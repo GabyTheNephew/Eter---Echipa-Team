@@ -1,4 +1,6 @@
 #pragma once
+#include <cstdint>
+#include<string_view>
 class Game
 {
 
@@ -17,6 +19,18 @@ public:
 	Game operator=(const Game&) = delete;//egal
 
 	static Game* get_Instance();//instanta jocului
+
+	enum class GameType :int8_t
+	{
+		Training,
+		MageDuel,
+		Power,
+		Tournament
+	};
+
+	GameType stringToGameType(std::string_view cuvant);
+	std::string_view gameTypeToString(GameType gameType)const;
+
 
 };
 
