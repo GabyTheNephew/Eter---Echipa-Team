@@ -26,3 +26,21 @@ Board::Board(const Board& board)
 		}
 	}
 }
+
+Board& Board::operator=(const Board& board)
+{
+	if (this == &board)
+	{
+		return *this;
+	}
+
+	for (int i = 0; i < m_board.size(); i++)
+	{
+		for (int j = 0; j < m_board[i].size(); j++)
+		{
+			m_board[i][j] = board.m_board[i][j];
+		}
+	}
+
+	return *this;
+}
