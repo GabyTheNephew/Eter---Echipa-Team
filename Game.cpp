@@ -1,5 +1,8 @@
 #include "Game.h"
 
+Game* Game::m_current_Instance = nullptr;
+
+
 Game* Game::get_Instance()
 {
 	if (m_current_Instance == nullptr)
