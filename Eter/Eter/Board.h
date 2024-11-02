@@ -11,5 +11,7 @@ private:
 public:
 	void emptyRow(int row);
 	void emptyColumn(int column);
+
+	Board(const Board& board);
 };
 
