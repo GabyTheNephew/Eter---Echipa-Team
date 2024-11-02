@@ -13,5 +13,6 @@ public:
 	void emptyColumn(int column);
 
 	Board(const Board& board);
+	Board& operator=(const Board& board);
 };
 
