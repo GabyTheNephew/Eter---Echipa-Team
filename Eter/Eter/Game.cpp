@@ -3,6 +3,8 @@
 Game* Game::m_current_Instance = nullptr;
 
 
+
+
 Game* Game::get_Instance()
 {
 	if (m_current_Instance == nullptr)
@@ -30,6 +32,7 @@ Game::GameType Game::stringToGameType(std::string_view cuvant)
 
 std::string_view Game::gameTypeToString(GameType gameType) const
 {
+	
 	if (gameType == GameType::Training)
 		return "Training";
 	else
@@ -41,4 +44,31 @@ std::string_view Game::gameTypeToString(GameType gameType) const
 			else
 				if (gameType == GameType::Tournament)
 					return "Tournament";
+	
+}
+
+void Game::startGame()
+{
+	
+
+	
+}
+
+
+
+uint8_t Game::getRoundCounter()
+{
+	return m_round_Counter;
+}
+
+void Game::setRoundCounter()
+{
+	this->m_round_Counter++;//we use it to increment the ammount of rounds farther int the game
+}
+
+
+
+Game::~Game()
+{
+	delete m_current_Instance;
 }
