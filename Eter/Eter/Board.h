@@ -15,6 +15,10 @@ public:
 	Board(const Board& board);
 	Board();//defaul constuctor
 	Board(uint8_t size);
+
+	Board(Board&& board)noexcept;
+	Board& operator=(Board&& board)noexcept;
+
 	void resizeBoard(int size);
 	Board& operator=(const Board& board);
 };
