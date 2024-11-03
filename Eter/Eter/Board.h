@@ -25,5 +25,7 @@ public:
 	void resizeBoard(int size);
 	void print();
 	void clear();
+	friend std::ostream& operator<<(std::ostream& os, const Board& board);
+	friend std::istream& operator>>(std::istream& in, Board& board); // this is just for test
 };
 
