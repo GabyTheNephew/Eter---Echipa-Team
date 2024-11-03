@@ -47,6 +47,29 @@ void Board::resizeBoard(int size)
 	this->m_board.resize(size, std::vector<std::deque<int>>(size));
 }
 
+void Board::print()
+{
+	for (const auto& row : m_board)
+	{
+		for (const auto& column : row)
+		{
+			std::cout << column.back() << " ";
+		}
+	}
+	std::cout << std::endl;
+}
+
+void Board::clear()
+{
+	for (auto& row : m_board)
+	{
+		for (auto& column : row)
+		{
+			column.clear();
+		}
+	}
+}
+
 
 Board::Board(const Board& board)
 	:m_board{board.m_board}
