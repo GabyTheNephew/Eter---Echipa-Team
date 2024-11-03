@@ -1,24 +1,26 @@
 #pragma once
 #include <cstdint>
 #include<string_view>
+#include "Board.h"
+
 class Game
 {
 
 private:
-	int m_round_Counter;
-	//Board  board
+	uint8_t m_round_Counter;
+	Board  m_board;
 	static Game* m_current_Instance;
 
 private:
-	Game() :m_round_Counter(0) {}
-	~Game() { delete m_current_Instance; }
+	Game() :m_round_Counter{ 0 },m_board(){}//same as in board.h
+	~Game();
 	
 
 public:
-	Game(const Game&) = delete;//cost de copiere
-	Game operator=(const Game&) = delete;//egal
+	Game(const Game&) = delete;
+	Game operator=(const Game&) = delete;
 
-	static Game* get_Instance();//instanta jocului
+	static Game* get_Instance();
 
 	enum class GameType :int8_t
 	{
@@ -31,6 +33,9 @@ public:
 	GameType stringToGameType(std::string_view cuvant);
 	std::string_view gameTypeToString(GameType gameType)const;
 
+	uint8_t getRoundCounter();
+	void setRoundCounter();
 
+	void startGame();
 };
 
