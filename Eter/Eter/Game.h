@@ -8,12 +8,17 @@ class Game
 
 private:
 	uint8_t m_round_Counter;
-	Board  m_board;
+	Board m_gameBoard;
 	static Game* m_current_Instance;
 
 private:
-	Game() :m_round_Counter{ 0 },m_board(){}//same as in board.h
+	Game() :m_round_Counter{ 0 },m_gameBoard(){}//same as in board.h
 	~Game();
+
+	void startTraining();
+	void startMageDuel();
+	void startPowerDuel();
+	void startTournament();
 	
 
 public:
@@ -33,9 +38,10 @@ public:
 	GameType stringToGameType(std::string_view cuvant);
 	std::string_view gameTypeToString(GameType gameType)const;
 
-	uint8_t getRoundCounter();
-	void setRoundCounter();
+	void incrementRoundCounter();
 
-	void startGame();
+
+	void startGame(GameType selectedGameType);
+
 };
 
