@@ -17,20 +17,24 @@ void Board::emptyColumn(int column)
 }
 
 Board::Board():
-	m_size{ 0 }, m_board{} //def constructor
+	 m_board{} //def constructor
 {
 
 }
 
 Board::Board(uint8_t size)
-	:m_size{size}
+{
+	resizeBoard(size);
+}
+
+void Board::resizeBoard(int size)
 {
 	this->m_board.resize(size, std::vector<std::deque<int>>(size));
 }
 
 
 Board::Board(const Board& board)
-	:m_size{board.m_size},m_board{board.m_board}
+	:m_board{board.m_board}
 {
 
 	for (int i = 0; i < m_board.size(); i++)
@@ -58,6 +62,5 @@ Board& Board::operator=(const Board& board)
 			m_board[i][j] = board.m_board[i][j];
 		}
 	}
-	m_size = board.m_size;
 	return *this;
 }

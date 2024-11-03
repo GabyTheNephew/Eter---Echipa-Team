@@ -47,21 +47,72 @@ std::string_view Game::gameTypeToString(GameType gameType) const
 	
 }
 
-void Game::startGame()
+void Game::startTraining()
 {
 	
+	this->m_round_Counter = 1;
+	uint8_t maxRounds=3;
+	while (m_round_Counter <= maxRounds)
+	{
+		m_gameBoard.resizeBoard(3);
+		//vector
+	}
+	
+}
 
+void Game::startMageDuel()
+{
+	this->m_round_Counter = 1;
+	uint8_t maxRounds = 4;
+	//vector
+	// eter
+	// get a mage
+	//best of 5
+}
+
+void Game::startPowerDuel()
+{
+	this->m_round_Counter = 1;
+	uint8_t maxRounds = 4;
+	//vector
+	// eter
+	// select 2 powers(!=)
+	//best of 5
+}
+
+void Game::startTournament()
+{
+	this->m_round_Counter = 1;
+	uint8_t maxRounds = 3;
+	//vector
+	//best of 5
+}
+
+void Game::startGame(GameType selectedGameType)
+{	
+	
+	switch (selectedGameType)
+	{
+	case (GameType::Training):
+		startTraining();
+		break;
+	case (GameType::MageDuel):
+		startMageDuel();
+		break;
+	case (GameType::Power):
+		startPowerDuel();
+		break;
+	case (GameType::Tournament):
+		startTournament();
+		break;
+	default:
+		break;
+	}
 	
 }
 
 
-
-uint8_t Game::getRoundCounter()
-{
-	return m_round_Counter;
-}
-
-void Game::setRoundCounter()
+void Game::incrementRoundCounter()
 {
 	this->m_round_Counter++;//we use it to increment the ammount of rounds farther int the game
 }
