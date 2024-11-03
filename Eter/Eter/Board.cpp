@@ -93,3 +93,34 @@ Board& Board::operator=(const Board& board)
 	}
 	return *this;
 }
+
+std::ostream& operator<<(std::ostream& os, const Board& board)
+{
+	for (int i = 0; i < board.m_board.size(); i++) {
+		for (int j = 0; j < board.m_board.size(); j++)
+		{
+			if (board.m_board[i][j].empty() == true) {
+				os << 0 << " ";
+			}
+			else {
+				os << board.m_board.back() << " ";
+			}
+			os << endl;
+		}
+	}
+	
+	return os;
+}
+
+std::istream& operator>>(std::istream& in, Board& board)
+{
+	for (int i = 0; i < board.m_board.size(); i++) {
+		for (int j = 0; j < board.m_board.size(); j++)
+		{
+			int val;
+			in >> val;
+			board.m_board.emplace_back(val);
+		}
+	}
+	return in;
+}
