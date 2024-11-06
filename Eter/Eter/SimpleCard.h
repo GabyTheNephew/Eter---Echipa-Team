@@ -13,7 +13,9 @@ public:
 	~SimpleCard();
 	SimpleCard& operator=(const SimpleCard& other);
 
-	int8_t getValue();
+	int8_t getValue()const;
 	void setValue(int8_t value);
+
+	friend std::ostream& operator<<(std::ostream& os, const SimpleCard& card);
 };
 
