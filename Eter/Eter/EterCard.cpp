@@ -1,8 +1,8 @@
 #include "EterCard.h"
 
-EterCard::EterCard():
+EterCard::EterCard(std::string_view color):
 	m_name{ "Eter" },
-	SimpleCard(5)
+	SimpleCard(5,color)
 {
 }
 
@@ -10,7 +10,7 @@ EterCard::~EterCard()
 {
 }
 
-std::string_view EterCard::getName()
+std::string EterCard::getName()
 {
 	return m_name;
 }

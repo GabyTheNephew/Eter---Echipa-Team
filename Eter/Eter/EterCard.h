@@ -8,14 +8,14 @@ class EterCard : public SimpleCard
 {
 private:
 
-	std::string_view m_name;
+	std::string m_name;
 
 public:
 
-	EterCard();
+	EterCard(std::string_view color);
 	~EterCard();
 
-	std::string_view getName();
+	std::string getName();
 	void setName(std::string_view name);
 };
 
