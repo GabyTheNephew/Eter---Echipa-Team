@@ -1,5 +1,22 @@
 #include "Board.h"
 
+void Board::expand(uint8_t newSize)
+{
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
+
+	uint8_t minSize = std::min(newSize, (uint8_t)m_board.size());
+
+	for (uint8_t i = 0; i < minSize; ++i)
+	{
+		for (uint8_t j = 0; j < minSize; ++j)
+		{
+			newMatrix[i][j] = std::move(m_board[i][j]);
+		}
+	}
+
+	m_board = std::move(newMatrix);
+}
+
 void Board::emptyRow(int row)
 {
 	for (auto& column : m_board[row])
@@ -44,7 +61,7 @@ Board& Board::operator=(Board&& board) noexcept
 
 void Board::resizeBoard(int size)
 {
-	this->m_board.resize(size, std::vector<std::deque<int>>(size));
+	this->m_board.resize(size, std::vector<std::deque<SimpleCard>>(size));
 }
 
 void Board::print()
@@ -103,10 +120,10 @@ std::ostream& operator<<(std::ostream& os, const Board& board)
 				os << 0 << " ";
 			}
 			else {
-				os << board.m_board.back() << " ";
+				os << board.m_board[i][j].back() << " ";
 			}
-			os << endl;
 		}
+		os << '\n';
 	}
 	
 	return os;
@@ -117,9 +134,9 @@ std::istream& operator>>(std::istream& in, Board& board)
 	for (int i = 0; i < board.m_board.size(); i++) {
 		for (int j = 0; j < board.m_board.size(); j++)
 		{
-			int val;
+			int8_t val;
 			in >> val;
-			board.m_board.emplace_back(val);
+			board.m_board[i][j].push_back(SimpleCard(val));
 		}
 	}
 	return in;

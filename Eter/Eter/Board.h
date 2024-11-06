@@ -2,10 +2,11 @@
 #include <vector>
 #include <deque>
 #include <iostream>
+#include "SimpleCard.h"
 
-typedef std::vector<std::vector<std::deque<int>>> matrix; // TODO: instead of int it should use Card class
+typedef std::vector<std::vector<std::deque<SimpleCard>>> matrix;
 
-// TODO: destructor, clear(), operator<< and operator>>
+// TODO: multiple expand functions so that the board can be expanded in multiple directions
 
 class Board
 {
@@ -19,7 +20,8 @@ public:
 
 	Board& operator=(Board&& board)noexcept;
 	Board& operator=(const Board& board);
-
+	
+	void expand(uint8_t newRows);
 	void emptyRow(int row);
 	void emptyColumn(int column);
 	void resizeBoard(int size);

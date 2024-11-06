@@ -18,7 +18,7 @@ SimpleCard& SimpleCard::operator=(const SimpleCard& other)
 	return *this;
 }
 
-int8_t SimpleCard::getValue()
+int8_t SimpleCard::getValue()const
 {
 	return m_value;
 }
@@ -28,4 +28,8 @@ void SimpleCard::setValue(int8_t value)
 	m_value = value;
 }
 
-
+std::ostream& operator<<(std::ostream& os, const SimpleCard& card)
+{
+	os << card.m_value;
+	return os;
+}
