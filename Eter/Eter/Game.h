@@ -2,7 +2,7 @@
 #include <cstdint>
 #include<string_view>
 #include "Board.h"
-
+#include "Player.h"
 class Game
 {
 
@@ -10,10 +10,10 @@ private:
 	uint8_t m_round_Counter;
 	Board m_gameBoard;
 	static Game* m_current_Instance;
+	Player player1, player2;
 
 private:
 	Game() :m_round_Counter{ 0 },m_gameBoard(){}//same as in board.h
-	~Game();
 
 	void startTraining();
 	void startMageDuel();
