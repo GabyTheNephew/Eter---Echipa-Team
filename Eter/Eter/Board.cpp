@@ -1,4 +1,6 @@
 #include "Board.h"
+#include "Board.h"
+#include "Board.h"
 
 void Board::expand(uint8_t newSize)
 {
@@ -109,6 +111,16 @@ Board& Board::operator=(const Board& board)
 		}
 	}
 	return *this;
+}
+
+matrix& Board::getBoard() const
+{
+	return m_board;
+}
+
+void Board::setBoard(const matrix& board)
+{
+	m_board = board;
 }
 
 std::ostream& operator<<(std::ostream& os, const Board& board)
