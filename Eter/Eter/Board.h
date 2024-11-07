@@ -21,6 +21,9 @@ public:
 	Board& operator=(Board&& board)noexcept;
 	Board& operator=(const Board& board);
 	
+	matrix& getBoard() const;  
+	void setBoard(const matrix& board); 
+
 	void expand(uint8_t newRows);
 	void emptyRow(int row);
 	void emptyColumn(int column);
