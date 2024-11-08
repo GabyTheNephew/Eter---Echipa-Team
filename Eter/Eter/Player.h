@@ -18,9 +18,12 @@ public:
 	void setName(std::string_view name);
 	std::string_view getName();
 
-	void printCards();
+	void printSimpleCards();
 
-	void setVector(std::vector<SimpleCard> simpleCardsVector);
-	std::vector<SimpleCard> getVector();
+	void setVector(std::vector<SimpleCard>& simpleCardsVector);
+	const std::vector<SimpleCard>& getVector();
+
+	void makeCardInvalid(uint8_t card_value);
+	void makeCardValid(uint8_t card_value);
 };
 
