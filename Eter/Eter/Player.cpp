@@ -24,20 +24,64 @@ std::string_view Player::getName()
 	return m_name;
 }
 
-void Player::printCards()
+void Player::printSimpleCards()
 {
 	for (auto card : m_simpleCardsVector)
 	{
-		std::cout << card;
+		if(card.getColor() == "red" || card.getColor() == "blue")
+				std::cout << card;
 	}
 }
 
-void Player::setVector(std::vector<SimpleCard> simpleCardsVector)
+void Player::setVector(std::vector<SimpleCard>& simpleCardsVector)
 {
 	m_simpleCardsVector = simpleCardsVector;
 }
 
-std::vector<SimpleCard> Player::getVector()
+const std::vector<SimpleCard>& Player::getVector()
 {
 	return m_simpleCardsVector;
+}
+
+void Player::makeCardInvalid(uint8_t card_value)
+{
+	for (auto& card : m_simpleCardsVector)
+	{
+		if (card.getValue() == card_value)
+		{
+			if (card.getColor() == "red")
+			{
+				card.setColor("usedRed");
+				break;
+			}
+			else
+				if (card.getColor() == "blue")
+				{
+					card.setColor("usedBlue");
+					break;
+				}
+		}
+	}
+}
+
+void Player::makeCardValid(uint8_t card_value)
+{
+	for (auto& card : m_simpleCardsVector)
+	{
+		if (card.getValue() == card_value)
+		{
+			if (card.getColor() == "usedRed")
+			{
+				card.setColor("red");
+				break;
+			}
+			else
+				if (card.getColor() == "usedBlue")
+				{
+					card.setColor("blue");
+					break;
+				}
+		}
+	}
+
 }
