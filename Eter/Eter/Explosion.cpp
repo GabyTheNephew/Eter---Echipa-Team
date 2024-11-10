@@ -1,15 +1,22 @@
 #include "Explosion.h"
 
-Explosion::Explosion()
+Explosion* Explosion::m_current_Instance = nullptr;
+
+
+
+Explosion* Explosion::get_Instance()
 {
+	if (m_current_Instance == nullptr)
+	{
+		m_current_Instance = new Explosion();
+	}
+
+	return m_current_Instance;
 }
 
-Explosion::Explosion(uint8_t size)
+void Explosion::vectorInstantiation(uint8_t size)
 {
-}
 
-Explosion::~Explosion()
-{
 }
 
 void Explosion::rotationLeft(uint8_t size)
@@ -40,3 +47,5 @@ void Explosion::rotationDown(uint8_t size)
 		positions[i].second = size - 1 - positions[i].second;
 	}
 }
+
+

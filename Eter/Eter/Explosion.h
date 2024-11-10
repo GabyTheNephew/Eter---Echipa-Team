@@ -16,15 +16,18 @@ class Explosion
 private:
 
 	std::vector<std::pair<uint8_t, uint8_t>> positions;
+	static Explosion* m_current_Instance;
 
 public:
+	static Explosion* get_Instance();
 
-	Explosion();
-	Explosion(uint8_t size);
-	~Explosion();
+	void vectorInstantiation(uint8_t size);
+	
 	void rotationLeft(uint8_t size);
 	void rotationRight(uint8_t size);
 	void rotationDown(uint8_t size);
+
+
 	
 
 };
