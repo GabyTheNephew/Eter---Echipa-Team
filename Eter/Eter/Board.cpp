@@ -2,23 +2,6 @@
 #include "Board.h"
 #include "Board.h"
 
-void Board::expand(uint8_t newSize)
-{
-	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
-
-	uint8_t minSize = std::min(newSize, (uint8_t)m_board.size());
-
-	for (uint8_t i = 0; i < minSize; ++i)
-	{
-		for (uint8_t j = 0; j < minSize; ++j)
-		{
-			newMatrix[i][j] = std::move(m_board[i][j]);
-		}
-	}
-
-	m_board = std::move(newMatrix);
-}
-
 void Board::expandLeftUpCorner()
 {
 	uint8_t newSize = m_board.size() + 1;
@@ -45,6 +28,38 @@ void Board::expandRightUpCorner()
 		for (int8_t j = m_board.size() - 1; j >= 0; --j)
 		{
 			newMatrix[i + 1][j] = std::move(m_board[i][j]);
+		}
+	}
+
+	m_board = std::move(newMatrix);
+}
+
+void Board::expandLeftBottomCorner()
+{
+	uint8_t newSize = m_board.size() + 1;
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
+
+	for (int8_t i = m_board.size() - 1; i >= 0; --i)
+	{
+		for (int8_t j = m_board.size() - 1; j >= 0; --j)
+		{
+			newMatrix[i][j+1] = std::move(m_board[i][j]);
+		}
+	}
+
+	m_board = std::move(newMatrix);
+}
+
+void Board::expandRightBottomCorner()
+{
+	uint8_t newSize = m_board.size() + 1;
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
+
+	for (int8_t i = m_board.size() - 1; i >= 0; --i)
+	{
+		for (int8_t j = m_board.size() - 1; j >= 0; --j)
+		{
+			newMatrix[i][j] = std::move(m_board[i][j]);
 		}
 	}
 
