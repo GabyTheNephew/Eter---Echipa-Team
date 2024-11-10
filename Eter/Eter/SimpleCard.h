@@ -6,7 +6,7 @@
 class SimpleCard
 {
 private:
-	int8_t m_value:3;
+	int8_t m_value;
 	std::string m_color;
 public:
 

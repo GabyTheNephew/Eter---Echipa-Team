@@ -63,14 +63,14 @@ void Game::startTraining()
 		while (player1.getVector().size() != 0 || player1.getVector().size() != 0)
 		{
 			std::cout << player1.getName() << " select a card";
-			player1.printCards();
+			player1.printSimpleCards();
 			std::cout << "\nPick a card\n";
 			std::cin >> chosen_card;
 
 			//we remove the card and add it to the board
 
 			std::cout << player2.getName() << " select a card";
-			player2.printCards();
+			player2.printSimpleCards();
 			std::cout << "\nPick a card\n";
 			std::cin >> chosen_card;
 

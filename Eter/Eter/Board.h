@@ -21,10 +21,14 @@ public:
 	Board& operator=(Board&& board)noexcept;
 	Board& operator=(const Board& board);
 	
-	matrix& getBoard() const;  
+	matrix& getBoard();  
 	void setBoard(const matrix& board); 
 
 	void expand(uint8_t newRows);
+
+	void expandLeftUpCorner();
+	void expandRightUpCorner();
+
 	void emptyRow(int row);
 	void emptyColumn(int column);
 	void resizeBoard(int size);
