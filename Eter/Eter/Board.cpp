@@ -19,6 +19,38 @@ void Board::expand(uint8_t newSize)
 	m_board = std::move(newMatrix);
 }
 
+void Board::expandLeftUpCorner()
+{
+	uint8_t newSize = m_board.size() + 1;
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
+
+	for (int8_t i = m_board.size() - 1; i >= 0 ; --i)
+	{
+		for (int8_t j = m_board.size() - 1; j >= 0; --j)
+		{
+			newMatrix[i + 1][j + 1] = std::move(m_board[i][j]);
+		}
+	}
+
+	m_board = std::move(newMatrix);
+}
+
+void Board::expandRightUpCorner()
+{
+	uint8_t newSize = m_board.size() + 1;
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
+
+	for (int8_t i = m_board.size() - 1; i >= 0; --i)
+	{
+		for (int8_t j = m_board.size() - 1; j >= 0; --j)
+		{
+			newMatrix[i + 1][j] = std::move(m_board[i][j]);
+		}
+	}
+
+	m_board = std::move(newMatrix);
+}
+
 void Board::emptyRow(int row)
 {
 	for (auto& column : m_board[row])
@@ -113,7 +145,7 @@ Board& Board::operator=(const Board& board)
 	return *this;
 }
 
-matrix& Board::getBoard() const
+matrix& Board::getBoard()
 {
 	return m_board;
 }
@@ -148,7 +180,7 @@ std::istream& operator>>(std::istream& in, Board& board)
 		{
 			int8_t val;
 			in >> val;
-			board.m_board[i][j].push_back(SimpleCard(val));
+			board.m_board[i][j].push_back(SimpleCard(val, "r"));
 		}
 	}
 	return in;
