@@ -22,7 +22,7 @@ private:
 	static Explosion* m_current_Instance;
 
 public:
-	static Explosion* get_Instance();
+	static Explosion* get_Instance(); 
 
 	void vectorInstantiation(uint8_t size);
 
