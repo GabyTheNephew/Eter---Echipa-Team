@@ -26,6 +26,7 @@ bool FireMageIgnara::playMage(Board& board, std::string_view color, int8_t x, in
 		if (board.getBoard()[x][y].back().getColor() != color && board.getBoard()[x][y][board.getBoard()[x][y].size()-2].getColor() == color)
 		{
 			board.getBoard()[x][y].pop_back();
+			board.setBoard(board.getBoard());
 			return true;
 		}
 	return false;
