@@ -24,10 +24,10 @@ public:
 	matrix& getBoard();  
 	void setBoard(const matrix& board); 
 
-	void expand(uint8_t newRows);
-
 	void expandLeftUpCorner();
 	void expandRightUpCorner();
+	void expandLeftBottomCorner();
+	void expandRightBottomCorner();
 
 	void emptyRow(int row);
 	void emptyColumn(int column);
