@@ -42,6 +42,12 @@ public:
 	std::vector<uint8_t> searchEmptyRows();
 	bool canBePlaced(int x,int y)const;
 
+	bool lineWithColor(std::string_view Color)const;
+	bool columnWithColor(std::string_view Color)const;
+	std::string_view win();
+
+
+
 	void emptyRow(uint8_t row);
 	void emptyColumn(uint8_t column);
 	void removeRow(uint8_t row);

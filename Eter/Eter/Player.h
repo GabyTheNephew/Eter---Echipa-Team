@@ -29,7 +29,7 @@ public:
 	void makeCardValid(uint8_t card_value);
 
 	uint8_t chooseCard();
-
+	int numberofValidCards();
 	void playCard(uint8_t card_value,Board& game_board);
 };
 

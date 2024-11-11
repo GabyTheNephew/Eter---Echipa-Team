@@ -60,11 +60,12 @@ void Game::startTraining()
 	while (m_round_Counter <= maxRounds)
 	{
 
-		while (player1.getVector().size() != 0 || player1.getVector().size() != 0)
+		while (player1.numberofValidCards()!=0 || player1.numberofValidCards()!= 0||m_gameBoard.win()!="red"||m_gameBoard.win()!="blue")
 		{
-			player1.chooseCard();
+			
+			player1.playCard(player1.chooseCard(), m_gameBoard);
 
-			player2.chooseCard();
+			player2.playCard(player2.chooseCard(), m_gameBoard);
 			
 		}
 

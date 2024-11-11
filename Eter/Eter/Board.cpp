@@ -195,6 +195,56 @@ bool Board::canBePlaced(int x,int y) const
 	return true;
 }
 
+bool Board::lineWithColor(std::string_view Color) const
+{
+	bool check = true;
+	for (int i = 0; i < m_board.size(); i++)
+	{
+		for (int j = 0; j < m_board[i].size(); j++)
+		{
+			if (m_board[i][j].front().getColor() != Color)
+			{
+				check = false;
+				break;
+			}
+		}
+	}
+	return check;
+}
+
+bool Board::columnWithColor(std::string_view Color) const
+{
+
+	bool check = true;
+	for (int i = 0; i < m_board.size(); i++)
+	{
+		for (int j = 0; j < m_board[i].size(); j++)
+		{
+			if (m_board[j][i].front().getColor() != Color)
+			{
+				check = false;
+				break;
+			}
+		}
+	}
+	return check;
+}
+
+std::string_view Board::win()
+{
+	bool checkred = lineWithColor("red") || columnWithColor("red");
+	bool checkblue = lineWithColor("blue") || columnWithColor("blue");
+
+	if (checkred)
+	{
+		return "Red";
+	}
+	if (checkblue)
+	{
+		return "Blue";
+	}
+}
+
 void Board::emptyRow(uint8_t row)
 {
 	for (auto& column : m_board[row])
