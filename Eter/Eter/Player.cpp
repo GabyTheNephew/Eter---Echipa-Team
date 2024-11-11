@@ -80,7 +80,7 @@ void Player::makeCardValid(uint8_t card_value)
 {
 	for (auto& card : m_simpleCardsVector)
 	{
-		if (card.getValue() == card_value)
+		if (card.getValue()+48 == card_value)
 		{
 			if (card.getColor() == "usedRed")
 			{
@@ -98,6 +98,7 @@ void Player::makeCardValid(uint8_t card_value)
 
 }
 
+
 uint8_t Player::chooseCard()
 {
 	uint8_t chosen_card;
@@ -110,20 +111,36 @@ uint8_t Player::chooseCard()
 
 }
 
+int Player::numberofValidCards()
+{
+	int count = 0;
+	for (auto& card : m_simpleCardsVector)
+	{
+		if (card.getColor() == "red" || card.getColor() == "blue")
+			count++;
+	}
+	return count;
+}
+
 void Player::playCard(uint8_t card_value, Board& game_board)
 {
 	int x, y;
 	std::cout << "Enter the coordinates of the card\n";
-	std::cin >> x >> y;
-	if (game_board.canBePlaced(x, y))
+	do
 	{
+		std::cin >> x >> y;
+		if (game_board.canBePlaced(x, y))
+		{
+			makeCardInvalid(card_value);
+			break;
+		}
+		else
+		{
+			std::cout << "Invalid coordinates\n";
+		}
 
-		makeCardInvalid(card_value);
-	}
-	else
-	{
-		std::cout << "Invalid coordinates\n";
-		playCard(card_value, game_board);
-	}
+	} while (game_board.canBePlaced(x,y));
+	std::cin >> x >> y;
+	
 
 }
