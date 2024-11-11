@@ -40,6 +40,7 @@ public:
 
 	std::vector<uint8_t> searchEmptyColumns();
 	std::vector<uint8_t> searchEmptyRows();
+	bool canBePlaced(int x,int y)const;
 
 	void emptyRow(uint8_t row);
 	void emptyColumn(uint8_t column);
