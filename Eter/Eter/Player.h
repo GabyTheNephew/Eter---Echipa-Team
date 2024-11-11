@@ -22,8 +22,11 @@ public:
 
 	void setVector(std::vector<SimpleCard>& simpleCardsVector);
 	const std::vector<SimpleCard>& getVector();
+	void ResetVector();
 
 	void makeCardInvalid(uint8_t card_value);
 	void makeCardValid(uint8_t card_value);
+
+	void chooseCard();
 };
 

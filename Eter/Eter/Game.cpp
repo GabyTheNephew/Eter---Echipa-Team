@@ -15,18 +15,18 @@ Game* Game::get_Instance()
 	return m_current_Instance;
 }
 
-Game::GameType Game::stringToGameType(std::string_view cuvant)
+Game::GameType Game::stringToGameType(std::string_view word)
 {
-	if (cuvant == "Training")
+	if (word == "Training")
 		return GameType::Training;
 	else
-		if (cuvant == "MageDuel")
+		if (word == "MageDuel")
 			return GameType::MageDuel;
 		else
-			if (cuvant == "Power")
+			if (word == "Power")
 				return GameType::Power;
 			else
-				if (cuvant == "Tournament")
+				if (word == "Tournament")
 					return GameType::Tournament;
 }
 
@@ -54,31 +54,23 @@ void Game::startTraining()
 	uint8_t maxRounds=3;
 	m_gameBoard.resizeBoard(1);
 	uint16_t chosen_card;
+	player1 = Player("Name1", { SimpleCard(1,"red"),SimpleCard(1,"red"),SimpleCard(2,"red") ,SimpleCard(2,"red") ,SimpleCard(3,"red"),SimpleCard(3,"red"),SimpleCard(4,"red") });
+	player2 = Player("Name2", { SimpleCard(1,"blue"),SimpleCard(1,"blue"),SimpleCard(2,"blue") ,SimpleCard(2,"blue") ,SimpleCard(3,"blue"),SimpleCard(3,"blue"),SimpleCard(4,"blue") });
+	
 	while (m_round_Counter <= maxRounds)
 	{
-		player1=Player("Name1",{SimpleCard(1,"red"),SimpleCard(1,"red"),SimpleCard(2,"red") ,SimpleCard(2,"red") ,SimpleCard(3,"red"),SimpleCard(3,"red"),SimpleCard(4,"red") });
-		player2 = Player("Name2", { SimpleCard(1,"blue"),SimpleCard(1,"blue"),SimpleCard(2,"blue") ,SimpleCard(2,"blue") ,SimpleCard(3,"blue"),SimpleCard(3,"blue"),SimpleCard(4,"blue") });
-
 
 		while (player1.getVector().size() != 0 || player1.getVector().size() != 0)
 		{
-			std::cout << player1.getName() << " select a card";
-			player1.printSimpleCards();
-			std::cout << "\nPick a card\n";
-			std::cin >> chosen_card;
+			player1.chooseCard();
 
-			//we remove the card and add it to the board
-
-			std::cout << player2.getName() << " select a card";
-			player2.printSimpleCards();
-			std::cout << "\nPick a card\n";
-			std::cin >> chosen_card;
-
+			player2.chooseCard();
 			
 		}
 
 
-
+		player1.ResetVector();
+		player2.ResetVector();
 		m_gameBoard.clear();
 		incrementRoundCounter();
 	}

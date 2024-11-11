@@ -43,6 +43,6 @@ void SimpleCard::setColor(std::string_view color)
 
 std::ostream& operator<<(std::ostream& os, const SimpleCard& card)
 {
-	os << card.m_value << card.m_color;
+	os << static_cast<int>(card.m_value) << card.m_color;
 	return os;
 }

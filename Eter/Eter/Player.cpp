@@ -29,7 +29,7 @@ void Player::printSimpleCards()
 	for (auto card : m_simpleCardsVector)
 	{
 		if(card.getColor() == "red" || card.getColor() == "blue")
-				std::cout << card;
+				std::cout << card<<'\n';
 	}
 }
 
@@ -41,6 +41,18 @@ void Player::setVector(std::vector<SimpleCard>& simpleCardsVector)
 const std::vector<SimpleCard>& Player::getVector()
 {
 	return m_simpleCardsVector;
+}
+
+void Player::ResetVector()
+{
+	for (auto& card : m_simpleCardsVector)
+	{
+		if (card.getColor() == "usedRed")
+			card.setColor("red");
+		else
+			if (card.getColor() == "usedBlue")
+				card.setColor("blue");
+	}
 }
 
 void Player::makeCardInvalid(uint8_t card_value)
@@ -83,5 +95,16 @@ void Player::makeCardValid(uint8_t card_value)
 				}
 		}
 	}
+
+}
+
+void Player::chooseCard()
+{
+	uint8_t chosen_card;
+	std::cout <<getName() << " select a card";
+	printSimpleCards();
+	std::cout << "\nPick a card\n";
+	std::cin >> chosen_card;
+	makeCardInvalid(chosen_card);
 
 }
