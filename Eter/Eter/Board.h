@@ -36,6 +36,10 @@ public:
 	void expandRight();
 	void expandLeft();
 	void expandDown();
+	void expandUp();
+
+	std::vector<uint8_t> searchEmptyColumns();
+	std::vector<uint8_t> searchEmptyRows();
 
 	void emptyRow(uint8_t row);
 	void emptyColumn(uint8_t column);
