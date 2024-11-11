@@ -35,7 +35,7 @@ public:
 		Tournament
 	};
 
-	GameType stringToGameType(std::string_view cuvant);
+	GameType stringToGameType(std::string_view word);
 	std::string_view gameTypeToString(GameType gameType)const;
 
 	void incrementRoundCounter();
