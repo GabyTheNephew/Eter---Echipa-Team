@@ -21,6 +21,5 @@ bool AirMageZephyraCrow::playMage(Board& board, std::string_view color, int8_t x
 	if (board.getBoard()[x][y].empty())
 	{
 		board.getBoard()[x][y].push_back(EterCard(color));
-		board.setBoard(board.getBoard());
 	}
 }
