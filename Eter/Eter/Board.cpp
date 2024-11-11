@@ -114,6 +114,64 @@ void Board::expandDown()
 	m_board = std::move(newMatrix);
 }
 
+void Board::expandUp()
+{
+	uint8_t newSize = m_board.size() + 1;
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(m_board[0].size()));
+
+	for (int8_t i = m_board.size()-1; i >= 1; --i)
+	{
+		for (int8_t j = 0; j < m_board[i].size(); j++)
+		{
+			newMatrix[i][j] = std::move(m_board[i][j]);
+		}
+	}
+
+	m_board = std::move(newMatrix);
+}
+
+std::vector<uint8_t> Board::searchEmptyColumns()
+{
+	std::vector<uint8_t> emptyCols;
+	for (int i = 0; i < m_board.size(); i++)
+	{
+		bool isEmpty = true;
+		for (int j = 0; j < m_board[i].size(); j++)
+		{
+			if (m_board[j][i].size() != 0)
+				isEmpty = false;
+		}
+
+		if (isEmpty)
+		{
+			emptyCols.push_back(i);
+		}
+	}
+
+	return emptyCols;
+}
+
+std::vector<uint8_t> Board::searchEmptyRows()
+{
+	std::vector<uint8_t> emptyRows;
+	for (int i = 0; i < m_board.size(); i++)
+	{
+		bool isEmpty = true;
+		for (int j = 0; j < m_board[i].size(); j++)
+		{
+			if (m_board[i][j].size() != 0)
+				isEmpty = false;
+		}
+
+		if (isEmpty)
+		{
+			emptyRows.push_back(i);
+		}
+	}
+
+	return emptyRows;
+}
+
 void Board::emptyRow(uint8_t row)
 {
 	for (auto& column : m_board[row])
