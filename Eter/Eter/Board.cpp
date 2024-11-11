@@ -66,7 +66,23 @@ void Board::expandRightBottomCorner()
 	m_board = std::move(newMatrix);
 }
 
-void Board::emptyRow(int row)
+void Board::expandRight()
+{
+	uint8_t newSize = m_board[0].size() + 1;
+	matrix newMatrix(m_board.size(), std::vector<std::deque<SimpleCard>>(newSize));
+
+	for (int8_t i = 0; i < m_board.size() ; ++i)
+	{
+		for (int8_t j = 0; j < m_board[0].size(); ++j)
+		{
+			newMatrix[i][j] = std::move(m_board[i][j]);
+		}
+	}
+
+	m_board = std::move(newMatrix);
+}
+
+void Board::emptyRow(uint8_t row)
 {
 	for (auto& column : m_board[row])
 	{
@@ -74,12 +90,84 @@ void Board::emptyRow(int row)
 	}
 }
 
-void Board::emptyColumn(int column)
+void Board::emptyColumn(uint8_t column)
 {
 	for (auto& row : m_board)
 	{
 		row[column].clear();
 	}
+}
+
+void Board::removeRow(uint8_t row)
+{
+	uint8_t newSize = m_board.size() - 1;
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
+
+	if (row == 0)
+	{
+		for (int8_t i = 0; i < newSize; i++)
+		{
+			for (int8_t j = 0; j < newSize; j++)
+			{
+				newMatrix[i][j] = std::move(m_board[i + 1][j]);
+			}
+		}
+	}
+	else
+	{
+		if (row == m_board.size() - 1)
+		{
+			for (int8_t i = 0; i < newSize; i++)
+			{
+				for (int8_t j = 0; j < newSize; j++)
+				{
+					newMatrix[i][j] = std::move(m_board[i][j]);
+				}
+			}
+		}
+		else
+		{
+			std::cout << "Nu se poate sterge randul din mijloc!\n";
+		}
+	}
+
+	m_board = std::move(newMatrix);
+}
+
+void Board::removeColumn(uint8_t column)
+{
+	uint8_t newSize = m_board[0].size() - 1;
+	matrix newMatrix(newSize + 1, std::vector<std::deque<SimpleCard>>(newSize));
+
+	if (column == 0)
+	{
+		for (int8_t i = 0; i < newSize; i++)
+		{
+			for (int8_t j = 0; j < newSize; j++)
+			{
+				newMatrix[i][j] = std::move(m_board[i][j + 1]);
+			}
+		}
+	}
+	else
+	{
+		if (column == newSize - 1)
+		{
+			for (int8_t i = 0; i < newSize; i++)
+			{
+				for (int8_t j = 0; j < newSize; j++)
+				{
+					newMatrix[i][j] = std::move(m_board[i][j]);
+				}
+			}
+		}
+		else
+		{
+			std::cout << "Nu se poate sterge coloana din mijloc!\n";
+		}
+	}
+
+	m_board = std::move(newMatrix);
 }
 
 Board::Board():
@@ -108,12 +196,12 @@ Board& Board::operator=(Board&& board) noexcept
 	return *this;
 }
 
-void Board::resizeBoard(int size)
+void Board::resizeBoard(uint8_t size)
 {
 	this->m_board.resize(size, std::vector<std::deque<SimpleCard>>(size));
 }
 
-void Board::print()
+void Board::print()const
 {
 	for (const auto& row : m_board)
 	{
