@@ -7,6 +7,7 @@
 typedef std::vector<std::vector<std::deque<SimpleCard>>> matrix;
 
 // TODO: multiple expand functions so that the board can be expanded in multiple directions
+// TODO: refactoring so that I use ranges and iterators instead of basic i and j when going trough matrix
 
 class Board
 {
@@ -29,10 +30,14 @@ public:
 	void expandLeftBottomCorner();
 	void expandRightBottomCorner();
 
-	void emptyRow(int row);
-	void emptyColumn(int column);
-	void resizeBoard(int size);
-	void print();
+	void expandRight();
+
+	void emptyRow(uint8_t row);
+	void emptyColumn(uint8_t column);
+	void removeRow(uint8_t row);
+	void removeColumn(uint8_t column);
+	void resizeBoard(uint8_t size);
+	void print()const;
 	void clear();
 	friend std::ostream& operator<<(std::ostream& os, const Board& board);
 	friend std::istream& operator>>(std::istream& in, Board& board); // this is just for test
