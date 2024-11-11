@@ -82,6 +82,38 @@ void Board::expandRight()
 	m_board = std::move(newMatrix);
 }
 
+void Board::expandLeft()
+{
+	uint8_t newSize = m_board[0].size() + 1;
+	matrix newMatrix(m_board.size(), std::vector<std::deque<SimpleCard>>(newSize));
+
+	for (int8_t i = 0; i < m_board.size(); ++i)
+	{
+		for (int8_t j = m_board[0].size() - 1 ;j >= 1; --j)
+		{
+			newMatrix[i][j] = std::move(m_board[i][j]);
+		}
+	}
+
+	m_board = std::move(newMatrix);
+}
+
+void Board::expandDown()
+{
+	uint8_t newSize = m_board.size() + 1;
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(m_board[0].size()));
+
+	for (int8_t i = 0; i < m_board.size(); ++i)
+	{
+		for (int8_t j = 0; j < m_board[i].size(); j++)
+		{
+			newMatrix[i][j] = std::move(m_board[i][j]);
+		}
+	}
+
+	m_board = std::move(newMatrix);
+}
+
 void Board::emptyRow(uint8_t row)
 {
 	for (auto& column : m_board[row])
@@ -101,7 +133,7 @@ void Board::emptyColumn(uint8_t column)
 void Board::removeRow(uint8_t row)
 {
 	uint8_t newSize = m_board.size() - 1;
-	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize + 1));
 
 	if (row == 0)
 	{

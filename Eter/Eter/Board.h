@@ -8,6 +8,9 @@ typedef std::vector<std::vector<std::deque<SimpleCard>>> matrix;
 
 // TODO: multiple expand functions so that the board can be expanded in multiple directions
 // TODO: refactoring so that I use ranges and iterators instead of basic i and j when going trough matrix
+// TODO: calculate points
+// TODO: is a line with a color?
+// TODO: test the expand methods
 
 class Board
 {
@@ -31,6 +34,8 @@ public:
 	void expandRightBottomCorner();
 
 	void expandRight();
+	void expandLeft();
+	void expandDown();
 
 	void emptyRow(uint8_t row);
 	void emptyColumn(uint8_t column);
