@@ -172,6 +172,29 @@ std::vector<uint8_t> Board::searchEmptyRows()
 	return emptyRows;
 }
 
+bool Board::canBePlaced(int x,int y) const
+{
+	int rows = m_board.size();
+	int columns = m_board[0].size();
+
+	if (x < 0 || x >= rows || y < 0 || y >= columns)
+	{
+		return false;
+	}
+	if (m_board[x+1][y].empty() &&
+		m_board[x-1][y].empty()&&
+		m_board[x+1][y+1].empty()&&
+		m_board[x-1][y+1].empty()&&
+		m_board[x][y+1].empty()&&
+		m_board[x][y-1].empty()&&
+		m_board[x-1][y-1].empty()&&
+		m_board[x+1][y-1].empty())
+	{
+		return false;
+	}
+	return true;
+}
+
 void Board::emptyRow(uint8_t row)
 {
 	for (auto& column : m_board[row])

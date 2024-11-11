@@ -2,6 +2,7 @@
 #include <string_view>
 #include<vector>
 #include "SimpleCard.h"
+#include "Board.h"
 class Player
 {
 private:
@@ -27,6 +28,8 @@ public:
 	void makeCardInvalid(uint8_t card_value);
 	void makeCardValid(uint8_t card_value);
 
-	void chooseCard();
+	uint8_t chooseCard();
+
+	void playCard(uint8_t card_value,Board& game_board);
 };
 
