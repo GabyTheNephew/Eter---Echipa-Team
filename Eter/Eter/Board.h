@@ -47,7 +47,7 @@ public:
 	std::string_view win();
 
 
-
+	void moveSpace(uint8_t row, uint8_t column, uint8_t newRow, uint8_t newColumn);
 	void emptyRow(uint8_t row);
 	void emptyColumn(uint8_t column);
 	void removeRow(uint8_t row);
@@ -55,6 +55,7 @@ public:
 	void resizeBoard(uint8_t size);
 	void print()const;
 	void clear();
+
 	friend std::ostream& operator<<(std::ostream& os, const Board& board);
 	friend std::istream& operator>>(std::istream& in, Board& board); // this is just for test
 };
