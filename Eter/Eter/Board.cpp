@@ -1,6 +1,4 @@
 #include "Board.h"
-#include "Board.h"
-#include "Board.h"
 
 void Board::expandLeftUpCorner()
 {
@@ -243,6 +241,12 @@ std::string_view Board::win()
 	{
 		return "Blue";
 	}
+}
+
+void Board::moveSpace(uint8_t row, uint8_t column, uint8_t newRow, uint8_t newColumn)
+{
+	m_board[newRow][newColumn] = std::move(m_board[row][column]);
+	m_board[row][column].clear;
 }
 
 void Board::emptyRow(uint8_t row)
