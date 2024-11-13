@@ -135,4 +135,25 @@ void Game::incrementRoundCounter()
 	this->m_round_Counter++;//we use it to increment the ammount of rounds farther int the game
 }
 
+bool Game::checkPlayExplosion(Board& m_board)
+{
+	uitnt8_t count = 0;
+	for (int i = 0; i < m_board.getBoard().size(); i++)
+	{
+		if (m_board.checkColumn(i) == true)
+		{
+			count++;
+		}if (m_board.checkRow(i) == true)
+		{
+			count++;
+		}
+
+		if (count >= 2)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 
