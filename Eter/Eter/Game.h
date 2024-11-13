@@ -3,6 +3,7 @@
 #include<string_view>
 #include "Board.h"
 #include "Player.h"
+#include "Explosion.h"
 class Game
 {
 
@@ -11,6 +12,7 @@ private:
 	Board m_gameBoard;
 	static Game* m_current_Instance;
 	Player player1, player2;
+	Explosion m_explosion;
 
 private:
 	Game() :m_round_Counter{ 0 },m_gameBoard(){}//same as in board.h
@@ -39,6 +41,8 @@ public:
 	std::string_view gameTypeToString(GameType gameType)const;
 
 	void incrementRoundCounter();
+
+	bool checkPlayExplosion(Board& m_board);
 
 
 	void startGame(GameType selectedGameType);

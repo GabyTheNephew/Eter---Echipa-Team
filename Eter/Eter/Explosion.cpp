@@ -27,25 +27,19 @@ void Explosion::vectorInstantiation(uint8_t size)
 		int y = std::rand() % 3;
 
 		// Verificăm dacă poziția este unică
-		if (uniquePositions.emplace(x, y).second) { // `.second` este true dacă perechea a fost inserată cu succes
-			ActionType action = static_cast<ActionType>(std::rand() % 3);
-			positions.emplace_back(x, y, action);
+		int chance = std::rand() % 10;
+		if (chance == 0) {
+			action = ActionType::hole;
 		}
-	}
-
-	for (const auto& entry : positions) {
-		int x, y;
-		ActionType action;
-		std::tie(x, y, action) = entry;
-
-		std::cout << "Position: (" << x << ", " << y << "), ActionType: ";
-		switch (action) {
-		case ActionType::explode: std::cout << "explode"; break;
-		case ActionType::giveBack: std::cout << "giveBack"; break;
-		case ActionType::hole: std::cout << "hole"; break;
+		else {
+			// 90% șansă pentru celelalte două tipuri de acțiuni
+			action = (std::rand() % 2 == 0) ? ActionType::explode : ActionType::giveBack;
 		}
-		std::cout << std::endl;
+
+		positions.emplace_back(x, y, action);
 	}
+}
+
 }
 
 void Explosion::rotationLeft(uint8_t size)
