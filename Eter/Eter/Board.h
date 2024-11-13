@@ -55,6 +55,8 @@ public:
 	void resizeBoard(uint8_t size);
 	void print()const;
 	void clear();
+	bool checkRow(uint8_t row);
+	bool checkColumn(uint8_t column);
 
 	friend std::ostream& operator<<(std::ostream& os, const Board& board);
 	friend std::istream& operator>>(std::istream& in, Board& board); // this is just for test

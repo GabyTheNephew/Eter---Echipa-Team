@@ -391,6 +391,32 @@ void Board::clear()
 	}
 }
 
+bool Board::checkRow(uint8_t row)
+{
+	bool check = true;
+	for (int i = 0; i < m_board.size(); i++)
+	{
+		if (m_board[row][i].empty())
+		{
+			check = false;
+		}
+	}
+	return check;
+}
+
+bool Board::checkColumn(uint8_t column)
+{
+	bool check = true;
+	for (int i = 0; i < m_board.size(); i++)
+	{
+		if (m_board[i][column].empty())
+		{
+			check = false;
+		}
+	}
+	return check;
+}
+
 
 Board::Board(const Board& board)
 	:m_board{board.m_board}
