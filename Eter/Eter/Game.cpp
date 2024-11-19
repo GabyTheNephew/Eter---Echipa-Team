@@ -1,18 +1,11 @@
 #include "Game.h"
 
-Game* Game::m_current_Instance = nullptr;
+Game Game::m_current_Instance;
 
 
-
-
-Game* Game::get_Instance()
+Game& Game::get_Instance()
 {
-	if (m_current_Instance == nullptr)
-	{
-		m_current_Instance = new Game();
-	}
-
-	return m_current_Instance;
+	return m_current_Instance; 
 }
 
 Game::GameType Game::stringToGameType(std::string_view word)
@@ -137,7 +130,7 @@ void Game::incrementRoundCounter()
 
 bool Game::checkPlayExplosion(Board& m_board)
 {
-	uitnt8_t count = 0;
+	uint8_t count = 0;
 	for (int i = 0; i < m_board.getBoard().size(); i++)
 	{
 		if (m_board.checkColumn(i) == true)
