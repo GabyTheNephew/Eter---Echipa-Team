@@ -4,6 +4,7 @@
 #include "Board.h"
 #include "Player.h"
 #include "Explosion.h"
+#include <string>
 
 class Game
 {
@@ -13,15 +14,17 @@ private:
     static Game m_current_Instance; 
     Player player1, player2;
     Explosion m_explosion;
+	bool m_explosionsEnabled;
 
     
-    Game() : m_round_Counter{ 0 }, m_gameBoard() {}
+    Game() : m_round_Counter{ 0 }, m_gameBoard{}, m_explosionsEnabled{false} {}
 
     // Methods for the different game types
     void startTraining();
     void startMageDuel();
     void startPowerDuel();
     void startTournament();
+	void showMenu();
 
 public:
     Game(const Game&) = delete;
@@ -43,4 +46,8 @@ public:
     void incrementRoundCounter();
     bool checkPlayExplosion(Board& m_board);
     void startGame(GameType selectedGameType);
+
+
+    void setExplosionsEnabled(bool enabled); 
+    bool areExplosionsEnabled() const;
 };

@@ -1,5 +1,6 @@
 #include "Game.h"
 
+
 Game Game::m_current_Instance;
 
 
@@ -99,8 +100,43 @@ void Game::startTournament()
 	//best of 5
 }
 
+void Game::showMenu()
+{
+	std::string input;
+
+	
+	std::cout << "=== Explosion Menu ===\n";
+	std::cout << "Type 'explosions' to enable explosions, 'no explosions' to disable them, or 'start' to begin the game:\n";
+
+	while (true)
+	{
+		std::getline(std::cin, input);
+
+		if (input == "explosions")
+		{
+			setExplosionsEnabled(true);
+			std::cout << "Explosions enabled!\n";
+		}
+		else if (input == "no explosions")
+		{
+			setExplosionsEnabled(false);
+			std::cout << "Explosions disabled!\n";
+		}
+		else if (input == "start")
+		{
+			std::cout << "Starting the game...\n";
+			break; // Exit the loop to start the game
+		}
+		else
+		{
+			std::cout << "Unknown command. Please type 'explosions', 'no explosions', or 'start'.\n";
+		}
+	}
+}
+
 void Game::startGame(GameType selectedGameType)
 {	
+	showMenu();
 	
 	switch (selectedGameType)
 	{
@@ -122,6 +158,16 @@ void Game::startGame(GameType selectedGameType)
 	
 }
 
+void Game::setExplosionsEnabled(bool enabled)
+{
+	m_explosionsEnabled = enabled;
+}
+
+bool Game::areExplosionsEnabled() const
+{
+	return m_explosionsEnabled;
+}
+
 
 void Game::incrementRoundCounter()
 {
@@ -130,6 +176,11 @@ void Game::incrementRoundCounter()
 
 bool Game::checkPlayExplosion(Board& m_board)
 {
+	if (!m_explosionsEnabled)
+	{
+		return false;
+	}
+
 	uint8_t count = 0;
 	for (int i = 0; i < m_board.getBoard().size(); i++)
 	{

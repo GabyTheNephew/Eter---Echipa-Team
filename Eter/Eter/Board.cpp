@@ -265,7 +265,7 @@ std::string_view Board::win()
 void Board::moveSpace(uint8_t row, uint8_t column, uint8_t newRow, uint8_t newColumn)
 {
 	m_board[newRow][newColumn] = std::move(m_board[row][column]);
-	m_board[row][column].clear;
+	m_board[row][column].clear();
 }
 
 void Board::emptyRow(uint8_t row)
