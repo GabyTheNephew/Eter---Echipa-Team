@@ -44,6 +44,7 @@ public:
 
 	bool lineWithColor(std::string_view Color)const;
 	bool columnWithColor(std::string_view Color)const;
+	bool diagonalWithColor(std::string_view Color)const;
 	std::string_view win();
 
 

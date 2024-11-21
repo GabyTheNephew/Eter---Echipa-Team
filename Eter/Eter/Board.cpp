@@ -228,11 +228,30 @@ bool Board::columnWithColor(std::string_view Color) const
 	return check;
 }
 
+bool Board::diagonalWithColor(std::string_view Color) const
+{
+	bool check = true;
+	for(int i=0;i<m_board.size();i++)
+		if (m_board[i][i].front().getColor() != Color)
+		{
+			check = false;
+			break;
+		}
+
+	for (int i = 0; i < m_board.size(); i++)
+		if (m_board[i][m_board.size()-1-i].front().getColor() != Color)
+		{
+			check = false;
+			break;
+		}
+
+	return check;
+}
+
 std::string_view Board::win()
 {
-	bool checkred = lineWithColor("red") || columnWithColor("red");
-	bool checkblue = lineWithColor("blue") || columnWithColor("blue");
-
+	bool checkred = lineWithColor("red") || columnWithColor("red")|| diagonalWithColor("red");
+	bool checkblue = lineWithColor("blue") || columnWithColor("blue")||diagonalWithColor("blue");
 	if (checkred)
 	{
 		return "Red";
