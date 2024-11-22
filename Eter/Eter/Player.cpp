@@ -55,45 +55,34 @@ void Player::ResetVector()
 	}
 }
 
-void Player::makeCardInvalid(uint8_t card_value)
+void Player::makeCardInvalid(uint8_t card_value,Color card_color)
 {
 	for (auto& card : m_simpleCardsVector)
 	{
-		if (card.getValue()+48 == card_value)
+		if (card.getValue() == card_value && card.getColor() == card_color)
 		{
-			if (card.getColor() == "red")
-			{
+			if (card_color == "red")
 				card.setColor("usedRed");
-				break;
-			}
 			else
-				if (card.getColor() == "blue")
-				{
+				if (card_color == "blue")
 					card.setColor("usedBlue");
-					break;
-				}
 		}
 	}
 }
 
-void Player::makeCardValid(uint8_t card_value)
+void Player::makeCardValid(uint8_t card_value, Color card_color)
 {
 	for (auto& card : m_simpleCardsVector)
 	{
-		if (card.getValue()+48 == card_value)
+		if (card.getValue() == card_value && card.getColor() == "usedRed")
 		{
-			if (card.getColor() == "usedRed")
-			{
-				card.setColor("red");
-				break;
-			}
-			else
-				if (card.getColor() == "usedBlue")
-				{
-					card.setColor("blue");
-					break;
-				}
+			card.setColor("red");
 		}
+		else
+			if (card.getValue() == card_value && card.getColor() == "usedBlue")
+			{
+				card.setColor("blue");
+			}
 	}
 
 }
@@ -122,7 +111,7 @@ int Player::numberofValidCards()
 	return count;
 }
 
-void Player::playCard(uint8_t card_value, Board& game_board)
+void Player::playCard(uint8_t card_value, Board& game_board,Color card_color)
 {
 	uint8_t x, y;
 	std::cout << "Enter the coordinates of the card\n";
@@ -132,7 +121,7 @@ void Player::playCard(uint8_t card_value, Board& game_board)
 
 		if (game_board.canBePlaced(x,y))
 		{ 
-			game_board[x][y].push_back(card_value);//push the card in the board 
+			
 			makeCardInvalid(card_value);
 			break;
 		}

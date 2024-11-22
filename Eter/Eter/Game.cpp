@@ -47,23 +47,58 @@ void Game::startTraining()
 	this->m_round_Counter = 1;
 	uint8_t maxRounds=3;
 	m_gameBoard.resizeBoard(1);
-	uint16_t chosen_card;
+
+
 	player1 = Player("Name1", { SimpleCard(1,"red"),SimpleCard(1,"red"),SimpleCard(2,"red") ,SimpleCard(2,"red") ,SimpleCard(3,"red"),SimpleCard(3,"red"),SimpleCard(4,"red") });
 	player2 = Player("Name2", { SimpleCard(1,"blue"),SimpleCard(1,"blue"),SimpleCard(2,"blue") ,SimpleCard(2,"blue") ,SimpleCard(3,"blue"),SimpleCard(3,"blue"),SimpleCard(4,"blue") });
 	
+
 	while (m_round_Counter <= maxRounds)
 	{
-
-		while (player1.numberofValidCards() != 0 || player1.numberofValidCards() != 0 || m_gameBoard.checkWin() != Board::State::Win)
+		while (true)
 		{
-			
-			player1.playCard(player1.chooseCard(), m_gameBoard);
+			if (player1.numberofValidCards() > 0)
+			{
+				std::cout << "Player 1's turn\n";
+				uint8_t chosenCard = player1.chooseCard();
+				if (chosenCard != 0)
+					player1.playCard(chosenCard, m_gameBoard,"red");
+			}
+			if (m_gameBoard.checkWin() == Board::State::Win)
+			{
+				std::cout << "Player 1 wins\n";
+				break;
+			}
 
-			player2.playCard(player2.chooseCard(), m_gameBoard);
-			
+				if (player2.numberofValidCards() > 0)
+				{
+					std::cout << "Player 2's turn\n";
+					uint8_t chosenCard = player2.chooseCard();
+					if (chosenCard != 0)
+						player2.playCard(chosenCard, m_gameBoard,"blue");
+				}
+				if (m_gameBoard.checkWin() == Board::State::Win)
+				{
+					std::cout << "Player 2 wins\n";
+					break;
+				}
+				if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0)
+				{
+					if (m_gameBoard.checkWin() == Board::State::Win)
+					{
+						std::cout << "Win by\n ";//show the player who won?
+						break;
+					}
+					if (m_gameBoard.checkWin() == Board::State::Draw)
+					{
+						std::cout << "Draw\n";
+						break;
+					}
+				}
+				
+
+
 		}
-
-
 		player1.ResetVector();
 		player2.ResetVector();
 		m_gameBoard.clear();
