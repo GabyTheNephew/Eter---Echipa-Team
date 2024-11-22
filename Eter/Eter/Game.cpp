@@ -49,8 +49,8 @@ void Game::startTraining()
 	m_gameBoard.resizeBoard(1);
 
 
-	player1 = Player("Name1", { SimpleCard(1,"red"),SimpleCard(1,"red"),SimpleCard(2,"red") ,SimpleCard(2,"red") ,SimpleCard(3,"red"),SimpleCard(3,"red"),SimpleCard(4,"red") });
-	player2 = Player("Name2", { SimpleCard(1,"blue"),SimpleCard(1,"blue"),SimpleCard(2,"blue") ,SimpleCard(2,"blue") ,SimpleCard(3,"blue"),SimpleCard(3,"blue"),SimpleCard(4,"blue") });
+	player1 = Player("Name1", { SimpleCard(1,Color::Red),SimpleCard(1,Color::Red),SimpleCard(2,Color::Red) ,SimpleCard(2,Color::Red) ,SimpleCard(3,Color::Red),SimpleCard(3,Color::Red),SimpleCard(4,Color::Red) });
+	player2 = Player("Name2", { SimpleCard(1,Color::Blue),SimpleCard(1,Color::Blue),SimpleCard(2,Color::Blue) ,SimpleCard(2,Color::Blue) ,SimpleCard(3,Color::Blue),SimpleCard(3,Color::Blue),SimpleCard(4,Color::Blue) });
 	
 
 	while (m_round_Counter <= maxRounds)
@@ -62,7 +62,7 @@ void Game::startTraining()
 				std::cout << "Player 1's turn\n";
 				uint8_t chosenCard = player1.chooseCard();
 				if (chosenCard != 0)
-					player1.playCard(chosenCard, m_gameBoard,"red");
+					player1.playCard(chosenCard, m_gameBoard,Color::Red);
 			}
 			if (m_gameBoard.checkWin() == Board::State::Win)
 			{
@@ -75,7 +75,7 @@ void Game::startTraining()
 					std::cout << "Player 2's turn\n";
 					uint8_t chosenCard = player2.chooseCard();
 					if (chosenCard != 0)
-						player2.playCard(chosenCard, m_gameBoard,"blue");
+						player2.playCard(chosenCard, m_gameBoard,Color::Blue);
 				}
 				if (m_gameBoard.checkWin() == Board::State::Win)
 				{

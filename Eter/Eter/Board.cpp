@@ -271,35 +271,20 @@ Board::State Board::checkWin()
 			if (!m_board[i][j].empty())
 			{
 				int8_t value;
-				std::string color = "";
-				if(m_board[i][j].back().has_value())
-					std::string color = m_board[i][j].back().value().getColor();
+				Color color;
+				if (m_board[i][j].back().has_value())
+					color = m_board[i][j].back().value().getColor();
 
-				/*switch (m_board[i][j].back().getColor())
+				switch (color)
 				{
-				case "Red":
+				case Color::Red:
 					value = 1;
 					break;
-				case Piece::Nought:
+				case Color::Blue:
 					value = -1;
 					break;
 				default:
 					value = 0;
-				}*/
-				if (color == "Red")
-				{
-					value = 1;
-				}
-				else
-				{
-					if (color == "Blue")
-					{
-						value = -1;
-					}
-					else
-					{
-						value = 0;
-					}
 				}
 
 				// rows
@@ -330,8 +315,8 @@ Board::State Board::checkWin()
 	// check if it's a tie
 	if (chessmanCount == kRows * kColumns)
 	{
-		int8_t redSum = sumPoints("Red");
-		int8_t blueSum = sumPoints("Blue");
+		int8_t redSum = sumPoints(Color::Red);
+		int8_t blueSum = sumPoints(Color::Red);
 
 		if (redSum != blueSum)
 		{
@@ -344,7 +329,7 @@ Board::State Board::checkWin()
 	return State::None;
 }
 
-int8_t Board::sumPoints(std::string_view color)
+int8_t Board::sumPoints(const Color& color)
 {
 	int8_t sum = 0;
 
@@ -625,7 +610,7 @@ std::istream& operator>>(std::istream& in, Board& board)
 		{
 			int8_t val;
 			in >> val;
-			board.m_board[i][j].push_back(SimpleCard(val, "r"));
+			board.m_board[i][j].push_back(SimpleCard(val, Color::Red));
 		}
 	}
 	return in;

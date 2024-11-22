@@ -7,3 +7,6 @@ enum class Color {
 	Blue,
 	usedBlue
 };
+
+std::string ColorToString(const Color& color);
+Color StringToColor(std::string_view color);
