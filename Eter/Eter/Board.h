@@ -3,10 +3,12 @@
 #include <deque>
 #include <iostream>
 #include "SimpleCard.h"
+#include <array>
+#include <optional>
+#include <tuple>
 
-typedef std::vector<std::vector<std::deque<SimpleCard>>> matrix;
+typedef std::vector<std::vector<std::deque<std::optional<SimpleCard>>>> matrix;
 
-// TODO: multiple expand functions so that the board can be expanded in multiple directions
 // TODO: refactoring so that I use ranges and iterators instead of basic i and j when going trough matrix
 // TODO: calculate points
 // TODO: is a line with a color?
@@ -16,6 +18,17 @@ class Board
 {
 private:
 	matrix m_board;
+
+public:
+	enum class State
+	{
+		None,
+		Win,
+		Draw
+	};
+
+	using Position = std::tuple<uint8_t, uint8_t>;
+
 public:
 	Board(const Board& board);
 	Board();//defaul constuctor
@@ -27,6 +40,8 @@ public:
 	
 	matrix& getBoard();  
 	void setBoard(const matrix& board); 
+	std::optional<SimpleCard>& operator[] (const Position& position);
+	const std::optional<SimpleCard>& operator [] (const Position& position) const;
 
 	void expandLeftUpCorner();
 	void expandRightUpCorner();
@@ -38,14 +53,14 @@ public:
 	void expandDown();
 	void expandUp();
 
-	std::vector<uint8_t> searchEmptyColumns();
-	std::vector<uint8_t> searchEmptyRows();
+	std::vector<uint8_t> searchEmptyColumns(); //returns a vector with indices to empty cols
+	std::vector<uint8_t> searchEmptyRows(); //returns a vector with indices to empty rows
 	bool canBePlaced(int x,int y)const;
 
-	bool lineWithColor(std::string_view Color)const;
+	/*bool lineWithColor(std::string_view Color)const;
 	bool columnWithColor(std::string_view Color)const;
-	bool diagonalWithColor(std::string_view Color)const;
-	std::string_view win();
+	bool diagonalWithColor(std::string_view Color)const;*/
+	State checkWin();
 
 
 	void moveSpace(uint8_t row, uint8_t column, uint8_t newRow, uint8_t newColumn);
@@ -53,7 +68,7 @@ public:
 	void emptyColumn(uint8_t column);
 	void removeRow(uint8_t row);
 	void removeColumn(uint8_t column);
-	void resizeBoard(uint8_t size);
+	// void resizeBoard(uint8_t size);
 	void print()const;
 	void clear();
 	bool checkRow(uint8_t row);
