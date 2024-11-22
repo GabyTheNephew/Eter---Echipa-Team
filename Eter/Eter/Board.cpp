@@ -170,28 +170,32 @@ std::vector<uint8_t> Board::searchEmptyRows()
 	return emptyRows;
 }
 
-bool Board::canBePlaced(int x,int y) const
-{
-	int rows = m_board.size();
-	int columns = m_board[0].size();
+bool Board::canBePlaced(int x, int y) const {
+	uint8_t rows = m_board.size();
+	uint8_t columns = m_board[0].size();
 
-	if (x < 0 || x >= rows || y < 0 || y >= columns)
-	{
+	if (x < 0 || x >= rows || y < 0 || y >= columns) {
 		return false;
 	}
-	if (m_board[x+1][y].empty() &&
-		m_board[x-1][y].empty()&&
-		m_board[x+1][y+1].empty()&&
-		m_board[x-1][y+1].empty()&&
-		m_board[x][y+1].empty()&&
-		m_board[x][y-1].empty()&&
-		m_board[x-1][y-1].empty()&&
-		m_board[x+1][y-1].empty())
-	{
-		return false;
+
+	// Check neighbors
+	std::vector<std::pair<int, int>> neighbors = {
+		{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1},
+		{x + 1, y + 1}, {x - 1, y + 1}, {x - 1, y - 1}, {x + 1, y - 1}
+	};
+
+	for (const auto& [nx, ny] : neighbors) {
+		if (nx >= 0 && nx < rows && ny >= 0 && ny < columns) {
+			if (!m_board[nx][ny].empty()) {
+				return true; 
+			}
+		}
 	}
-	return true;
+
+	
+	return false;
 }
+
 
 //bool Board::lineWithColor(std::string_view Color) const
 //{
