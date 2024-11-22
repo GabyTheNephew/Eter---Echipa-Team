@@ -101,7 +101,7 @@ void Player::makeCardValid(uint8_t card_value)
 
 uint8_t Player::chooseCard()
 {
-	uint8_t chosen_card;
+	char chosen_card;
 	std::cout <<getName() << " select a card\n";
 	printSimpleCards();
 	std::cout << "\nPick a card\n";
@@ -124,13 +124,15 @@ int Player::numberofValidCards()
 
 void Player::playCard(uint8_t card_value, Board& game_board)
 {
-	int x, y;
+	uint8_t x, y;
 	std::cout << "Enter the coordinates of the card\n";
-	do
+	while (true)
 	{
 		std::cin >> x >> y;
-		if (game_board.canBePlaced(x, y))
-		{
+
+		if (game_board.canBePlaced(x,y))
+		{ 
+			game_board[x][y].push_back(card_value);//push the card in the board 
 			makeCardInvalid(card_value);
 			break;
 		}
@@ -139,8 +141,8 @@ void Player::playCard(uint8_t card_value, Board& game_board)
 			std::cout << "Invalid coordinates\n";
 		}
 
-	} while (game_board.canBePlaced(x,y));
-	std::cin >> x >> y;
+	}
+	
 	
 
 }
