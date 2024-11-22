@@ -2,24 +2,25 @@
 #include <iostream>
 #include <cstdint>
 #include <string_view>
+#include "CardColor.h"
 
 class SimpleCard
 {
 private:
 	uint8_t m_value;
-	std::string m_color;
+	Color m_color;
 public:
 
 	SimpleCard();
-	SimpleCard(uint8_t value, std::string_view color);
+	SimpleCard(uint8_t value, const Color& color);
 	~SimpleCard();
 	SimpleCard& operator=(const SimpleCard& other);
 
 	uint8_t getValue()const;
-	std::string getColor()const;
+	Color getColor()const;
 
 	void setValue(uint8_t value);
-	void setColor(std::string_view color);
+	void setColor(const Color& color);
 
 	friend std::ostream& operator<<(std::ostream& os, const SimpleCard& card);
 };

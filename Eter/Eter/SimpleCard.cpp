@@ -2,11 +2,11 @@
 
 SimpleCard::SimpleCard():
 	m_value{0},
-	m_color{""}
+	m_color{}
 {
 }
 
-SimpleCard::SimpleCard(uint8_t value, std::string_view color):
+SimpleCard::SimpleCard(uint8_t value, const Color& color):
 	m_value{value},
 	m_color{color}
 {}
@@ -26,7 +26,7 @@ uint8_t SimpleCard::getValue()const
 	return static_cast<int>(m_value);
 }
 
-std::string SimpleCard::getColor() const
+Color SimpleCard::getColor() const
 {
 	return m_color;
 }
@@ -36,7 +36,7 @@ void SimpleCard::setValue(uint8_t value)
 	m_value = value;
 }
 
-void SimpleCard::setColor(std::string_view color)
+void SimpleCard::setColor(const Color& color)
 {
 	m_color = color;
 }

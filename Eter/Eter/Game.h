@@ -24,7 +24,7 @@ private:
     void startMageDuel();
     void startPowerDuel();
     void startTournament();
-	void showMenu();
+	void showExplosionMenu();
 
 public:
     Game(const Game&) = delete;
