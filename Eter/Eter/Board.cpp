@@ -326,10 +326,36 @@ Board::State Board::checkWin()
 	// check if it's a tie
 	if (chessmanCount == kRows * kColumns)
 	{
+		int8_t redSum = sumPoints("Red");
+		int8_t blueSum = sumPoints("Blue");
+
+		if (redSum != blueSum)
+		{
+			return State::Win;
+		}
+
 		return State::Draw;
 	}
 
 	return State::None;
+}
+
+int8_t Board::sumPoints(std::string_view color)
+{
+	int8_t sum = 0;
+
+	for (uint8_t i = 0; i < m_board.size(); i++)
+	{
+		for (uint8_t j = 0; j < m_board[i].size(); j++)
+		{
+			if (m_board[i][j].back().value().getColor() == color)
+			{
+				sum += m_board[i][j].back().value().getValue();
+			}
+		}
+	}
+
+	return sum;
 }
 
 //std::string_view Board::win()
@@ -347,6 +373,11 @@ Board::State Board::checkWin()
 //}
 
 
+
+uint8_t Board::getSize() const
+{
+	return m_size;
+}
 
 void Board::moveSpace(uint8_t row, uint8_t column, uint8_t newRow, uint8_t newColumn)
 {
@@ -443,7 +474,8 @@ void Board::removeColumn(uint8_t column)
 }
 
 Board::Board():
-	 m_board{} //def constructor
+	 m_board{},
+	m_size{ 0 }//def constructor
 {
 
 }
@@ -451,10 +483,12 @@ Board::Board():
 Board::Board(uint8_t size)
 {
 	m_board.resize(size);
+	m_size = size;
 }
 
 Board::Board(Board&& board) noexcept
-	:m_board{ std::move(board.m_board) }
+	:m_board{ std::move(board.m_board) },
+	m_size{ std::move(board.m_size) }
 {
 
 }
@@ -465,13 +499,15 @@ Board& Board::operator=(Board&& board) noexcept
 		return *this;
 
 	m_board = std::move(board.m_board);
+	m_size = std::move(board.m_size);
+
 	return *this;
 }
 
-//void Board::resizeBoard(uint8_t size)
-//{
-//	this->m_board.resize(size, std::vector<std::deque<SimpleCard>>(size));
-//}
+void Board::resizeBoard(uint8_t size)
+{
+	this->m_board.resize(size, std::vector<std::deque<std::optional<SimpleCard>>>(size));
+}
 
 void Board::print()const
 {
@@ -524,7 +560,8 @@ bool Board::checkColumn(uint8_t column)
 
 
 Board::Board(const Board& board)
-	:m_board{board.m_board}
+	:m_board{board.m_board},
+	m_size{board.m_size}
 {}
 
 
@@ -543,13 +580,16 @@ Board& Board::operator=(const Board& board)
 			m_board[i][j] = board.m_board[i][j];
 		}
 	}
+
+	m_size = board.m_size;
+
 	return *this;
 }
 
-matrix& Board::getBoard()
-{
-	return m_board;
-}
+//matrix& Board::getBoard()
+//{
+//	return m_board;
+//}
 
 void Board::setBoard(const matrix& board)
 {

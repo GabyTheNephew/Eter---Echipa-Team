@@ -54,7 +54,7 @@ void Game::startTraining()
 	while (m_round_Counter <= maxRounds)
 	{
 
-		while (player1.numberofValidCards()!=0 || player1.numberofValidCards()!= 0||m_gameBoard.win()!="red"||m_gameBoard.win()!="blue")
+		while (player1.numberofValidCards() != 0 || player1.numberofValidCards() != 0 || m_gameBoard.checkWin() != Board::State::Win)
 		{
 			
 			player1.playCard(player1.chooseCard(), m_gameBoard);
@@ -100,7 +100,7 @@ void Game::startTournament()
 	//best of 5
 }
 
-void Game::showMenu()
+void Game::showExplosionMenu()
 {
 	std::string input;
 
@@ -136,7 +136,7 @@ void Game::showMenu()
 
 void Game::startGame(GameType selectedGameType)
 {	
-	showMenu();
+	showExplosionMenu();
 	
 	switch (selectedGameType)
 	{
@@ -182,7 +182,7 @@ bool Game::checkPlayExplosion(Board& m_board)
 	}
 
 	uint8_t count = 0;
-	for (int i = 0; i < m_board.getBoard().size(); i++)
+	for (uint8_t i = 0; i < m_board.getSize(); i++)
 	{
 		if (m_board.checkColumn(i) == true)
 		{
