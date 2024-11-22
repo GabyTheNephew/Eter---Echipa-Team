@@ -6,6 +6,7 @@
 #include <array>
 #include <optional>
 #include <tuple>
+#include "CardColor.h"
 
 typedef std::vector<std::vector<std::deque<std::optional<SimpleCard>>>> matrix;
 
@@ -61,7 +62,7 @@ public:
 	bool columnWithColor(std::string_view Color)const;
 	bool diagonalWithColor(std::string_view Color)const;*/
 	State checkWin();
-	int8_t sumPoints(std::string_view color);
+	int8_t sumPoints(const Color& color);
 
 	uint8_t getSize()const;
 	void moveSpace(uint8_t row, uint8_t column, uint8_t newRow, uint8_t newColumn);

@@ -28,7 +28,7 @@ void Player::printSimpleCards()
 {
 	for (auto card : m_simpleCardsVector)
 	{
-		if(card.getColor() == "red" || card.getColor() == "blue")
+		if(card.getColor() == Color::Red || card.getColor() == Color::Blue)
 				std::cout << card<<'\n';
 	}
 }
@@ -47,25 +47,25 @@ void Player::ResetVector()
 {
 	for (auto& card : m_simpleCardsVector)
 	{
-		if (card.getColor() == "usedRed")
-			card.setColor("red");
+		if (card.getColor() == Color::usedRed)
+			card.setColor(Color::Red);
 		else
-			if (card.getColor() == "usedBlue")
-				card.setColor("blue");
+			if (card.getColor() == Color::usedBlue)
+				card.setColor(Color::Blue);
 	}
 }
 
-void Player::makeCardInvalid(uint8_t card_value,Color card_color)
+void Player::makeCardInvalid(uint8_t card_value, Color card_color)
 {
 	for (auto& card : m_simpleCardsVector)
 	{
 		if (card.getValue() == card_value && card.getColor() == card_color)
 		{
-			if (card_color == "red")
-				card.setColor("usedRed");
+			if (card_color == Color::Red)
+				card.setColor(Color::usedRed);
 			else
-				if (card_color == "blue")
-					card.setColor("usedBlue");
+				if (card_color == Color::Blue)
+					card.setColor(Color::usedBlue);
 		}
 	}
 }
@@ -74,14 +74,14 @@ void Player::makeCardValid(uint8_t card_value, Color card_color)
 {
 	for (auto& card : m_simpleCardsVector)
 	{
-		if (card.getValue() == card_value && card.getColor() == "usedRed")
+		if (card.getValue() == card_value && card.getColor() == Color::usedRed)
 		{
-			card.setColor("red");
+			card.setColor(Color::Red);
 		}
 		else
-			if (card.getValue() == card_value && card.getColor() == "usedBlue")
+			if (card.getValue() == card_value && card.getColor() == Color::usedBlue)
 			{
-				card.setColor("blue");
+				card.setColor(Color::Blue);
 			}
 	}
 
@@ -105,7 +105,7 @@ int Player::numberofValidCards()
 	int count = 0;
 	for (auto& card : m_simpleCardsVector)
 	{
-		if (card.getColor() == "red" || card.getColor() == "blue")
+		if (card.getColor() == Color::Red || card.getColor() == Color::Blue)
 			count++;
 	}
 	return count;
@@ -122,7 +122,7 @@ void Player::playCard(uint8_t card_value, Board& game_board,Color card_color)
 		if (game_board.canBePlaced(x,y))
 		{ 
 			
-			makeCardInvalid(card_value);
+			makeCardInvalid(card_value, card_color);
 			break;
 		}
 		else
