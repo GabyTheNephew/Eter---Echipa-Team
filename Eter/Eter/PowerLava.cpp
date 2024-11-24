@@ -1,8 +1,8 @@
-#include "PowerLava.h"
+﻿#include "PowerLava.h"
 
 PowerLava::PowerLava(std::string_view name, std::string_view description):
-	m_name{ "Chill Thoughts" },
-	m_description{ "On his turn, a Mage may move an opponent�s card (or a stack of cards with an opponent�s card) to a different, empty space." }
+	m_name{ "Lava" },
+	m_description{ " Alege un număr cu condiția că cel puțin 2 cărți cu acel număr sunt vizibile pe tablă. Toate cărțile vizibile cu acest număr se întorc în mâinile proprietarilor." }
 {
 }
 
