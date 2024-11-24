@@ -73,8 +73,8 @@ public:
 	void resizeBoard(uint8_t size);
 	void print()const;
 	void clear();
-	bool checkRow(uint8_t row); // checks if a row is empty
-	bool checkColumn(uint8_t column); // checks if a column is empty
+	bool checkRow(uint8_t row); // checks if a row is full , for Explosions
+	bool checkColumn(uint8_t column); // checks if a column is full , for Explosions
 
 	friend std::ostream& operator<<(std::ostream& os, const Board& board);
 	friend std::istream& operator>>(std::istream& in, Board& board); // this is just for test
