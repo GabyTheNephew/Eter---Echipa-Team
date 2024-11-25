@@ -60,9 +60,9 @@ void Game::startTraining()
 			if (player1.numberofValidCards() > 0)
 			{
 				std::cout << "Player 1's turn\n";
-				uint8_t chosenCard = player1.chooseCard();
-				if (chosenCard != 0)
-					player1.playCard(chosenCard, m_gameBoard,Color::Red);
+				SimpleCard chosenCard = player1.chooseCard();
+				if (chosenCard.getValue() != 0)
+					player1.playCard(chosenCard, m_gameBoard);
 			}
 			if (m_gameBoard.checkWin() == Board::State::Win)
 			{
@@ -73,9 +73,9 @@ void Game::startTraining()
 				if (player2.numberofValidCards() > 0)
 				{
 					std::cout << "Player 2's turn\n";
-					uint8_t chosenCard = player2.chooseCard();
-					if (chosenCard != 0)
-						player2.playCard(chosenCard, m_gameBoard,Color::Blue);
+					SimpleCard chosenCard = player2.chooseCard();
+					if (chosenCard.getValue() != 0)
+						player2.playCard(chosenCard, m_gameBoard);
 				}
 				if (m_gameBoard.checkWin() == Board::State::Win)
 				{

@@ -36,7 +36,7 @@ void SimpleCard::setValue(uint8_t value)
 	m_value = value;
 }
 
-void SimpleCard::setColor(const Color& color)
+void SimpleCard::setColor(Color color)
 {
 	m_color = color;
 }

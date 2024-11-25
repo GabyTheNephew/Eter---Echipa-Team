@@ -25,11 +25,14 @@ public:
 	const std::vector<SimpleCard>& getVector();
 	void ResetVector();
 
-	void makeCardInvalid(uint8_t card_value,Color card_color);
-	void makeCardValid(uint8_t card_value, Color card_color);
+	void makeCardInvalid(SimpleCard& card);
+	void makeCardValid(SimpleCard& card);
 
-	uint8_t chooseCard();
+	SimpleCard chooseCard();
 	int numberofValidCards();
-	void playCard(uint8_t card_value,Board& game_board,Color card_color);
+	//void playCard(uint8_t card_value,Board& game_board,Color card_color);
+	void playCard(SimpleCard& card, Board& game_board);
+
+	void initiateBoard(Board& board, int x, int y);
 };
 
