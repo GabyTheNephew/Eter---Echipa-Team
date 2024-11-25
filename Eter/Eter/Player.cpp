@@ -55,31 +55,31 @@ void Player::ResetVector()
 	}
 }
 
-void Player::makeCardInvalid(uint8_t card_value, Color card_color)
+void Player::makeCardInvalid(SimpleCard& card)
 {
-	for (auto& card : m_simpleCardsVector)
+	for (auto& curCard : m_simpleCardsVector)
 	{
-		if (card.getValue() == card_value && card.getColor() == card_color)
+		if (curCard.getValue() == card.getValue()  && curCard.getColor() == card.getColor())
 		{
-			if (card_color == Color::Red)
+			if (card.getColor() == Color::Red)
 				card.setColor(Color::usedRed);
 			else
-				if (card_color == Color::Blue)
+				if (card.getColor() == Color::Blue)
 					card.setColor(Color::usedBlue);
 		}
 	}
 }
 
-void Player::makeCardValid(uint8_t card_value, Color card_color)
+void Player::makeCardValid(SimpleCard& card)
 {
-	for (auto& card : m_simpleCardsVector)
+	for (auto& curCard : m_simpleCardsVector)
 	{
-		if (card.getValue() == card_value && card.getColor() == Color::usedRed)
+		if (curCard.getValue() == card.getValue() && curCard.getColor() == Color::usedRed)
 		{
 			card.setColor(Color::Red);
 		}
 		else
-			if (card.getValue() == card_value && card.getColor() == Color::usedBlue)
+			if (curCard.getValue() == card.getValue() && curCard.getColor() == Color::usedBlue)
 			{
 				card.setColor(Color::Blue);
 			}
@@ -88,15 +88,22 @@ void Player::makeCardValid(uint8_t card_value, Color card_color)
 }
 
 
-uint8_t Player::chooseCard()
+SimpleCard Player::chooseCard()
 {
-	char chosen_card;
+	uint8_t chosen_card;
 	std::cout <<getName() << " select a card\n";
 	printSimpleCards();
 	std::cout << "\nPick a card\n";
 	std::cin >> chosen_card;
 	
-	return chosen_card;
+	for (int8_t i = 0; i < m_simpleCardsVector.size(); i++)
+	{
+		if (m_simpleCardsVector[i].getValue() == chosen_card)
+		{
+			makeCardInvalid(m_simpleCardsVector[i]);
+			return m_simpleCardsVector[i];
+		}
+	}
 
 }
 
@@ -111,7 +118,7 @@ int Player::numberofValidCards()
 	return count;
 }
 
-void Player::playCard(uint8_t card_value, Board& game_board,Color card_color)
+void Player::playCard(SimpleCard& card, Board& game_board)
 {
 	uint8_t x, y;
 	std::cout << "Enter the coordinates of the card\n";
@@ -122,7 +129,7 @@ void Player::playCard(uint8_t card_value, Board& game_board,Color card_color)
 		if (game_board.canBePlaced(x,y))
 		{ 
 			
-			makeCardInvalid(card_value, card_color);
+			makeCardInvalid(card);
 			break;
 		}
 		else
@@ -131,7 +138,98 @@ void Player::playCard(uint8_t card_value, Board& game_board,Color card_color)
 		}
 
 	}
-	
-	
+}
 
+void Player::initiateBoard(Board& board, int x, int y)
+{
+	board.resizeBoard(1);
+
+	std::cout << "Coordinates: \n";
+
+	std::tuple<uint8_t, uint8_t> position = std::make_tuple(x, y);
+
+	auto chosenCard = chooseCard();
+	auto& [line, column] = position;
+
+	if (board.canBePlaced(x, y));
+	{
+		switch (x)
+		{
+		case -1:
+			if (y == 0)
+			{
+				board.expandLeft();
+			}
+			else
+			{
+				if (y == 1)
+				{
+					board.expandLeftUpCorner();
+				}
+				else
+				{
+					if (y == -1)
+					{
+						board.expandLeftBottomCorner();
+					}
+					else
+					{
+						std::cout << "Y nu este valid!\n";
+						break;
+					}
+				}
+			}
+			break;
+		case 1:
+			if (y == 0)
+			{
+				board.expandRight();
+			}
+			else
+			{
+				if (y == 1)
+				{
+					board.expandRightUpCorner();
+				}
+				else
+				{
+					if (y == -1)
+					{
+						board.expandRightBottomCorner();
+					}
+					else
+					{
+						std::cout << "Y nu este valid!\n";
+						break;
+					}
+				}
+			}
+			break;
+		case 0:
+			if (y == 0)
+			{
+				break;
+			}
+			else
+			{
+				if (y == 1)
+				{
+					board.expandRightUpCorner();
+				}
+				else
+				{
+					if (y == -1)
+					{
+						board.expandRightBottomCorner();
+					}
+					else
+					{
+						std::cout << "Y nu este valid!\n";
+						break;
+					}
+				}
+			}
+			break;
+		}
+	}
 }

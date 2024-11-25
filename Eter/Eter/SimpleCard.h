@@ -20,7 +20,7 @@ public:
 	Color getColor()const;
 
 	void setValue(uint8_t value);
-	void setColor(const Color& color);
+	void setColor(Color color);
 
 	friend std::ostream& operator<<(std::ostream& os, const SimpleCard& card);
 };

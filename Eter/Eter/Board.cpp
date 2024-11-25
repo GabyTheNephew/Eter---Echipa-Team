@@ -547,6 +547,13 @@ bool Board::checkColumn(uint8_t column)
 	return true;
 }
 
+void Board::pushCard(const SimpleCard& card, const Position& position)
+{
+	auto& [line, column] = position;
+
+	m_board[line][column].push_back(card);
+}
+
 
 Board::Board(const Board& board)
 	:m_board{board.m_board},
