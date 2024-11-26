@@ -13,7 +13,7 @@ public:
 
 	SimpleCard();
 	SimpleCard(uint8_t value, const Color& color);
-	~SimpleCard();
+	virtual ~SimpleCard();
 	SimpleCard& operator=(const SimpleCard& other);
 
 	uint8_t getValue()const;

@@ -3,7 +3,7 @@
 void Board::expandLeftUpCorner()
 {
 	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<std::optional<SimpleCard>>>(newSize));
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
 
 	for (int8_t i = m_board.size() - 1; i >= 0 ; --i)
 	{
@@ -19,8 +19,7 @@ void Board::expandLeftUpCorner()
 void Board::expandRightUpCorner()
 {
 	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<std::optional<SimpleCard>>>(newSize));
-
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
 	for (int8_t i = m_board.size() - 1; i >= 0; --i)
 	{
 		for (int8_t j = m_board.size() - 1; j >= 0; --j)
@@ -35,8 +34,7 @@ void Board::expandRightUpCorner()
 void Board::expandLeftBottomCorner()
 {
 	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<std::optional<SimpleCard>>>(newSize));
-
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
 	for (int8_t i = m_board.size() - 1; i >= 0; --i)
 	{
 		for (int8_t j = m_board.size() - 1; j >= 0; --j)
@@ -51,8 +49,7 @@ void Board::expandLeftBottomCorner()
 void Board::expandRightBottomCorner()
 {
 	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<std::optional<SimpleCard>>>(newSize));
-
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
 	for (int8_t i = m_board.size() - 1; i >= 0; --i)
 	{
 		for (int8_t j = m_board.size() - 1; j >= 0; --j)
@@ -67,8 +64,7 @@ void Board::expandRightBottomCorner()
 void Board::expandRight()
 {
 	uint8_t newSize = m_board[0].size() + 1;
-	matrix newMatrix(m_board.size(), std::vector<std::deque<std::optional<SimpleCard>>>(newSize));
-
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
 	for (int8_t i = 0; i < m_board.size() ; ++i)
 	{
 		for (int8_t j = 0; j < m_board[0].size(); ++j)
@@ -83,8 +79,7 @@ void Board::expandRight()
 void Board::expandLeft()
 {
 	uint8_t newSize = m_board[0].size() + 1;
-	matrix newMatrix(m_board.size(), std::vector<std::deque<std::optional<SimpleCard>>>(newSize));
-
+	matrix newMatrix(m_board.size(), std::vector<std::deque<SimpleCard>>(newSize));
 	for (int8_t i = 0; i < m_board.size(); ++i)
 	{
 		for (int8_t j = m_board[0].size() - 1 ;j >= 1; --j)
@@ -99,8 +94,7 @@ void Board::expandLeft()
 void Board::expandDown()
 {
 	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<std::optional<SimpleCard>>>(m_board[0].size()));
-
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(m_board[0].size()));
 	for (int8_t i = 0; i < m_board.size(); ++i)
 	{
 		for (int8_t j = 0; j < m_board[i].size(); j++)
@@ -115,8 +109,7 @@ void Board::expandDown()
 void Board::expandUp()
 {
 	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<std::optional<SimpleCard>>>(m_board[0].size()));
-
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(m_board[0].size()));
 	for (int8_t i = m_board.size()-1; i >= 1; --i)
 	{
 		for (int8_t j = 0; j < m_board[i].size(); j++)
@@ -272,8 +265,7 @@ Board::State Board::checkWin()
 			{
 				int8_t value;
 				Color color;
-				if (m_board[i][j].back().has_value())
-					color = m_board[i][j].back().value().getColor();
+				color = m_board[i][j].back().getColor();
 
 				switch (color)
 				{
@@ -337,9 +329,9 @@ int8_t Board::sumPoints(const Color& color)
 	{
 		for (uint8_t j = 0; j < m_board[i].size(); j++)
 		{
-			if (m_board[i][j].back().value().getColor() == color)
+			if (m_board[i][j].back().getColor() == color)
 			{
-				sum += m_board[i][j].back().value().getValue();
+				sum += m_board[i][j].back().getValue();
 			}
 		}
 	}
@@ -393,8 +385,7 @@ void Board::emptyColumn(uint8_t column)
 void Board::removeRow(uint8_t row)
 {
 	uint8_t newSize = m_board.size() - 1;
-	matrix newMatrix(newSize, std::vector<std::deque<std::optional<SimpleCard>>>(newSize + 1));
-
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize + 1));
 	if (row == 0)
 	{
 		for (int8_t i = 0; i < newSize; i++)
@@ -429,8 +420,7 @@ void Board::removeRow(uint8_t row)
 void Board::removeColumn(uint8_t column)
 {
 	uint8_t newSize = m_board[0].size() - 1;
-	matrix newMatrix(newSize + 1, std::vector<std::deque<std::optional<SimpleCard>>>(newSize));
-
+	matrix newMatrix(newSize + 1, std::vector<std::deque<SimpleCard>>(newSize));
 	if (column == 0)
 	{
 		for (int8_t i = 0; i < newSize; i++)
@@ -495,7 +485,7 @@ Board& Board::operator=(Board&& board) noexcept
 
 void Board::resizeBoard(uint8_t size)
 {
-	this->m_board.resize(size, std::vector<std::deque<std::optional<SimpleCard>>>(size));
+	this->m_board.resize(size, std::vector<std::deque<SimpleCard>>(size));
 }
 
 void Board::print()const
@@ -504,7 +494,7 @@ void Board::print()const
 	{
 		for (const auto& column : row)
 		{
-			std::cout << column.back().value() << " ";
+			std::cout << column.back() << " ";
 		}
 	}
 	std::cout << std::endl;
@@ -601,7 +591,7 @@ std::ostream& operator<<(std::ostream& os, const Board& board)
 				os << 0 << " ";
 			}
 			else {
-				os << board.m_board[i][j].back().value() << " ";
+				os << board.m_board[i][j].back() << " ";
 			}
 		}
 		os << '\n';
@@ -623,7 +613,7 @@ std::istream& operator>>(std::istream& in, Board& board)
 	return in;
 }
 
-std::optional<SimpleCard>& Board::operator[](const Board::Position& position)
+SimpleCard& Board::operator[](const Board::Position& position)
 {
 	auto& [line, column] = position;
 
@@ -636,7 +626,7 @@ std::optional<SimpleCard>& Board::operator[](const Board::Position& position)
 	return m_board[line][column].back();
 }
 
-const std::optional<SimpleCard>& Board::operator[](const Position& position) const
+const SimpleCard& Board::operator[](const Position& position) const
 {
 	auto& [line, column] = position;
 
