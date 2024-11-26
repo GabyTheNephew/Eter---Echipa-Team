@@ -32,7 +32,7 @@ public:
 	int numberofValidCards();
 	//void playCard(uint8_t card_value,Board& game_board,Color card_color);
 	void playCard(SimpleCard& card, Board& game_board);
-
+	void playCardandExtend(SimpleCard& card, Board& game_board);
 	void initiateBoard(Board& board, int x, int y);
 };
 
