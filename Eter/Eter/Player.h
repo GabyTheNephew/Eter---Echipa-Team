@@ -6,7 +6,7 @@
 class Player
 {
 private:
-	std::string_view m_name;
+	std::string m_name;
 	std::vector<SimpleCard> m_simpleCardsVector;
 	//vector for power
 	//vector for mage

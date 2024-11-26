@@ -8,11 +8,15 @@
 #include <tuple>
 #include "CardColor.h"
 
-typedef std::vector<std::vector<std::deque<std::optional<SimpleCard>>>> matrix;
+using matrix = std::vector<std::vector<std::deque<SimpleCard>>>;
 
 // TODO: refactoring so that I use ranges and iterators instead of basic i and j when going trough matrix
-// TODO: calculate points
 // TODO: implement extend functionality in Game.h
+// TODO: less expand functions (only for row and column)
+// TODO: spune-i lui Radu sa modifice in mages sa foloseasca enum pt culoare
+// TODO: spune-i lui Radu sa faca membrii statici la mages
+// TODO: method to remove card from a position (on top)
+// TODO: refactor the code so that it uses CardColor enum instead of std::string
 
 class Board
 {
@@ -41,8 +45,8 @@ public:
 	// matrix& getBoard();  
 	void setBoard(const matrix& board); 
 
-	std::optional<SimpleCard>& operator[] (const Position& position);
-	const std::optional<SimpleCard>& operator [] (const Position& position) const;
+	SimpleCard& operator[] (const Position& position);
+	const SimpleCard& operator [] (const Position& position) const;
 
 	void expandLeftUpCorner();
 	void expandRightUpCorner();
