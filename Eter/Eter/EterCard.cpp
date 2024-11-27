@@ -2,7 +2,7 @@
 
 EterCard::EterCard(std::string_view color):
 	m_name{ "Eter" },
-	SimpleCard(5,color)
+	SimpleCard(5,StringToColor(color))
 {
 }
 

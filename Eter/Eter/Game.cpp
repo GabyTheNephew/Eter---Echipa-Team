@@ -47,7 +47,7 @@ void Game::startTraining()
 	this->m_round_Counter = 1;
 	uint8_t maxRounds=3;
 	m_gameBoard.resizeBoard(1);
-
+	int matrixMaxSize = 3;
 
 	player1 = Player("Name1", { SimpleCard(1,Color::Red),SimpleCard(1,Color::Red),SimpleCard(2,Color::Red) ,SimpleCard(2,Color::Red) ,SimpleCard(3,Color::Red),SimpleCard(3,Color::Red),SimpleCard(4,Color::Red) });
 	player2 = Player("Name2", { SimpleCard(1,Color::Blue),SimpleCard(1,Color::Blue),SimpleCard(2,Color::Blue) ,SimpleCard(2,Color::Blue) ,SimpleCard(3,Color::Blue),SimpleCard(3,Color::Blue),SimpleCard(4,Color::Blue) });
@@ -57,12 +57,23 @@ void Game::startTraining()
 	{
 		while (true)
 		{
+
 			if (player1.numberofValidCards() > 0)
 			{
 				std::cout << "Player 1's turn\n";
 				SimpleCard chosenCard = player1.chooseCard();
 				if (chosenCard.getValue() != 0)
-					player1.playCard(chosenCard, m_gameBoard);
+					if (m_gameBoard.getSize() < 3)
+					{
+						player1.playCardandExtend(chosenCard, m_gameBoard);
+						
+					}
+					else
+					{
+						player1.playCard(chosenCard, m_gameBoard);
+					
+					}
+						
 			}
 			if (m_gameBoard.checkWin() == Board::State::Win)
 			{
@@ -70,14 +81,21 @@ void Game::startTraining()
 				break;
 			}
 
-				if (player2.numberofValidCards() > 0)
+			if (player2.numberofValidCards() > 0)
+			{
+				std::cout << "Player 2's turn\n";
+				SimpleCard chosenCard = player2.chooseCard();
+				if (chosenCard.getValue() != 0)
+					if (m_gameBoard.getSize() < 3)
 				{
-					std::cout << "Player 2's turn\n";
-					SimpleCard chosenCard = player2.chooseCard();
-					if (chosenCard.getValue() != 0)
+					player2.playCardandExtend(chosenCard, m_gameBoard);
+				}
+				else
+				{
 						player2.playCard(chosenCard, m_gameBoard);
 				}
-				if (m_gameBoard.checkWin() == Board::State::Win)
+				}
+			if (m_gameBoard.checkWin() == Board::State::Win)
 				{
 					std::cout << "Player 2 wins\n";
 					break;
@@ -97,9 +115,8 @@ void Game::startTraining()
 				}
 				
 
-
-		}
-		player1.ResetVector();
+	}
+	player1.ResetVector();
 		player2.ResetVector();
 		m_gameBoard.clear();
 		incrementRoundCounter();

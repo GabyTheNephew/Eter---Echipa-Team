@@ -59,15 +59,23 @@ void Player::makeCardInvalid(SimpleCard& card)
 {
 	for (auto& curCard : m_simpleCardsVector)
 	{
-		if (curCard.getValue() == card.getValue()  && curCard.getColor() == card.getColor())
+		if (curCard.getValue() == card.getValue() && curCard.getColor() == card.getColor())
 		{
 			if (card.getColor() == Color::Red)
+			{
 				card.setColor(Color::usedRed);
+				
+				break;
+			}
 			else
 				if (card.getColor() == Color::Blue)
+				{
 					card.setColor(Color::usedBlue);
+					break;
+		}
 		}
 	}
+	
 }
 
 void Player::makeCardValid(SimpleCard& card)
@@ -98,9 +106,8 @@ SimpleCard Player::chooseCard()
 	
 	for (int8_t i = 0; i < m_simpleCardsVector.size(); i++)
 	{
-		if (m_simpleCardsVector[i].getValue() == chosen_card)
+		if (m_simpleCardsVector[i].getValue()+48 == chosen_card)
 		{
-			makeCardInvalid(m_simpleCardsVector[i]);
 			return m_simpleCardsVector[i];
 		}
 	}
@@ -125,10 +132,43 @@ void Player::playCard(SimpleCard& card, Board& game_board)
 	while (true)
 	{
 		std::cin >> x >> y;
-
+		
 		if (game_board.canBePlaced(x,y))
 		{ 
-			
+			game_board.pushCard(card, { x,y });
+			makeCardInvalid(card);
+			break;
+		}
+		else
+		{
+			std::cout << "Invalid coordinates\n";
+		}
+
+	}
+}
+
+void Player::playCardandExtend(SimpleCard& card, Board& game_board)
+{
+	uint8_t x, y;
+	std::cout << "Enter the coordinates of the card\n";
+	while (true)
+	{
+		std::cin >> x >> y;
+
+
+		if (game_board.getSize() == 1)
+		{
+			game_board.pushCard(card, { x,y });
+			makeCardInvalid(card);
+			break;
+		}
+		
+
+
+		if (game_board.canBePlaced(x, y))
+		{
+			initiateBoard(game_board, x, y);
+			game_board.pushCard(card, { x,y });
 			makeCardInvalid(card);
 			break;
 		}
@@ -142,16 +182,9 @@ void Player::playCard(SimpleCard& card, Board& game_board)
 
 void Player::initiateBoard(Board& board, int x, int y)
 {
-	board.resizeBoard(1);
 
-	std::cout << "Coordinates: \n";
 
-	std::tuple<uint8_t, uint8_t> position = std::make_tuple(x, y);
-
-	auto chosenCard = chooseCard();
-	auto& [line, column] = position;
-
-	if (board.canBePlaced(x, y));
+	if (board.canBePlaced(x, y))
 	{
 		switch (x)
 		{
