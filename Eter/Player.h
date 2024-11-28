@@ -11,6 +11,9 @@ private:
 	//vector for power
 	//vector for mage
 
+	using Position = std::tuple<int, int>;
+	// TODO: check int8_t, why is it converted to ascii/ char?
+
 public:
 	Player();
 	Player(std::string_view name,std::vector <SimpleCard> simpleCards);
@@ -33,6 +36,6 @@ public:
 	//void playCard(uint8_t card_value,Board& game_board,Color card_color);
 	void playCard(SimpleCard& card, Board& game_board);
 	void playCardandExtend(SimpleCard& card, Board& game_board);
-	void initiateBoard(Board& board, int x, int y);
+	void initiateBoard(Board& board, Position pos);
 };
 

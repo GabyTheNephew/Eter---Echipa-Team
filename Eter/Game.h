@@ -3,7 +3,7 @@
 #include<cstdint>
 #include "Board.h"
 #include "Player.h"
-#include "Explosion.h"
+//#include "Explosion.h"
 #include <string>
 
 class Game
@@ -13,7 +13,7 @@ private:
     Board m_gameBoard;
     static Game m_current_Instance; 
     Player player1, player2;
-    Explosion m_explosion;
+    //Explosion m_explosion;
 	bool m_explosionsEnabled;
 
     

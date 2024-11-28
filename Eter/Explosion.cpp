@@ -22,6 +22,8 @@ void Explosion::vectorInstantiation(uint8_t size)
 
 	std::set<std::pair<int, int>> uniquePositions;
 
+	ActionType action;
+
 	while (positions.size() < static_cast<size_t>(numActions)) {
 		int x = std::rand() % 3;
 		int y = std::rand() % 3;
@@ -38,8 +40,6 @@ void Explosion::vectorInstantiation(uint8_t size)
 
 		positions.emplace_back(x, y, action);
 	}
-}
-
 }
 
 void Explosion::rotationLeft(uint8_t size)
