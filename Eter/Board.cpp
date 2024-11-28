@@ -1,120 +1,57 @@
 #include "Board.h"
 
-void Board::expandLeftUpCorner()
+void Board::expandRow(RowExpandDirection direction)
 {
 	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(m_board[0].size()));
 
-	for (int8_t i = m_board.size() - 1; i >= 0 ; --i)
+	if (direction == RowExpandDirection::Down)
 	{
-		for (int8_t j = m_board.size() - 1; j >= 0; --j)
+		for (int8_t i = m_board.size() - 1; i >= 0; --i)
 		{
-			newMatrix[i + 1][j + 1] = std::move(m_board[i][j]);
+			for (int8_t j = 0; j < m_board[i].size(); j++)
+			{
+				newMatrix[i][j] = std::move(m_board[i][j]);///////
+			}
+		}
+	}
+	else
+	{
+		for (int8_t i = 0; i < m_board.size(); ++i)
+		{
+			for (int8_t j = 0; j < m_board[i].size(); j++)
+			{
+				newMatrix[i][j] = std::move(m_board[i][j]);
+			}
 		}
 	}
 
 	m_board = std::move(newMatrix);
 }
 
-void Board::expandRightUpCorner()
-{
-	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
-	for (int8_t i = m_board.size() - 1; i >= 0; --i)
-	{
-		for (int8_t j = m_board.size() - 1; j >= 0; --j)
-		{
-			newMatrix[i + 1][j] = std::move(m_board[i][j]);
-		}
-	}
-
-	m_board = std::move(newMatrix);
-}
-
-void Board::expandLeftBottomCorner()
-{
-	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
-	for (int8_t i = m_board.size() - 1; i >= 0; --i)
-	{
-		for (int8_t j = m_board.size() - 1; j >= 0; --j)
-		{
-			newMatrix[i][j+1] = std::move(m_board[i][j]);
-		}
-	}
-
-	m_board = std::move(newMatrix);
-}
-
-void Board::expandRightBottomCorner()
-{
-	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
-	for (int8_t i = m_board.size() - 1; i >= 0; --i)
-	{
-		for (int8_t j = m_board.size() - 1; j >= 0; --j)
-		{
-			newMatrix[i][j] = std::move(m_board[i][j]);
-		}
-	}
-
-	m_board = std::move(newMatrix);
-}
-
-void Board::expandRight()
-{
-	uint8_t newSize = m_board[0].size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize));
-	for (int8_t i = 0; i < m_board.size() ; ++i)
-	{
-		for (int8_t j = 0; j < m_board[0].size(); ++j)
-		{
-			newMatrix[i][j] = std::move(m_board[i][j]);
-		}
-	}
-
-	m_board = std::move(newMatrix);
-}
-
-void Board::expandLeft()
+void Board::expandColumn(ColumnExpandDirection direction)
 {
 	uint8_t newSize = m_board[0].size() + 1;
 	matrix newMatrix(m_board.size(), std::vector<std::deque<SimpleCard>>(newSize));
-	for (int8_t i = 0; i < m_board.size(); ++i)
+
+	if (direction == ColumnExpandDirection::Left)
 	{
-		for (int8_t j = m_board[0].size() - 1 ;j >= 1; --j)
+		for (int8_t i = 0; i < m_board.size(); ++i)
 		{
-			newMatrix[i][j] = std::move(m_board[i][j]);
+			for (int8_t j = m_board[0].size() - 1; j >= 0; --j)
+			{
+				newMatrix[i][j] = std::move(m_board[i][j]);
+			}
 		}
 	}
-
-	m_board = std::move(newMatrix);
-}
-
-void Board::expandDown()
-{
-	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(m_board[0].size()));
-	for (int8_t i = 0; i < m_board.size(); ++i)
+	else
 	{
-		for (int8_t j = 0; j < m_board[i].size(); j++)
+		for (int8_t i = 0; i < m_board.size(); ++i)
 		{
-			newMatrix[i][j] = std::move(m_board[i][j]);
-		}
-	}
-
-	m_board = std::move(newMatrix);
-}
-
-void Board::expandUp()
-{
-	uint8_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(m_board[0].size()));
-	for (int8_t i = m_board.size()-1; i >= 1; --i)
-	{
-		for (int8_t j = 0; j < m_board[i].size(); j++)
-		{
-			newMatrix[i][j] = std::move(m_board[i][j]);
+			for (int8_t j = 0; j < m_board[0].size(); ++j)
+			{
+				newMatrix[i][j] = std::move(m_board[i][j]);
+			}
 		}
 	}
 
@@ -163,13 +100,13 @@ std::vector<uint8_t> Board::searchEmptyRows()
 	return emptyRows;
 }
 
-bool Board::canBePlaced(int x, int y) const {
-	uint8_t rows = m_board.size();
-	uint8_t columns = m_board[0].size();
+bool Board::canBePlaced(int8_t x, int8_t y) const {
+	int8_t rows = m_board.size();
+	int8_t columns = m_board[0].size();
 
-	if (x < 0 || x >= rows || y < 0 || y >= columns) {
+	/*if (x < 0 || x >= rows || y < 0 || y >= columns) {
 		return false;
-	}
+	}*/
 
 	// Check neighbors
 	std::vector<std::pair<int, int>> neighbors = {
@@ -185,7 +122,10 @@ bool Board::canBePlaced(int x, int y) const {
 		}
 	}
 
-	
+	if (m_size == 1)
+	{
+		return true;
+	}
 	return false;
 }
 
@@ -360,6 +300,16 @@ uint8_t Board::getSize() const
 	return m_size;
 }
 
+int8_t Board::getRowSize() const 
+{
+	return m_board.size();
+}
+
+int8_t Board::getColumnSize() const
+{
+	return m_board[0].size();
+}
+
 void Board::moveSpace(uint8_t row, uint8_t column, uint8_t newRow, uint8_t newColumn)
 {
 	m_board[newRow][newColumn] = std::move(m_board[row][column]);
@@ -485,17 +435,22 @@ Board& Board::operator=(Board&& board) noexcept
 
 void Board::resizeBoard(uint8_t size)
 {
+	m_size = size;
 	this->m_board.resize(size, std::vector<std::deque<SimpleCard>>(size));
 }
 
 void Board::print()const
 {
-	for (const auto& row : m_board)
+	for (int8_t i = 0; i < m_board.size(); i++)
 	{
-		for (const auto& column : row)
+		for (int8_t j = 0; j < m_board[i].size(); j++)
 		{
-			std::cout << column.back() << " ";
+			if (m_board[i][j].empty())
+				std::cout << " * ";
+			else
+				std::cout << m_board[i][j].back() << " ";
 		}
+		std::cout << '\n';
 	}
 	std::cout << std::endl;
 }
@@ -542,6 +497,13 @@ void Board::pushCard(const SimpleCard& card, const Position& position)
 	auto& [line, column] = position;
 
 	m_board[line][column].push_back(card);
+}
+
+void Board::popCard(const Position& position)
+{
+	auto& [line, column] = position;
+
+	m_board[line][column].pop_back();
 }
 
 

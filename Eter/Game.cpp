@@ -73,6 +73,7 @@ void Game::startTraining()
 						player1.playCard(chosenCard, m_gameBoard);
 					
 					}
+				m_gameBoard.print();
 						
 			}
 			if (m_gameBoard.checkWin() == Board::State::Win)
@@ -94,7 +95,9 @@ void Game::startTraining()
 				{
 						player2.playCard(chosenCard, m_gameBoard);
 				}
-				}
+
+				m_gameBoard.print();
+			}
 			if (m_gameBoard.checkWin() == Board::State::Win)
 				{
 					std::cout << "Player 2 wins\n";

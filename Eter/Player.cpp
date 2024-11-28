@@ -149,26 +149,25 @@ void Player::playCard(SimpleCard& card, Board& game_board)
 
 void Player::playCardandExtend(SimpleCard& card, Board& game_board)
 {
-	uint8_t x, y;
+	Position pos;
+	auto& [line, column] = pos;
 	std::cout << "Enter the coordinates of the card\n";
 	while (true)
 	{
-		std::cin >> x >> y;
+		std::cin >> line >> column;
 
 
-		if (game_board.getSize() == 1)
+		/*if (game_board.getSize() == 1)
 		{
-			game_board.pushCard(card, { x,y });
+			game_board.pushCard(card, { 0, 0});
 			makeCardInvalid(card);
 			break;
-		}
+		}*/
 		
-
-
-		if (game_board.canBePlaced(x, y))
+		if (game_board.canBePlaced(line, column))
 		{
-			initiateBoard(game_board, x, y);
-			game_board.pushCard(card, { x,y });
+			initiateBoard(game_board, pos);
+			game_board.pushCard(card, { line, column });
 			makeCardInvalid(card);
 			break;
 		}
@@ -180,89 +179,84 @@ void Player::playCardandExtend(SimpleCard& card, Board& game_board)
 	}
 }
 
-void Player::initiateBoard(Board& board, int x, int y)
+void Player::initiateBoard(Board& board, Position pos)
 {
+	auto& [line, column] = pos;
 
+	uint8_t colSize = board.getColumnSize();
+	uint8_t rowSize = board.getRowSize();
 
-	if (board.canBePlaced(x, y))
+	if (line == -1)
 	{
-		switch (x)
+		board.expandRow(Board::RowExpandDirection::Up);
+
+		if (column == -1)
 		{
-		case -1:
-			if (y == 0)
+			board.expandColumn(Board::ColumnExpandDirection::Left);
+		}
+		else
+		{
+			if (column == colSize)
 			{
-				board.expandLeft();
+				board.expandColumn(Board::ColumnExpandDirection::Right);
+			}
+		}
+		return;
+	}
+	else
+	{
+		if (line == rowSize)
+		{
+			board.expandRow(Board::RowExpandDirection::Down);
+
+			if (column == -1)
+			{
+				board.expandColumn(Board::ColumnExpandDirection::Left);
 			}
 			else
 			{
-				if (y == 1)
+				if (column == colSize)
 				{
-					board.expandLeftUpCorner();
-				}
-				else
-				{
-					if (y == -1)
-					{
-						board.expandLeftBottomCorner();
-					}
-					else
-					{
-						std::cout << "Y nu este valid!\n";
-						break;
-					}
+					board.expandColumn(Board::ColumnExpandDirection::Right);
 				}
 			}
-			break;
-		case 1:
-			if (y == 0)
+			return;
+		}
+	}
+
+	if (column == -1)
+	{
+		board.expandColumn(Board::ColumnExpandDirection::Left);
+
+		if (line == -1)
+		{
+			board.expandRow(Board::RowExpandDirection::Up);
+		}
+		else
+		{
+			if (line == rowSize)
 			{
-				board.expandRight();
+				board.expandRow(Board::RowExpandDirection::Down);
+			}
+		}
+	}
+	else
+	{
+		if (column == colSize)
+		{
+			board.expandColumn(Board::ColumnExpandDirection::Right);
+
+			if (line == -1)
+			{
+				board.expandRow(Board::RowExpandDirection::Up);
 			}
 			else
 			{
-				if (y == 1)
+				if (line == rowSize)
 				{
-					board.expandRightUpCorner();
-				}
-				else
-				{
-					if (y == -1)
-					{
-						board.expandRightBottomCorner();
-					}
-					else
-					{
-						std::cout << "Y nu este valid!\n";
-						break;
-					}
+					board.expandRow(Board::RowExpandDirection::Down);
 				}
 			}
-			break;
-		case 0:
-			if (y == 0)
-			{
-				break;
-			}
-			else
-			{
-				if (y == 1)
-				{
-					board.expandRightUpCorner();
-				}
-				else
-				{
-					if (y == -1)
-					{
-						board.expandRightBottomCorner();
-					}
-					else
-					{
-						std::cout << "Y nu este valid!\n";
-						break;
-					}
-				}
-			}
-			break;
 		}
 	}
 }
