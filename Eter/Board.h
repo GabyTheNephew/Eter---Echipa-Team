@@ -89,6 +89,7 @@ public:
 	bool checkColumn(uint8_t column); // checks if a column is full , for Explosions
 	void pushCard(const SimpleCard& card, const Position& position);
 	void popCard(const Position& position);
+	void popCardAt(const Position& position, const SimpleCard& targetCard);
 
 	friend std::ostream& operator<<(std::ostream& os, const Board& board);
 	friend std::istream& operator>>(std::istream& in, Board& board); // this is just for test

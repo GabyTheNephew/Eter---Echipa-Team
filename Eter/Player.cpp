@@ -26,10 +26,19 @@ std::string_view Player::getName()
 
 void Player::printSimpleCards()
 {
-	for (auto card : m_simpleCardsVector)
+	for (auto& card : m_simpleCardsVector)
 	{
 		if(card.getColor() == Color::Red || card.getColor() == Color::Blue)
 				std::cout << card<<'\n';
+	}
+}
+
+void Player::printPastSimpleCards()
+{
+	for (auto& card : m_simpleCardsVector)
+	{
+		if (card.getColor() == Color::usedBlue || card.getColor() == Color::usedRed)
+			std::cout << card << '\n';
 	}
 }
 
@@ -55,7 +64,7 @@ void Player::ResetVector()
 	}
 }
 
-void Player::makeCardInvalid(SimpleCard& card)
+void Player::makeCardInvalid(SimpleCard card)
 {
 	for (auto& curCard : m_simpleCardsVector)
 	{
@@ -63,14 +72,14 @@ void Player::makeCardInvalid(SimpleCard& card)
 		{
 			if (card.getColor() == Color::Red)
 			{
-				card.setColor(Color::usedRed);
+				curCard.setColor(Color::usedRed);
 				
 				break;
 			}
 			else
 				if (card.getColor() == Color::Blue)
 				{
-					card.setColor(Color::usedBlue);
+					curCard.setColor(Color::usedBlue);
 					break;
 		}
 		}
@@ -106,7 +115,7 @@ SimpleCard Player::chooseCard()
 	
 	for (int8_t i = 0; i < m_simpleCardsVector.size(); i++)
 	{
-		if (m_simpleCardsVector[i].getValue()+48 == chosen_card)
+		if (m_simpleCardsVector[i].getValue()+48 == chosen_card && (ColorToString(m_simpleCardsVector[i].getColor())=="Red" || ColorToString(m_simpleCardsVector[i].getColor())=="Blue"))
 		{
 			return m_simpleCardsVector[i];
 		}
