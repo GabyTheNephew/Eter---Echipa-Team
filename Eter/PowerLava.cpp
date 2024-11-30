@@ -1,8 +1,8 @@
 ﻿#include "PowerLava.h"
 
 PowerLava::PowerLava(std::string_view name, std::string_view description):
-	m_name{ "Lava" },
-	m_description{ " Alege un număr cu condiția că cel puțin 2 cărți cu acel număr sunt vizibile pe tablă. Toate cărțile vizibile cu acest număr se întorc în mâinile proprietarilor." }
+	m_name{ "FIRE" },
+	m_description{ " Return to their owners’ hands all visible cards of the same value (at least 2 of them) chosen by you - also yours! In case of stacks remove only the top card." }
 {
 }
 
@@ -21,16 +21,20 @@ void PowerLava::playPower(Board& board, Player& player1, Player& player2, uint8_
 	for (int i = 0; i < board.getSize(); i++) 
 		for (int j = 0; j < board.getSize(); j++)
 		{
-			if (board[{i, j}].value().getValue() == nrLvl) {
-				if (ColorToString(board[{i, j}].value().getColor()) == "Red") {
-					player1.makeCardValid(nrLvl, Color::Red);
-					//pop the card that came back to a player
+			if (board[{i, j}].getValue() == nrLvl) {
+				if (ColorToString(board[{i, j}].getColor()) == "Red") {
+					auto card = SimpleCard(nrLvl, Color::Red);
+					player1.makeCardValid(card);
+					board.popCard({ i, j });
 				}
-
-				if (ColorToString(board[{i, j}].value().getColor()) == "Blue") {
-					player1.makeCardValid(nrLvl, Color::Blue);
-					//pop the card that came back to a player
+				else{
+					if (ColorToString(board[{i, j}].getColor()) == "Blue") {
+						auto card = SimpleCard(nrLvl, Color::Blue);
+						player1.makeCardValid(card);
+						board.popCard({ i, j });
+					}
 				}
+			
 			}
 		}
 }
@@ -45,7 +49,7 @@ bool PowerLava::checkPower(Board& board, int8_t nrLvl)
 		}
 		for (int j = 0; j < board.getSize(); j++)
 		{
-			if (board[{i, j}].value().getValue() == nrLvl) {
+			if (board[{i, j}].getValue() == nrLvl) {
 				count++;
 			}
 
