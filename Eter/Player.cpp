@@ -5,8 +5,8 @@ Player::Player()
 	m_name = "Player";
 }
 
-Player::Player(std::string_view name, std::vector <SimpleCard> simpleCards):
-	m_name{name},m_simpleCardsVector{simpleCards}
+Player::Player(std::string_view name, std::vector <SimpleCard> simpleCards,std::vector <SimpleCard> simplepastCards):
+	m_name{ name }, m_simpleCardsVector{ simpleCards }, m_pastSimpleCardsVector(simplepastCards)
 {	
 }
 
@@ -35,7 +35,7 @@ void Player::printSimpleCards()
 
 void Player::printPastSimpleCards()
 {
-	for (auto& card : m_simpleCardsVector)
+	for (auto& card : m_pastSimpleCardsVector)
 	{
 		if (card.getColor() == Color::usedBlue || card.getColor() == Color::usedRed)
 			std::cout << card << '\n';
@@ -50,6 +50,11 @@ void Player::setVector(std::vector<SimpleCard>& simpleCardsVector)
 const std::vector<SimpleCard>& Player::getVector()
 {
 	return m_simpleCardsVector;
+}
+
+const std::vector<SimpleCard>& Player::getPastVector()
+{
+	return m_pastSimpleCardsVector;
 }
 
 void Player::ResetVector()
@@ -93,15 +98,45 @@ void Player::makeCardValid(SimpleCard& card)
 	{
 		if (curCard.getValue() == card.getValue() && curCard.getColor() == Color::usedRed)
 		{
-			card.setColor(Color::Red);
+			curCard.setColor(Color::Red);
 		}
 		else
 			if (curCard.getValue() == card.getValue() && curCard.getColor() == Color::usedBlue)
 			{
-				card.setColor(Color::Blue);
+				curCard.setColor(Color::Blue);
 			}
 	}
 
+}
+
+std::string Player::GetVectorColor()
+{
+		for (auto& elemnt : m_simpleCardsVector)
+		{
+			if (elemnt.getColor() == Color::Red)
+			{
+				return "Red";
+			}
+			else
+				if (elemnt.getColor() == Color::Blue)
+				{
+					return "Blue";
+				}
+		}
+		throw "All cards of the player are used";
+	
+}
+
+void Player::deleteCardFromPastVectro(SimpleCard& card)
+{
+	for (auto& card : m_pastSimpleCardsVector)
+	{
+		if (card.getValue() == card.getValue() && card.getColor() == card.getColor())
+		{
+			m_pastSimpleCardsVector.erase(std::remove(m_pastSimpleCardsVector.begin(), m_pastSimpleCardsVector.end(), card), m_pastSimpleCardsVector.end());
+			break;
+		}
+	}
 }
 
 
@@ -134,7 +169,7 @@ int Player::numberofValidCards()
 	return count;
 }
 
-void Player::playCard(SimpleCard& card, Board& game_board)
+void Player::playCard(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& pastcards)
 {
 	uint8_t x, y;
 	std::cout << "Enter the coordinates of the card\n";
@@ -146,6 +181,7 @@ void Player::playCard(SimpleCard& card, Board& game_board)
 		{ 
 			game_board.pushCard(card, { x,y });
 			makeCardInvalid(card);
+			pastcards.push_back(card);
 			break;
 		}
 		else
@@ -156,7 +192,7 @@ void Player::playCard(SimpleCard& card, Board& game_board)
 	}
 }
 
-void Player::playCardandExtend(SimpleCard& card, Board& game_board)
+void Player::playCardandExtend(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& pastcards)
 {
 	Position pos;
 	auto& [line, column] = pos;
@@ -178,6 +214,7 @@ void Player::playCardandExtend(SimpleCard& card, Board& game_board)
 			initiateBoard(game_board, pos);
 			game_board.pushCard(card, { line, column });
 			makeCardInvalid(card);
+			pastcards.push_back(card);
 			break;
 		}
 		else
