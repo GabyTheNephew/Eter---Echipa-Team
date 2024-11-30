@@ -5,8 +5,8 @@ Player::Player()
 	m_name = "Player";
 }
 
-Player::Player(std::string_view name, std::vector <SimpleCard> simpleCards,std::vector <SimpleCard> simplepastCards):
-	m_name{ name }, m_simpleCardsVector{ simpleCards }, m_pastSimpleCardsVector(simplepastCards)
+Player::Player(std::string_view name, std::vector <SimpleCard> simpleCards,std::vector <SimpleCard> simplePastCards):
+	m_name{ name }, m_simpleCardsVector{ simpleCards }, m_pastSimpleCardsVector(simplePastCards)
 {	
 }
 
