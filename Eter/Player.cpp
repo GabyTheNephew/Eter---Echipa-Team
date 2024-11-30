@@ -98,12 +98,28 @@ void Player::makeCardValid(SimpleCard& card)
 	{
 		if (curCard.getValue() == card.getValue() && curCard.getColor() == Color::usedRed)
 		{
-			curCard.setColor(Color::Red);
+			for (auto& pastCard : m_pastSimpleCardsVector)
+			{
+				if (pastCard.getValue() == card.getValue() && pastCard.getColor() == Color::usedRed)
+				{
+					curCard.setColor(Color::Red);
+					m_pastSimpleCardsVector.erase(std::remove(m_pastSimpleCardsVector.begin(), m_pastSimpleCardsVector.end(), pastCard), m_pastSimpleCardsVector.end());
+					break;
+				}
+			}
 		}
 		else
 			if (curCard.getValue() == card.getValue() && curCard.getColor() == Color::usedBlue)
 			{
-				curCard.setColor(Color::Blue);
+				for (auto& pastCard : m_pastSimpleCardsVector)
+				{
+					if (pastCard.getValue() == card.getValue() && pastCard.getColor() == Color::usedBlue)
+					{
+						curCard.setColor(Color::Blue);
+						m_pastSimpleCardsVector.erase(std::remove(m_pastSimpleCardsVector.begin(), m_pastSimpleCardsVector.end(), pastCard), m_pastSimpleCardsVector.end());
+						break;
+					}
+				}
 			}
 	}
 
@@ -127,7 +143,7 @@ std::string Player::GetVectorColor()
 	
 }
 
-void Player::deleteCardFromPastVectro(SimpleCard& card)
+void Player::deleteCardFromPastVector(SimpleCard& card)
 {
 	for (auto& card : m_pastSimpleCardsVector)
 	{
