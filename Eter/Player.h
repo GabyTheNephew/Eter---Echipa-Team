@@ -23,12 +23,13 @@ public:
 	std::string_view getName();
 
 	void printSimpleCards();
+	void printPastSimpleCards();
 
 	void setVector(std::vector<SimpleCard>& simpleCardsVector);
 	const std::vector<SimpleCard>& getVector();
 	void ResetVector();
 
-	void makeCardInvalid(SimpleCard& card);
+	void makeCardInvalid(SimpleCard card);
 	void makeCardValid(SimpleCard& card);
 
 	SimpleCard chooseCard();

@@ -506,6 +506,27 @@ void Board::popCard(const Position& position)
 	m_board[line][column].pop_back();
 }
 
+void Board::popCardAt(const Position& position, const SimpleCard& targetCard)
+{
+	auto& [line, column] = position;
+
+	if (line > m_board.size() || column > m_board[0].size())
+	{
+		throw std::out_of_range("Position out of bounds");
+	}
+
+	std::deque<SimpleCard>& dequeWeRemoveFrom = m_board[line][column];
+
+	for(auto it = dequeWeRemoveFrom.begin(); it != dequeWeRemoveFrom.end(); ++it)
+	{
+		if (it->getValue()==targetCard.getValue() && it->getColor()==targetCard.getColor())
+		{
+			dequeWeRemoveFrom.erase(it);
+			break;
+		}
+	}
+}
+
 
 Board::Board(const Board& board)
 	:m_board{board.m_board},
