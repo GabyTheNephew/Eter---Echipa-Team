@@ -24,15 +24,13 @@ Explosion* Explosion::get_Instance()
 
 void Explosion::vectorInstantiation(uint8_t size)
 {
-	// Inițializăm generatorul mt19937 folosind timpul curent
+	
 	std::mt19937 generator(static_cast<unsigned>(std::time(nullptr)));
 
-	// Distribuții pentru numerele aleatoare
-	std::uniform_int_distribution<int> numActionsDist(2, 3);  // 2 sau 3 acțiuni
-	std::uniform_int_distribution<int> positionDist(0, 2);    // Poziții x și y între 0 și 2
-
-	// Distribuție pentru ActionType cu ponderi
-	// 10% pentru hole, 45% pentru explode, 45% pentru giveBack
+	
+	std::uniform_int_distribution<int> numActionsDist(2, 3);  
+	std::uniform_int_distribution<int> positionDist(0, 2);    
+	
 	std::discrete_distribution<int> actionDist({ 10, 45, 45 });
 
 	int numActions = numActionsDist(generator);
@@ -43,10 +41,8 @@ void Explosion::vectorInstantiation(uint8_t size)
 		int x = positionDist(generator);
 		int y = positionDist(generator);
 
-		// Generează ActionType pe baza distribuției personalizate
 		ActionType action = static_cast<ActionType>(actionDist(generator));
 
-		// Adăugăm poziția și acțiunea în vector dacă nu există deja
 		if (uniquePositions.insert({ x, y }).second) {
 			positions.emplace_back(x, y, action);
 		}
