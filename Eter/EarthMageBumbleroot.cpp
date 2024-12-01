@@ -18,7 +18,7 @@ std::string EarthMageBumbleroot::getDescription() const
 
 bool EarthMageBumbleroot::playMage(Board& board, int8_t x, int8_t y)
 {
-	if (board[{x, y}].has_value() == false)
+	if (board[{x,y}].empty())
 	{
 		///make hole
 	}

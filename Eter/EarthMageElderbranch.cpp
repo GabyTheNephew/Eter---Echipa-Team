@@ -16,18 +16,18 @@ std::string EarthMageElderbranch::getDescription() const
 	return m_description;
 }
 
-bool EarthMageElderbranch::playMage(Board& board, std::string_view color, int8_t value, int8_t x, int8_t y)
+bool EarthMageElderbranch::playMage(Board& board, Color color, int8_t value, int8_t x, int8_t y)
 {
-	if ((board.getBoard()[x][y].back().getColor() != color) && (board.getBoard()[x][y].back().getValue() > value))
+	if ((board[{x,y}].back().getColor() != color) && (board[{x,y}].back().getValue() > value))
 	{
-		board.getBoard()[x][y].push_back(SimpleCard(value, color));
-		if(color=="red")
+		board[{x,y}].push_back(SimpleCard(value, color));
+		if(color == Color::Red)
 		{
-			color = "usedRed";
+			color = Color::usedRed;
 		}
-		else if (color == "blue")
+		else if (color == Color::Blue)
 		{
-			color = "usedBlue";
+			color = Color::usedBlue;
 		}
 		return true;
 	}

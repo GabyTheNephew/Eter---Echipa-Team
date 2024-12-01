@@ -16,7 +16,7 @@ std::string WaterMageAqualon::getDescription() const
 	return m_description;
 }
 
-bool WaterMageAqualon::playMage(Board& board, std::string_view color, bool rowOrColumn, int8_t x)
+bool WaterMageAqualon::playMage(Board& board, Color color, bool rowOrColumn, int8_t x)
 {
 	/// function
 	return false;

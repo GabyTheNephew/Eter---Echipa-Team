@@ -58,8 +58,8 @@ public:
 	// matrix& getBoard();  
 	void setBoard(const matrix& board); 
 
-	SimpleCard& operator[] (const Position& position);
-	const SimpleCard& operator [] (const Position& position) const;
+	std::deque<SimpleCard>& operator[] (const Position& position);
+	const std::deque<SimpleCard>& operator [] (const Position& position) const;
 
 	void expandRow(RowExpandDirection direction);
 	void expandColumn(ColumnExpandDirection direction);
