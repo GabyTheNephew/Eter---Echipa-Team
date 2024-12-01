@@ -1,8 +1,9 @@
 #include "EarthMageBumbleroot.h"
 
-EarthMageBumbleroot::EarthMageBumbleroot(std::string_view name, std::string_view description) :
-	m_name{ "Bumbleroot" },
-	m_description{ "The chosen empty space on the playing field becomes a ’hole’. No Mage can play any cards there, no Mage Powers or Power Explosions may affect that space.Mark it with this Mage Power card or the ’hole’ marker udes in Power Explosions." }
+const std::string EarthMageBumbleroot::m_name = "Bumbleroot" ;
+const std::string EarthMageBumbleroot::m_description = "The chosen empty space on the playing field becomes a ’hole’. No Mage can play any cards there, no Mage Powers or Power Explosions may affect that space.Mark it with this Mage Power card or the ’hole’ marker udes in Power Explosions.";
+
+EarthMageBumbleroot::EarthMageBumbleroot()
 {
 }
 
