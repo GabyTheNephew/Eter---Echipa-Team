@@ -22,7 +22,7 @@ private:
 	static Explosion* m_current_Instance;
 
 public:
-	static Explosion* get_Instance(); 
+	static Explosion* get_Instance();
 
 	void vectorInstantiation(uint8_t size);
 
@@ -30,8 +30,7 @@ public:
 	void rotationRight(uint8_t size);
 	void rotationDown(uint8_t size);
 
-
-
+	const std::vector<std::tuple<int, int, ActionType>>& getPositions() const;
 
 };
 
