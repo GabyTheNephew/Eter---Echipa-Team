@@ -16,7 +16,7 @@ std::string FireMagePyrofang::getDescription() const
 	return m_description;
 }
 
-bool FireMagePyrofang::playMage(Board& board, std::string_view color, bool rowOrColumn, int8_t x)
+bool FireMagePyrofang::playMage(Board& board, Color color, bool rowOrColumn, int8_t x)
 {
 	///row == false
 	///column == true
@@ -27,7 +27,7 @@ bool FireMagePyrofang::playMage(Board& board, std::string_view color, bool rowOr
 	{
 		for (int i = 0; i < board.getSize(); i++)
 		{
-			if (ColorToString(board[{x, i}].value().getColor()) == color)
+			if (board[{x, i}].back().getColor() == color)
 			{
 				ok = true;
 			}
@@ -42,7 +42,7 @@ bool FireMagePyrofang::playMage(Board& board, std::string_view color, bool rowOr
 	{
 		for (int i = 0; i < board.getSize(); i++)
 		{
-			if (ColorToString(board[{i, x}].value().getColor()) == color)
+			if (board[{i, x}].back().getColor() == color)
 			{
 				ok = true;
 			}

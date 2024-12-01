@@ -596,7 +596,7 @@ std::istream& operator>>(std::istream& in, Board& board)
 	return in;
 }
 
-SimpleCard& Board::operator[](const Board::Position& position)
+std::deque<SimpleCard>& Board::operator[](const Board::Position& position)
 {
 	auto& [line, column] = position;
 
@@ -606,10 +606,10 @@ SimpleCard& Board::operator[](const Board::Position& position)
 	if (line < 0 || line > kRows || column < 0 || column > kColumns)
 		throw std::out_of_range("Position out of bounds");
 
-	return m_board[line][column].back();
+	return m_board[line][column];
 }
 
-const SimpleCard& Board::operator[](const Position& position) const
+const std::deque<SimpleCard>& Board::operator[](const Position& position) const
 {
 	auto& [line, column] = position;
 
@@ -619,5 +619,5 @@ const SimpleCard& Board::operator[](const Position& position) const
 	if (line < 0 || line > kRows || column < 0 || column > kColumns)
 		throw std::out_of_range("Position out of bounds");
 
-	return m_board[line][column].back();
+	return m_board[line][column];
 }
