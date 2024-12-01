@@ -7,12 +7,12 @@ class WaterMageAqualon
 {
 private:
 
-	std::string m_name;
-	std::string m_description;
+	static const std::string m_name;
+	static const std::string m_description;
 
 public:
 
-	WaterMageAqualon(std::string_view name, std::string_view description);
+	WaterMageAqualon();
 
 	std::string getName() const;
 	std::string getDescription() const;

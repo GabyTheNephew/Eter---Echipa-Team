@@ -1,9 +1,9 @@
 #include "FireMageIgnara.h"
 
+const std::string FireMageIgnara::m_name = "Ignara";
+const std::string FireMageIgnara::m_description = "Remove from play an opponent’s card that covers one of your cards.";
 
-FireMageIgnara::FireMageIgnara(std::string_view name, std::string_view description) :
-	m_name{"Ignara"},
-	m_description{ "Remove from play an opponent’s card that covers one of your cards." }
+FireMageIgnara::FireMageIgnara()
 {
 
 }

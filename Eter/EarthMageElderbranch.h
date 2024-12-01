@@ -8,12 +8,12 @@ class EarthMageElderbranch
 {
 private:
 
-	std::string m_name;
-	std::string m_description;
+	static const std::string m_name;
+	static const std::string m_description;
 
 public:
 
-	EarthMageElderbranch(std::string_view name, std::string_view description);
+	EarthMageElderbranch();
 
 	std::string getName() const;
 	std::string getDescription() const;

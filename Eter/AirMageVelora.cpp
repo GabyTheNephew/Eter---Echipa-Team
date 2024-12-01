@@ -1,8 +1,9 @@
 #include "AirMageVelora.h"
 
-AirMageVelora::AirMageVelora(std::string_view name, std::string_view description):
-	m_name{ "Velora" },
-	m_description{ "On his turn, the player may move his card (or a stack of cards with his card on top) to a different, empty space." }
+const std::string AirMageVelora::m_name = "Velora";
+const std::string AirMageVelora::m_description = "On his turn, the player may move his card (or a stack of cards with his card on top) to a different, empty space.";
+
+AirMageVelora::AirMageVelora()
 {
 }
 

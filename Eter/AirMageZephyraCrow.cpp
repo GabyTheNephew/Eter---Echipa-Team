@@ -1,8 +1,9 @@
 #include "AirMageZephyraCrow.h"
 
-AirMageZephyraCrow::AirMageZephyraCrow(std::string_view name, std::string_view description):
-	m_name{ "Zephyra Crow" },
-	m_description{ "Use your Mage Power card as an additional ETER card - place it on an empty space on the playing field with your marker." }
+const std::string AirMageZephyraCrow::m_name = "Zephyra Crow";
+const std::string AirMageZephyraCrow::m_description = "Use your Mage Power card as an additional ETER card - place it on an empty space on the playing field with your marker.";
+
+AirMageZephyraCrow::AirMageZephyraCrow()
 {
 }
 

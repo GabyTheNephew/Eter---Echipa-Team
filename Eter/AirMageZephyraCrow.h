@@ -9,12 +9,12 @@ class AirMageZephyraCrow
 {
 private:
 
-	std::string m_name;
-	std::string m_description;
+	static const std::string m_name;
+	static const std::string m_description;
 
 public:
 
-	AirMageZephyraCrow(std::string_view name, std::string_view description);
+	AirMageZephyraCrow();
 
 	std::string getName() const;
 	std::string getDescription() const;

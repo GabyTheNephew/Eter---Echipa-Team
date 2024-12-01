@@ -1,8 +1,9 @@
 #include "WaterMageAqualon.h"
 
-WaterMageAqualon::WaterMageAqualon(std::string_view name, std::string_view description) :
-	m_name{ "Aqualon" },
-	m_description{ "Take any row or column of 3 or more cards at the edge of the playing field and move it to a different edge.This redefines the shape of the playing field. " }
+const std::string WaterMageAqualon::m_name = "Aqualon";
+const std::string WaterMageAqualon::m_description = "Take any row or column of 3 or more cards at the edge of the playing field and move it to a different edge.This redefines the shape of the playing field. ";
+
+WaterMageAqualon::WaterMageAqualon()
 {
 }
 

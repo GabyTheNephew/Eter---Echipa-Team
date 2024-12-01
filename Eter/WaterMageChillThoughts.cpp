@@ -1,8 +1,9 @@
 #include "WaterMageChillThoughts.h"
 
-WaterMageChillThoughts::WaterMageChillThoughts(std::string_view name, std::string_view description):
-	m_name{ "Chill Thoughts" },
-	m_description{ "On his turn, a Mage may move an opponent’s card (or a stack of cards with an opponent’s card) to a different, empty space." }
+const std::string WaterMageChillThoughts::m_name = "Chill Thoughts";
+const std::string WaterMageChillThoughts::m_description = "On his turn, a Mage may move an opponent’s card (or a stack of cards with an opponent’s card) to a different, empty space.";
+
+WaterMageChillThoughts::WaterMageChillThoughts()
 {
 }
 

@@ -1,8 +1,9 @@
 #include "EarthMageElderbranch.h"
 
-EarthMageElderbranch::EarthMageElderbranch(std::string_view name, std::string_view description):
-	m_name{ "Elderbranch" },
-	m_description{ "Cover an opponent’s card with your card of a lower value." }
+const std::string EarthMageElderbranch::m_name = "Elderbranch";
+const std::string EarthMageElderbranch::m_description = "Cover an opponent’s card with your card of a lower value.";
+
+EarthMageElderbranch::EarthMageElderbranch()
 {
 }
 

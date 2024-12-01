@@ -1,8 +1,9 @@
 #include "FireMagePyrofang.h"
 
-FireMagePyrofang::FireMagePyrofang(std::string_view name, std::string_view description) :
-	m_name{ "Pyrofang" },
-	m_description{ "Remove from play a row or column of 3 or more cards. The removed row or column must contain at least one of your cards. The power impacts single cards and stacks." }
+const std::string FireMagePyrofang::m_name = "Pyrofang";
+const std::string FireMagePyrofang::m_description = "Remove from play a row or column of 3 or more cards. The removed row or column must contain at least one of your cards. The power impacts single cards and stacks.";
+
+FireMagePyrofang::FireMagePyrofang()
 {
 }
 
