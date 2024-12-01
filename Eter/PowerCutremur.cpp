@@ -24,7 +24,7 @@ void PowerCutremur::playPower(Board& board)
 		{
 			if (board[{i, j}].getValue() == 1) {
 
-				//pop the card
+				board.popCard({ i,j });
 			}
 		}
 }
