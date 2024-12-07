@@ -52,7 +52,7 @@ const std::vector<SimpleCard>& Player::getVector()
 	return m_simpleCardsVector;
 }
 
-const std::vector<SimpleCard>& Player::getPastVector()
+std::vector<SimpleCard>& Player::getPastVector()
 {
 	return m_pastSimpleCardsVector;
 }
@@ -185,7 +185,7 @@ int Player::numberofValidCards()
 	return count;
 }
 
-void Player::playCard(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& pastcards)
+void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& pastcards)
 {
 	uint8_t x, y;
 	std::cout << "Enter the coordinates of the card\n";
