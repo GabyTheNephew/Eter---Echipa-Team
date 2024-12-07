@@ -5,7 +5,9 @@ enum class Color {
 	Red,
 	usedRed,
 	Blue,
-	usedBlue
+	usedBlue,
+	IlusionBlue,
+	IlusionRed
 };
 
 std::string ColorToString(const Color& color);
