@@ -28,13 +28,14 @@ public:
 
 	void setVector(std::vector<SimpleCard>& simpleCardsVector);
 	const std::vector<SimpleCard>& getVector();
-	const std::vector<SimpleCard>& getPastVector();
+	std::vector<SimpleCard>& getPastVector();
 	void ResetVector();
 
 	void makeCardInvalid(SimpleCard card);
 	void makeCardValid(SimpleCard& card);
 	std::string GetVectorColor();
 	void deleteCardFromPastVector(SimpleCard& card);
+
 
 	SimpleCard chooseCard();
 	int numberofValidCards();
@@ -43,4 +44,3 @@ public:
 	void playCardandExtend(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& m_pastSimpleCardsVecto);
 	void initiateBoard(Board& board, Position pos);
 };
-
