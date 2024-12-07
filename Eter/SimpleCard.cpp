@@ -41,6 +41,16 @@ void SimpleCard::setColor(Color color)
 	m_color = color;
 }
 
+void SimpleCard::setIllusionState(bool value)
+{
+	m_isIllusion = value;
+}
+
+bool SimpleCard::getIllusionState()const
+{
+	return m_isIllusion;
+}
+
 std::ostream& operator<<(std::ostream& os, const SimpleCard& card)
 {
 	os << static_cast<int>(card.m_value) << ColorToString(card.m_color);
