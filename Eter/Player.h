@@ -28,7 +28,7 @@ public:
 
 	void setVector(std::vector<SimpleCard>& simpleCardsVector);
 	const std::vector<SimpleCard>& getVector();
-	std::vector<SimpleCard>& getPastVector();
+	const std::vector<SimpleCard>& getPastVector();
 	void ResetVector();
 
 	void makeCardInvalid(SimpleCard card);
@@ -36,11 +36,12 @@ public:
 	std::string GetVectorColor();
 	void deleteCardFromPastVector(SimpleCard& card);
 
-
 	SimpleCard chooseCard();
 	int numberofValidCards();
 	//void playCard(uint8_t card_value,Board& game_board,Color card_color);
-	void playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& m_pastSimpleCardsVecto);
-	void playCardandExtend(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& m_pastSimpleCardsVecto);
+	void playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& m_pastSimpleCardsVecto, bool& canPlayIllusion);
+	void playCardandExtend(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& m_pastSimpleCardsVecto, bool& canPlayIllusion);
 	void initiateBoard(Board& board, Position pos);
+	//void playIllusion(SimpleCard& card, Board& board, Position pos);
 };
+

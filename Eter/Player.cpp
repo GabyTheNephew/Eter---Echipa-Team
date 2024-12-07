@@ -52,7 +52,7 @@ const std::vector<SimpleCard>& Player::getVector()
 	return m_simpleCardsVector;
 }
 
-std::vector<SimpleCard>& Player::getPastVector()
+const std::vector<SimpleCard>& Player::getPastVector()
 {
 	return m_pastSimpleCardsVector;
 }
@@ -185,9 +185,23 @@ int Player::numberofValidCards()
 	return count;
 }
 
-void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& pastcards)
+void Player::playCard(SimpleCard& card, Board& game_board,
+	std::vector<SimpleCard>& pastcards, bool& canPlayIllusion)
 {
 	uint8_t x, y;
+
+	std::cout << "Do you want to play it as an illusion?\n";
+	std::string answer;
+	std::cin >> answer;
+	if (answer == "yes")
+	{
+		if (canPlayIllusion)
+		{
+			canPlayIllusion = false;
+			card.setIllusionState(true);
+		}
+	}
+
 	std::cout << "Enter the coordinates of the card\n";
 	while (true)
 	{
@@ -208,10 +222,24 @@ void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard
 	}
 }
 
-void Player::playCardandExtend(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& pastcards)
+void Player::playCardandExtend(SimpleCard& card, Board& game_board,
+	std::vector<SimpleCard>& pastcards, bool& canPlayIllusion)
 {
 	Position pos;
 	auto& [line, column] = pos;
+
+	std::cout << "Do you want to play it as an illusion?\n";
+	std::string answer;
+	std::cin >> answer;
+	if (answer == "yes")
+	{
+		if (canPlayIllusion)
+		{
+			canPlayIllusion = false;
+			card.setIllusionState(true);
+		}
+	}
+
 	std::cout << "Enter the coordinates of the card\n";
 	while (true)
 	{
@@ -322,3 +350,11 @@ void Player::initiateBoard(Board& board, Position pos)
 		}
 	}
 }
+
+//void Player::playIllusion(SimpleCard& card, Board& board, Position pos)
+//{
+//	if (card.getIllusionState())
+//	{
+//
+//	}
+//}
