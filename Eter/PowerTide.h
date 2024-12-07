@@ -1,9 +1,9 @@
 #pragma once
-#include "Board.h"
 #include <iostream>
+#include "Board.h"
 #include <string_view>
 
-class WaterMageAqualon
+class PowerTide
 {
 private:
 
@@ -12,11 +12,12 @@ private:
 
 public:
 
-	WaterMageAqualon();
+	PowerTide();
 
 	std::string getName() const;
 	std::string getDescription() const;
 
-	bool playMage(Board& board, bool rowOrColumn, int8_t x);
+	void playPower(Board& board, uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2);
+	bool checkPower(Board& board, uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2);
 };
 

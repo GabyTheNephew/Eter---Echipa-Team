@@ -1,9 +1,10 @@
 #pragma once
-#include "Board.h"
 #include <iostream>
+#include "Board.h"
+#include "Player.h"
 #include <string_view>
 
-class WaterMageAqualon
+class PowerFire
 {
 private:
 
@@ -12,11 +13,13 @@ private:
 
 public:
 
-	WaterMageAqualon();
+	PowerFire();
 
 	std::string getName() const;
 	std::string getDescription() const;
 
-	bool playMage(Board& board, bool rowOrColumn, int8_t x);
+	void playPower(Board& board, Player& player1, Player& player2,uint8_t value);
+	bool checkPower(Board& board, uint8_t value);
+
 };
 
