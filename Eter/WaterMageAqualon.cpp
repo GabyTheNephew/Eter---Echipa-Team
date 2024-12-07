@@ -17,9 +17,36 @@ std::string WaterMageAqualon::getDescription() const
 	return m_description;
 }
 
-bool WaterMageAqualon::playMage(Board& board, Color color, bool rowOrColumn, int8_t x)
+bool WaterMageAqualon::playMage(Board& board, bool rowOrColumn, int8_t x)
 {
-	/// function
+	///row == false
+	///column == true
+
+	if(board.getSize() >= 3 && (x==0 || x==board.getSize()))
+	{
+		if (rowOrColumn)
+		{
+			if (board.checkColumn(x))
+			{
+				for (int i = 0; i < board.getSize(); i++)
+				{
+					board.moveSpace(i, x, board.getSize()-i, x);
+				}
+				return true;
+			}
+		}
+		else
+		{
+			if (board.checkRow(x))
+			{
+				for (int i = 0; i < board.getSize(); i++)
+				{
+					board.moveSpace(x, i, x, board.getSize()-i);
+				}
+				return true;
+			}
+		}
+	}
 	return false;
 }
 
