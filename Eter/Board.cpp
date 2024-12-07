@@ -496,7 +496,26 @@ void Board::pushCard(const SimpleCard& card, const Position& position)
 {
 	auto& [line, column] = position;
 
-	m_board[line][column].push_back(card);
+	if (canBePushed(card, position))
+	{
+		m_board[line][column].push_back(card);
+	}
+	else
+	{
+		std::cout << "Cannot push card because it has a smaller value\n";
+	}
+}
+
+bool Board::canBePushed(const SimpleCard& card, const Position& position) const
+{
+	auto& [line, column] = position;
+
+	if (card.getValue() > m_board[line][column].back().getValue())
+	{
+		return true;
+	}
+
+	return false;
 }
 
 void Board::popCard(const Position& position)

@@ -88,6 +88,7 @@ public:
 	bool checkRow(uint8_t row); // checks if a row is full , for Explosions
 	bool checkColumn(uint8_t column); // checks if a column is full , for Explosions
 	void pushCard(const SimpleCard& card, const Position& position);
+	bool canBePushed(const SimpleCard& card, const Position& position)const;
 	void popCard(const Position& position);
 	void popCardAt(const Position& position, const SimpleCard& targetCard);
 
