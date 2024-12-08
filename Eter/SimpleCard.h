@@ -9,7 +9,6 @@ class SimpleCard
 private:
 	uint8_t m_value;
 	Color m_color;
-	bool m_isIllusion;
 public:
 
 	SimpleCard();
@@ -17,14 +16,11 @@ public:
 	virtual ~SimpleCard();
 	SimpleCard& operator=(const SimpleCard& other);
 
-	uint8_t getValue()const;
 	Color getColor()const;
-
-	void setValue(uint8_t value);
 	void setColor(Color color);
 
-	void setIllusionState(bool value);
-	bool getIllusionState()const;
+	uint8_t getValue()const;
+	void setValue(uint8_t value);
 
 	friend std::ostream& operator<<(std::ostream& os, const SimpleCard& card);
 };

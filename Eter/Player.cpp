@@ -5,9 +5,9 @@ Player::Player()
 	m_name = "Player";
 }
 
-Player::Player(std::string_view name, std::vector <SimpleCard> simpleCards,std::vector <SimpleCard> simplePastCards):
+Player::Player(std::string_view name, std::vector <SimpleCard> simpleCards, std::vector <SimpleCard> simplePastCards) :
 	m_name{ name }, m_simpleCardsVector{ simpleCards }, m_pastSimpleCardsVector(simplePastCards)
-{	
+{
 }
 
 Player::~Player()
@@ -28,8 +28,8 @@ void Player::printSimpleCards()
 {
 	for (auto& card : m_simpleCardsVector)
 	{
-		if(card.getColor() == Color::Red || card.getColor() == Color::Blue)
-				std::cout << card<<'\n';
+		if (card.getColor() == Color::Red || card.getColor() == Color::Blue)
+			std::cout << card << '\n';
 	}
 }
 
@@ -75,21 +75,21 @@ void Player::makeCardInvalid(SimpleCard card)
 	{
 		if (curCard.getValue() == card.getValue() && curCard.getColor() == card.getColor())
 		{
-			if (card.getColor() == Color::Red)
+			if (card.getColor() == Color::Red || card.getColor() == Color::IlusionRed)
 			{
 				curCard.setColor(Color::usedRed);
-				
+
 				break;
 			}
 			else
-				if (card.getColor() == Color::Blue)
+				if (card.getColor() == Color::Blue || card.getColor() == Color::IlusionBlue)
 				{
 					curCard.setColor(Color::usedBlue);
 					break;
-		}
+				}
 		}
 	}
-	
+
 }
 
 void Player::makeCardValid(SimpleCard& card)
@@ -127,20 +127,20 @@ void Player::makeCardValid(SimpleCard& card)
 
 std::string Player::GetVectorColor()
 {
-		for (auto& elemnt : m_simpleCardsVector)
+	for (auto& elemnt : m_simpleCardsVector)
+	{
+		if (elemnt.getColor() == Color::Red)
 		{
-			if (elemnt.getColor() == Color::Red)
-			{
-				return "Red";
-			}
-			else
-				if (elemnt.getColor() == Color::Blue)
-				{
-					return "Blue";
-				}
+			return "Red";
 		}
-		throw "All cards of the player are used";
-	
+		else
+			if (elemnt.getColor() == Color::Blue)
+			{
+				return "Blue";
+			}
+	}
+	throw "All cards of the player are used";
+
 }
 
 void Player::deleteCardFromPastVector(SimpleCard& card)
@@ -159,14 +159,14 @@ void Player::deleteCardFromPastVector(SimpleCard& card)
 SimpleCard Player::chooseCard()
 {
 	uint8_t chosen_card;
-	std::cout <<getName() << " select a card\n";
+	std::cout << getName() << " select a card\n";
 	printSimpleCards();
 	std::cout << "\nPick a card\n";
 	std::cin >> chosen_card;
-	
+
 	for (int8_t i = 0; i < m_simpleCardsVector.size(); i++)
 	{
-		if (m_simpleCardsVector[i].getValue()+48 == chosen_card && (ColorToString(m_simpleCardsVector[i].getColor())=="Red" || ColorToString(m_simpleCardsVector[i].getColor())=="Blue"))
+		if (m_simpleCardsVector[i].getValue() + 48 == chosen_card && (ColorToString(m_simpleCardsVector[i].getColor()) == "Red" || ColorToString(m_simpleCardsVector[i].getColor()) == "Blue"))
 		{
 			return m_simpleCardsVector[i];
 		}
@@ -188,17 +188,26 @@ int Player::numberofValidCards()
 void Player::playCard(SimpleCard& card, Board& game_board,
 	std::vector<SimpleCard>& pastcards, bool& canPlayIllusion)
 {
-	uint8_t x, y;
+	Position pos;
 
-	std::cout << "Do you want to play it as an illusion?\n";
-	std::string answer;
-	std::cin >> answer;
-	if (answer == "yes")
+	auto& [x, y] = pos;
+
+	if (canPlayIllusion)
 	{
-		if (canPlayIllusion)
+		std::cout << "Do you want to play it as an illusion?\n";
+		std::string answer;
+		std::cin >> answer;
+		if (answer == "yes")
 		{
 			canPlayIllusion = false;
-			card.setIllusionState(true);
+			if (card.getColor() == Color::Red)
+			{
+				card.setColor(Color::IlusionRed);
+			}
+			else
+			{
+				card.setColor(Color::IlusionBlue);
+			}
 		}
 	}
 
@@ -206,44 +215,6 @@ void Player::playCard(SimpleCard& card, Board& game_board,
 	while (true)
 	{
 		std::cin >> x >> y;
-		
-		if (game_board.canBePlaced(x,y))
-		{ 
-			game_board.pushCard(card, { x,y });
-			makeCardInvalid(card);
-			pastcards.push_back(card);
-			break;
-		}
-		else
-		{
-			std::cout << "Invalid coordinates\n";
-		}
-
-	}
-}
-
-void Player::playCardandExtend(SimpleCard& card, Board& game_board,
-	std::vector<SimpleCard>& pastcards, bool& canPlayIllusion)
-{
-	Position pos;
-	auto& [line, column] = pos;
-
-	std::cout << "Do you want to play it as an illusion?\n";
-	std::string answer;
-	std::cin >> answer;
-	if (answer == "yes")
-	{
-		if (canPlayIllusion)
-		{
-			canPlayIllusion = false;
-			card.setIllusionState(true);
-		}
-	}
-
-	std::cout << "Enter the coordinates of the card\n";
-	while (true)
-	{
-		std::cin >> line >> column;
 
 
 		/*if (game_board.getSize() == 1)
@@ -252,22 +223,114 @@ void Player::playCardandExtend(SimpleCard& card, Board& game_board,
 			makeCardInvalid(card);
 			break;
 		}*/
-		
-		if (game_board.canBePlaced(line, column))
+
+		if (game_board.canBePlaced(x, y))
 		{
-			initiateBoard(game_board, pos);
-			game_board.pushCard(card, { line, column });
-			makeCardInvalid(card);
-			pastcards.push_back(card);
-			break;
+			if (game_board.getSize() < 3)
+			{
+				initiateBoard(game_board, pos);
+			}
+			if (card.getColor() == Color::IlusionBlue || card.getColor() == Color::IlusionRed)
+			{
+				if (game_board[pos].empty())
+				{
+					game_board.pushCard(card, { x,y });
+					makeCardInvalid(card);
+					pastcards.push_back(card);
+					break;
+				}
+				else
+				{
+					std::cout << "You can only play an illusion on an empty space on the board!\n";
+					continue;
+				}
+			}
+			else if (game_board[pos].back().getColor() == Color::IlusionBlue)
+			{
+				if (card.getColor() == Color::Red)
+				{
+					game_board.pushCard(card, pos);
+					pastcards.push_back(card);
+					break;
+				}
+			}
+			else if (game_board[pos].back().getColor() == Color::IlusionRed)
+			{
+				if (card.getColor() == Color::Blue)
+				{
+					game_board.pushCard(card, pos);
+					pastcards.push_back(card);
+					break;
+				}
+			}
+			else
+			{
+				game_board.pushCard(card, { x,y });
+				makeCardInvalid(card);
+				pastcards.push_back(card);
+				break;
+			}
 		}
 		else
 		{
 			std::cout << "Invalid coordinates\n";
 		}
-
 	}
 }
+
+//void Player::playCardandExtend(SimpleCard& card, Board& game_board,
+//	std::vector<SimpleCard>& pastcards, bool& canPlayIllusion)
+//{
+//	Position pos;
+//	auto& [line, column] = pos;
+//
+//	if (canPlayIllusion)
+//	{
+//		std::cout << "Do you want to play it as an illusion?\n";
+//		std::string answer;
+//		std::cin >> answer;
+//		if (answer == "yes")
+//		{
+//			canPlayIllusion = false;
+//			if (card.getColor() == Color::Red)
+//			{
+//				card.setColor(Color::IlusionRed);
+//			}
+//			else
+//			{
+//				card.setColor(Color::IlusionBlue);
+//			}
+//		}
+//	}
+//
+//	std::cout << "Enter the coordinates of the card\n";
+//	while (true)
+//	{
+//		std::cin >> line >> column;
+//
+//
+//		/*if (game_board.getSize() == 1)
+//		{
+//			game_board.pushCard(card, { 0, 0});
+//			makeCardInvalid(card);
+//			break;
+//		}*/
+//
+//		if (game_board.canBePlaced(line, column))
+//		{
+//			initiateBoard(game_board, pos);
+//			game_board.pushCard(card, { line, column });
+//			makeCardInvalid(card);
+//			pastcards.push_back(card);
+//			break;
+//		}
+//		else
+//		{
+//			std::cout << "Invalid coordinates\n";
+//		}
+//
+//	}
+//}
 
 void Player::initiateBoard(Board& board, Position pos)
 {

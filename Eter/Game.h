@@ -15,7 +15,7 @@ private:
     Player player1, player2;
     //Explosion m_explosion;
 	bool m_explosionsEnabled;
-
+    bool m_illusionsEnabled;
     
     Game() : m_round_Counter{ 0 }, m_gameBoard{}, m_explosionsEnabled{false} {}
 
@@ -50,4 +50,7 @@ public:
 
     void setExplosionsEnabled(bool enabled); 
     bool areExplosionsEnabled() const;
+
+    void setIllusionsEnabled(bool enabled);
+    bool areIllusionsEnabled()const;
 };
