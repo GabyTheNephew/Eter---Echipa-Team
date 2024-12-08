@@ -43,18 +43,27 @@ std::string_view Game::gameTypeToString(GameType gameType) const
 
 void Game::startTraining()
 {
-	
+
 	this->m_round_Counter = 1;
-	uint8_t maxRounds=3;
+	uint8_t maxRounds = 3;
 	m_gameBoard.resizeBoard(1);
 	int matrixMaxSize = 3;
 	std::vector<SimpleCard> PastCards;
-	bool canPlayIllusion = true;
+	bool canPlayIllusion;
 
-	player1 = Player("Name1", { SimpleCard(1,Color::Red),SimpleCard(1,Color::Red),SimpleCard(2,Color::Red) ,SimpleCard(2,Color::Red) ,SimpleCard(3,Color::Red),SimpleCard(3,Color::Red),SimpleCard(4,Color::Red) },PastCards);
+	if (m_illusionsEnabled)
+	{
+		canPlayIllusion = true;
+	}
+	else
+	{
+		canPlayIllusion = false;
+	}
+
+	player1 = Player("Name1", { SimpleCard(1,Color::Red),SimpleCard(1,Color::Red),SimpleCard(2,Color::Red) ,SimpleCard(2,Color::Red) ,SimpleCard(3,Color::Red),SimpleCard(3,Color::Red),SimpleCard(4,Color::Red) }, PastCards);
 	player2 = Player("Name2", { SimpleCard(1,Color::Blue),SimpleCard(1,Color::Blue),SimpleCard(2,Color::Blue) ,SimpleCard(2,Color::Blue) ,SimpleCard(3,Color::Blue),SimpleCard(3,Color::Blue),SimpleCard(4,Color::Blue) }, PastCards);
-	
-	
+
+
 
 	while (m_round_Counter <= maxRounds)
 	{
@@ -67,18 +76,12 @@ void Game::startTraining()
 				std::cout << "Player 1's turn\n";
 				SimpleCard chosenCard = player1.chooseCard();
 				if (chosenCard.getValue() != 0)
-					if (m_gameBoard.getSize() < 3)
-					{
-						player1.playCardandExtend(chosenCard, m_gameBoard, PastCards, canPlayIllusion);
-						
-					}
-					else
-					{
-						player1.playCard(chosenCard, m_gameBoard,PastCards, canPlayIllusion);
-					
-					}
+				{
+					player1.playCard(chosenCard, m_gameBoard, PastCards, canPlayIllusion);
+
+				}
 				m_gameBoard.print();
-						
+
 			}
 			if (m_gameBoard.checkWin() == Board::State::Win)
 			{
@@ -91,39 +94,34 @@ void Game::startTraining()
 				std::cout << "Player 2's turn\n";
 				SimpleCard chosenCard = player2.chooseCard();
 				if (chosenCard.getValue() != 0)
-					if (m_gameBoard.getSize() < 3)
 				{
-					player2.playCardandExtend(chosenCard, m_gameBoard, PastCards);
-				}
-				else
-				{
-						player2.playCard(chosenCard, m_gameBoard, PastCards);
+					player2.playCard(chosenCard, m_gameBoard, PastCards, canPlayIllusion);
 				}
 
 				m_gameBoard.print();
 			}
 			if (m_gameBoard.checkWin() == Board::State::Win)
+			{
+				std::cout << "Player 2 wins\n";
+				break;
+			}
+			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0)
+			{
+				if (m_gameBoard.checkWin() == Board::State::Win)
 				{
-					std::cout << "Player 2 wins\n";
+					std::cout << "Win by\n ";//show the player who won?
 					break;
 				}
-				if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0)
+				if (m_gameBoard.checkWin() == Board::State::Draw)
 				{
-					if (m_gameBoard.checkWin() == Board::State::Win)
-					{
-						std::cout << "Win by\n ";//show the player who won?
-						break;
-					}
-					if (m_gameBoard.checkWin() == Board::State::Draw)
-					{
-						std::cout << "Draw\n";
-						break;
-					}
+					std::cout << "Draw\n";
+					break;
 				}
-				
+			}
 
-	}
-	player1.ResetVector();
+
+		}
+		player1.ResetVector();
 		player2.ResetVector();
 		m_gameBoard.clear();
 		incrementRoundCounter();
@@ -165,7 +163,8 @@ void Game::showExplosionMenu()
 
 	
 	std::cout << "=== Explosion Menu ===\n";
-	std::cout << "Type 'explosions' to enable explosions, 'no explosions' to disable them, or 'start' to begin the game:\n";
+	std::cout << 
+		"Type 'explosions' to enable explosions, 'no explosions' to disable them, 'illusions' to enable illusions, 'no illusions' to disable them or 'start' to begin the game:\n";
 
 	while (true)
 	{
@@ -180,6 +179,16 @@ void Game::showExplosionMenu()
 		{
 			setExplosionsEnabled(false);
 			std::cout << "Explosions disabled!\n";
+		}
+		else if (input == "illusions")
+		{
+			setIllusionsEnabled(true);
+			std::cout << "Illusions enabled!\n";
+		}
+		else if (input == "no illusions")
+		{
+			setIllusionsEnabled(false);
+			std::cout << "Illusions disabled!\n";
 		}
 		else if (input == "start")
 		{
@@ -225,6 +234,16 @@ void Game::setExplosionsEnabled(bool enabled)
 bool Game::areExplosionsEnabled() const
 {
 	return m_explosionsEnabled;
+}
+
+void Game::setIllusionsEnabled(bool enabled)
+{
+	m_illusionsEnabled = enabled;
+}
+
+bool Game::areIllusionsEnabled() const
+{
+	return m_illusionsEnabled;
 }
 
 

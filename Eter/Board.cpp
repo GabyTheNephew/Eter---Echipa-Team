@@ -271,7 +271,14 @@ int8_t Board::sumPoints(const Color& color)
 		{
 			if (m_board[i][j].back().getColor() == color)
 			{
-				sum += m_board[i][j].back().getValue();
+				if (color == Color::IlusionBlue || color == Color::IlusionRed)
+				{
+					sum += 1;
+				}
+				else
+				{
+					sum += m_board[i][j].back().getValue();
+				}
 			}
 		}
 	}
@@ -448,7 +455,20 @@ void Board::print()const
 			if (m_board[i][j].empty())
 				std::cout << " * ";
 			else
-				std::cout << m_board[i][j].back() << " ";
+			{
+				if (m_board[i][j].back().getColor() == Color::IlusionRed)
+				{
+					std::cout << "iR" << " ";
+				}
+				else if (m_board[i][j].back().getColor() == Color::IlusionBlue)
+				{
+					std::cout << "iB" << " ";
+				}
+				else
+				{
+					std::cout << m_board[i][j].back() << " ";
+				}
+			}
 		}
 		std::cout << '\n';
 	}
