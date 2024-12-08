@@ -20,20 +20,20 @@ void PowerWhirlpool::playPower(Board& board,uint8_t xFirst, uint8_t yFirst, uint
 {
 	
 
-	if (board[{xFirst, yFirst}].getValue() > board[{xSecond, ySecond}].getValue())
+	if (board[{xFirst, yFirst}].back().getValue() > board[{xSecond, ySecond}].back().getValue())
 	{
-		auto card1 = SimpleCard(board[{xFirst, yFirst}].getValue(), board[{xFirst, yFirst}].getColor());
+		auto card1 = SimpleCard(board[{xFirst, yFirst}].back().getValue(), board[{xFirst, yFirst}].back().getColor());
 		board.pushCard(card1, { xFirst, ySecond - 1 });
-		auto card2 = SimpleCard(board[{xSecond, ySecond}].getValue(), board[{xSecond, ySecond}].getColor());
+		auto card2 = SimpleCard(board[{xSecond, ySecond}].back().getValue(), board[{xSecond, ySecond}].back().getColor());
 		board.pushCard(card1, { xFirst, ySecond - 1 });
 	}
 	else
 	{
-		if (board[{xFirst, yFirst}].getValue() < board[{xSecond, ySecond}].getValue())
+		if (board[{xFirst, yFirst}].back().getValue() < board[{xSecond, ySecond}].back().getValue())
 		{
-			auto card2 = SimpleCard(board[{xSecond, ySecond}].getValue(), board[{xSecond, ySecond}].getColor());
+			auto card2 = SimpleCard(board[{xSecond, ySecond}].back().getValue(), board[{xSecond, ySecond}].back().getColor());
 			board.pushCard(card2, { xFirst, ySecond - 1 });
-			auto card1 = SimpleCard(board[{xFirst, yFirst}].getValue(), board[{xFirst, yFirst}].getColor());
+			auto card1 = SimpleCard(board[{xFirst, yFirst}].back().getValue(), board[{xFirst, yFirst}].back().getColor());
 			board.pushCard(card1, { xFirst, ySecond - 1 });
 		}
 		else {
@@ -62,7 +62,7 @@ bool PowerWhirlpool::checkPower(Board& board, uint8_t xFirst, uint8_t yFirst, ui
 		return false;
 	}
 
-	if (board[{xFirst, ySecond - 1}].getValue() == NULL)
+	if (board[{xFirst, ySecond - 1}].back().getValue() == NULL)
 	{
 		//message pt ca nu e spatiul gol dintre ele
 		return false;

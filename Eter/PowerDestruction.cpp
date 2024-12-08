@@ -51,7 +51,7 @@ void PowerDestruction::playPower(Player& player)
 			{
 				if (card.getColor() == Color::usedBlue)
 				{
-					player.deleteCardFromPastVectro(card);
+					player.deleteCardFromPastVector(card);
 					break;
 				}
 			}
@@ -59,7 +59,7 @@ void PowerDestruction::playPower(Player& player)
 			{
 				if (card.getColor() == Color::usedRed)
 				{
-					player.deleteCardFromPastVectro(card);
+					player.deleteCardFromPastVector(card);
 					break;
 				}
 			}

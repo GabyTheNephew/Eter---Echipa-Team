@@ -185,8 +185,7 @@ int Player::numberofValidCards()
 	return count;
 }
 
-void Player::playCard(SimpleCard& card, Board& game_board,
-	std::vector<SimpleCard>& pastcards, bool& canPlayIllusion)
+void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& pastcards, bool& canPlayIllusion)
 {
 	Position pos;
 

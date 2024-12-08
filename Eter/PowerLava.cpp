@@ -21,14 +21,14 @@ void PowerLava::playPower(Board& board, Player& player1, Player& player2, uint8_
 	for (int i = 0; i < board.getSize(); i++) 
 		for (int j = 0; j < board.getSize(); j++)
 		{
-			if (board[{i, j}].getValue() == nrLvl) {
-				if (ColorToString(board[{i, j}].getColor()) == "Red") {
+			if (board[{i, j}].back().getValue() == nrLvl) {
+				if (ColorToString(board[{i, j}].back().getColor()) == "Red") {
 					auto card = SimpleCard(nrLvl, Color::Red);
 					player1.makeCardValid(card);
 					board.popCard({ i, j });
 				}
 				else{
-					if (ColorToString(board[{i, j}].getColor()) == "Blue") {
+					if (ColorToString(board[{i, j}].back().getColor()) == "Blue") {
 						auto card = SimpleCard(nrLvl, Color::Blue);
 						player1.makeCardValid(card);
 						board.popCard({ i, j });
@@ -49,7 +49,7 @@ bool PowerLava::checkPower(Board& board, int8_t nrLvl)
 		}
 		for (int j = 0; j < board.getSize(); j++)
 		{
-			if (board[{i, j}].getValue() == nrLvl) {
+			if (board[{i, j}].back().getValue() == nrLvl) {
 				count++;
 			}
 
