@@ -19,14 +19,14 @@ std::string PowerVifor::getDescription() const
 void PowerVifor::playPower(Board& board, Player& player1, Player& player2, uint8_t x,uint8_t y)//nrLvl - numarul de putere petru o carte
 {
 	
-	if (ColorToString(board[{x, y}].getColor()) == "Red") {
-		auto card = SimpleCard(board[{x, y}].getValue(), Color::Red);
+	if (ColorToString(board[{x, y}].back().getColor()) == "Red") {
+		auto card = SimpleCard(board[{x, y}].back().getValue(), Color::Red);
 		player1.makeCardValid(card);
 		board.popCard({x, y});
 	}
 	else {
-		if (ColorToString(board[{x, y}].getColor()) == "Blue") {
-			auto card = SimpleCard(board[{x, y}].getValue(), Color::Blue);
+		if (ColorToString(board[{x, y}].back().getColor()) == "Blue") {
+			auto card = SimpleCard(board[{x, y}].back().getValue(), Color::Blue);
 			player1.makeCardValid(card);
 			board.popCard({ x, y });
 		}
@@ -38,7 +38,7 @@ void PowerVifor::playPower(Board& board, Player& player1, Player& player2, uint8
 
 bool PowerVifor::checkPower(Board& board, uint8_t x, uint8_t y)
 {
-	if (board[{x, y}].getValue() != NULL)
+	if (board[{x, y}].back().getValue() != NULL)
 	{
 		return false;
 	}

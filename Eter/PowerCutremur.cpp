@@ -22,7 +22,7 @@ void PowerCutremur::playPower(Board& board)
 	for (int i = 0; i < board.getSize(); i++)
 		for (int j = 0; j < board.getSize(); j++)
 		{
-			if (board[{i, j}].getValue() == 1) {
+			if (board[{i, j}].back().getValue() == 1) {
 
 				board.popCard({ i,j });
 			}
