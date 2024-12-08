@@ -19,7 +19,7 @@ std::string PowerCrumble::getDescription() const
 void PowerCrumble::playPower(Board& board, uint8_t x, uint8_t y)
 {
 
-	board[{x, y}].back().setValue(board[{x, y}].back().getValue() + 1);
+	board[{x, y}].back().setValue(board[{x, y}].back().getValue() - 1);
 	Color color = board[{x, y}].back().getColor();
 	if (ColorToString(color) == "Blue")
 	{
