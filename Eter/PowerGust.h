@@ -7,8 +7,8 @@
 class PowerGust
 {
 private:
-	std::string m_name;
-	std::string m_description;
+	static const std::string m_name;
+	static const std::string m_description;
 
 public:
 	PowerGust();
@@ -16,8 +16,8 @@ public:
 	std::string_view getName() const;
 	std::string_view getDescription() const;
 
-	bool checkPower(Board& board, int16_t x, int16_t y);
-	void playPower(Board& board);
+	bool checkGustPower(Board& board, int16_t x, int16_t y);
+	void playGustPower(Board& board);
 };
 
 

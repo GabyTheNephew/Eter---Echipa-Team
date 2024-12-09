@@ -17,12 +17,12 @@ std::string PowerTide::getDescription() const
 	return m_description;
 }
 
-void PowerTide::playPower(Board& board, int16_t x1, int16_t y1, int16_t x2, int16_t y2)
+void PowerTide::playTidePower(Board& board, int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
 	std::swap(board[{x1, y1}], board[{x2, y2}]);
 }
 
-bool PowerTide::checkPower(Board& board, int16_t x1, int16_t y1, int16_t x2, int16_t y2)
+bool PowerTide::checkTidePower(Board& board, int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
 	if (!board[{x1, y1}].empty() && !board[{x2, y2}].empty())
 	{

@@ -7,16 +7,16 @@ class PowerCrumble
 {
 private:
 
-	std::string m_name;
-	std::string m_description;
+	static const std::string m_name;
+	static const std::string m_description;
 
 public:
-	PowerCrumble(std::string_view name, std::string_view description);
+	PowerCrumble();
 
-	std::string getName() const;
-	std::string getDescription() const;
+	std::string getName()const;
+	std::string getDescription()const;
 
-	void playPower(Board& board, int16_t x, int16_t y);
-	bool checkPower(Board& board, int16_t x, int16_t y);
+	void playCrumblePower(Board& board, int16_t x, int16_t y);
+	bool checkCrumblePower(Board& board, int16_t x, int16_t y);
 
 };

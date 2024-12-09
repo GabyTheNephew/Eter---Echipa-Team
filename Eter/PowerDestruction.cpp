@@ -1,28 +1,26 @@
 #include "PowerDestruction.h"
 
+const std::string PowerDestruction::m_name = "DESTRUCTION";
+const std::string PowerDestruction::m_desctiption = "Remove from play the last card played by the opponent.";
+
 PowerDestruction::PowerDestruction()
 {
-	m_name = "";
-	m_desctiption = "";
-}
-
-PowerDestruction::PowerDestruction(std::string_view name, std::string_view description)
-	:m_name{"DESTRUCTION"}, m_desctiption{"Remove from play the last card played by the opponent."}
-{
 }
 
 
-std::string_view PowerDestruction::getName()
+
+
+std::string_view PowerDestruction::getName()const
 {
 	return m_name;
 }
 
-std::string_view PowerDestruction::getDescription()
+std::string_view PowerDestruction::getDescription()const
 {
 	return m_desctiption;
 }
 
-bool PowerDestruction::checkPower(Player& player)
+bool PowerDestruction::checkDestructionPower(Player& player)
 {
 	if (player.getPastVector().empty())
 	{
@@ -34,14 +32,13 @@ bool PowerDestruction::checkPower(Player& player)
 	}
 }
 
-
-
-void PowerDestruction::playPower(Player& player)
+void PowerDestruction::playDestructionPower(Player& player)
 {
-	std::string color =player.GetVectorColor();
+
+	std::string color = player.GetVectorColor();
 
 
-	if (checkPower(player))
+	if (checkDestructionPower(player))
 	{
 		for (auto it = player.getPastVector().rbegin(); it != player.getPastVector().rend(); ++it)
 		{
@@ -65,3 +62,5 @@ void PowerDestruction::playPower(Player& player)
 			}
 		}
 	}
+}
+

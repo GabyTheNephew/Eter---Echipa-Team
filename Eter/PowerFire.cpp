@@ -20,47 +20,44 @@ std::string PowerFire::getDescription() const
 
 
 
-void PowerFire::playPower(Board& board, Player& player1, Player& player2, int16_t value)
+void PowerFire::playFirePower(Board& board, Player& player1, Player& player2, int16_t nrLvl)//nrLvl - numarul de putere petru o carte
 {
 	for (int16_t i = 0; i < board.getSize(); i++)
-	{
 		for (int16_t j = 0; j < board.getSize(); j++)
 		{
-			if (board[{i, j}].back().getValue() == value)
-			{
-				if (board[{i, j}].back().getColor() == Color::Red) {
-					auto card = SimpleCard(board[{i, j}].back().getValue(), Color::Red);
+			if (board[{i, j}].back().getValue() == nrLvl) {
+				if (ColorToString(board[{i, j}].back().getColor()) == "Red") {
+					auto card = SimpleCard(nrLvl, Color::Red);
 					player1.makeCardValid(card);
-					board.popCard({i, j});
+					board.popCard({ i, j });
 				}
 				else {
-					if (board[{i, j}].back().getColor() == Color::Blue) {
-						auto card = SimpleCard(board[{i, j}].back().getValue(), Color::Blue);
+					if (ColorToString(board[{i, j}].back().getColor()) == "Blue") {
+						auto card = SimpleCard(nrLvl, Color::Blue);
 						player1.makeCardValid(card);
-						board.popCard({i, j});
+						board.popCard({ i, j });
 					}
 				}
+
 			}
 		}
-	}
 }
 
-bool PowerFire::checkPower(Board& board, int16_t value)
+bool PowerFire::checkFirePower(Board& board, int16_t nrLvl)
 {
-	int16_t counter = 0;
-	for (int16_t i = 0; i < board.getSize(); i++)
-	{
+	int16_t count = 0;
+	for (int16_t i = 0; i < board.getSize(); i++) {
+		if (count >= 2)
+		{
+			return true;
+		}
 		for (int16_t j = 0; j < board.getSize(); j++)
 		{
-			if (board[{i, j}].back().getValue() == value)
-				counter++;
+			if (board[{i, j}].back().getValue() == nrLvl) {
+				count++;
+			}
+
 		}
 	}
-
-	if (counter >= 2)
-	{
-		return true;
-	}
-
 	return false;
 }
