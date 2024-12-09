@@ -16,7 +16,7 @@ std::string PowerWhirlpool::getDescription() const
 	return m_description;
 }
 
-void PowerWhirlpool::playPower(Board& board,uint8_t xFirst, uint8_t yFirst, uint8_t xSecond, uint8_t ySecond)
+void PowerWhirlpool::playPower(Board& board,int16_t xFirst, int16_t yFirst, int16_t xSecond, int16_t ySecond)
 {
 	
 
@@ -43,7 +43,7 @@ void PowerWhirlpool::playPower(Board& board,uint8_t xFirst, uint8_t yFirst, uint
 
 }
 
-bool PowerWhirlpool::checkPower(Board& board, uint8_t xFirst, uint8_t yFirst, uint8_t xSecond, uint8_t ySecond)
+bool PowerWhirlpool::checkPower(Board& board, int16_t xFirst, int16_t yFirst, int16_t xSecond, int16_t ySecond)
 {
 	if (ySecond < yFirst)
 	{

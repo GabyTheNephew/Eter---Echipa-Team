@@ -45,7 +45,7 @@ void Game::startTraining()
 {
 
 	this->m_round_Counter = 1;
-	uint8_t maxRounds = 3;
+	int16_t maxRounds = 3;
 	m_gameBoard.resizeBoard(1);
 	int matrixMaxSize = 3;
 	std::vector<SimpleCard> PastCards;
@@ -132,7 +132,7 @@ void Game::startTraining()
 void Game::startMageDuel()
 {
 	this->m_round_Counter = 1;
-	uint8_t maxRounds = 4;
+	int16_t maxRounds = 4;
 	//vector
 	// eter
 	// get a mage
@@ -142,7 +142,7 @@ void Game::startMageDuel()
 void Game::startPowerDuel()
 {
 	this->m_round_Counter = 1;
-	uint8_t maxRounds = 4;
+	int16_t maxRounds = 4;
 	//vector
 	// eter
 	// select 2 powers(!=)
@@ -152,7 +152,7 @@ void Game::startPowerDuel()
 void Game::startTournament()
 {
 	this->m_round_Counter = 1;
-	uint8_t maxRounds = 3;
+	int16_t maxRounds = 3;
 	//vector
 	//best of 5
 }
@@ -249,7 +249,7 @@ bool Game::areIllusionsEnabled() const
 
 void Game::incrementRoundCounter()
 {
-	this->m_round_Counter++;//we use it to increment the ammount of rounds farther int the game
+	this->m_round_Counter++; //we use it to increment the ammount of rounds further into the game
 }
 
 bool Game::checkPlayExplosion(Board& m_board)
@@ -259,8 +259,8 @@ bool Game::checkPlayExplosion(Board& m_board)
 		return false;
 	}
 
-	uint8_t count = 0;
-	for (uint8_t i = 0; i < m_board.getSize(); i++)
+	int16_t count = 0;
+	for (int16_t i = 0; i < m_board.getSize(); i++)
 	{
 		if (m_board.checkColumn(i) == true)
 		{

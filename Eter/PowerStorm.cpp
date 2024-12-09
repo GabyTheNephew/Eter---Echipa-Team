@@ -16,12 +16,12 @@ std::string PowerStorm::getDescription() const
 	return m_description;
 }
 
-void PowerStorm::playPower(Board& board, uint8_t x, uint8_t y)
+void PowerStorm::playPower(Board& board, int16_t x, int16_t y)
 {
 	board[{x, y}].clear();
 }
 
-bool PowerStorm::checkPower(Board& board, uint8_t x, uint8_t y)
+bool PowerStorm::checkPower(Board& board, int16_t x, int16_t y)
 {
 	if (board[{x, y}].size() >= 2)
 	{

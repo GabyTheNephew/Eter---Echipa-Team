@@ -16,7 +16,7 @@ std::string PowerVifor::getDescription() const
 	return m_description;
 }
 
-void PowerVifor::playPower(Board& board, Player& player1, Player& player2, uint8_t x,uint8_t y)//nrLvl - numarul de putere petru o carte
+void PowerVifor::playPower(Board& board, Player& player1, Player& player2, int16_t x,int16_t y)//nrLvl - numarul de putere petru o carte
 {
 	
 	if (ColorToString(board[{x, y}].back().getColor()) == "Red") {
@@ -36,7 +36,7 @@ void PowerVifor::playPower(Board& board, Player& player1, Player& player2, uint8
 		
 }
 
-bool PowerVifor::checkPower(Board& board, uint8_t x, uint8_t y)
+bool PowerVifor::checkPower(Board& board, int16_t x, int16_t y)
 {
 	if (board[{x, y}].back().getValue() != NULL)
 	{

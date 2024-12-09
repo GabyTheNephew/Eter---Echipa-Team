@@ -14,13 +14,13 @@ std::string_view PowerGust::getDescription() const
 	return std::string_view();
 }
 
-bool PowerGust::checkPower(Board& board,uint8_t x,uint8_t y)
+bool PowerGust::checkPower(Board& board,int16_t x,int16_t y)
 {
 	if (board[{x, y}].empty()) return false;
-	int currentValue = board[{x, y}].front().getValue();
+	int16_t currentValue = board[{x, y}].front().getValue();
 
 
-	std::vector<std::pair<int8_t, int8_t>> neighbors = {
+	std::vector<std::pair<int16_t, int16_t>> neighbors = {
 	   {x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}
 	};
 
@@ -59,11 +59,11 @@ void PowerGust::playPower(Board& board)
 	std::cout << "Available positions to move:\n";
 
 
-	std::vector<std::pair<int8_t, int8_t>> neighbors = {
+	std::vector<std::pair<int16_t, int16_t>> neighbors = {
 	   {x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}
 	};
 
-	std::vector<std::pair<int8_t, int8_t>> validMoves;
+	std::vector<std::pair<int16_t, int16_t>> validMoves;
 
 	for (const auto& [nx, ny] : neighbors) 
 	{
@@ -77,7 +77,7 @@ void PowerGust::playPower(Board& board)
 		}
 	}
 
-	int8_t newX, newY;
+	int16_t newX, newY;
 	std::cout << "Enter the coordinates of the position you want to move to:\n";
 	while (true)
 	{

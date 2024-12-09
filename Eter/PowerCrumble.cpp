@@ -16,7 +16,7 @@ std::string PowerCrumble::getDescription() const
 	return m_description;
 }
 
-void PowerCrumble::playPower(Board& board, uint8_t x, uint8_t y)
+void PowerCrumble::playPower(Board& board, int16_t x, int16_t y)
 {
 
 	board[{x, y}].back().setValue(board[{x, y}].back().getValue() - 1);
@@ -31,7 +31,7 @@ void PowerCrumble::playPower(Board& board, uint8_t x, uint8_t y)
 	}
 }
 
-bool PowerCrumble::checkPower(Board& board, uint8_t x, uint8_t y)
+bool PowerCrumble::checkPower(Board& board, int16_t x, int16_t y)
 {
 	if (board[{x, y}].back().getValue() == 1)
 	{

@@ -20,7 +20,7 @@ std::string FireMageIgnara::getDescription() const
 
 
 
-bool FireMageIgnara::playMage(Board& board, Color color, int8_t x, int8_t y)
+bool FireMageIgnara::playMage(Board& board, Color color, int16_t x, int16_t y)
 {
 	if (board[{x,y}].size() >= 2)
 		if (board[{x,y}].back().getColor() != color && board[{x,y}][board[{x,y}].size()-2].getColor() == color)

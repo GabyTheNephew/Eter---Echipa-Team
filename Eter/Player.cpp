@@ -335,8 +335,8 @@ void Player::initiateBoard(Board& board, Position pos)
 {
 	auto& [line, column] = pos;
 
-	uint8_t colSize = board.getColumnSize();
-	uint8_t rowSize = board.getRowSize();
+	int16_t colSize = board.getColumnSize();
+	int16_t rowSize = board.getRowSize();
 
 	if (line == -1)
 	{

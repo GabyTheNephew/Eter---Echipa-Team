@@ -7,20 +7,20 @@
 class SimpleCard
 {
 private:
-	uint8_t m_value;
+	int16_t m_value;
 	Color m_color;
 public:
 
 	SimpleCard();
-	SimpleCard(uint8_t value, const Color& color);
+	SimpleCard(int16_t value, const Color& color);
 	virtual ~SimpleCard();
 	SimpleCard& operator=(const SimpleCard& other);
 
 	Color getColor()const;
 	void setColor(Color color);
 
-	uint8_t getValue()const;
-	void setValue(uint8_t value);
+	int16_t getValue()const;
+	void setValue(int16_t value);
 
 	friend std::ostream& operator<<(std::ostream& os, const SimpleCard& card);
 };

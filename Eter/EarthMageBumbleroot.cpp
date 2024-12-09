@@ -17,7 +17,7 @@ std::string EarthMageBumbleroot::getDescription() const
 	return m_description;
 }
 
-bool EarthMageBumbleroot::playMage(Board& board, int8_t x, int8_t y)
+bool EarthMageBumbleroot::playMage(Board& board, int16_t x, int16_t y)
 {
 	if (board[{x,y}].empty())
 	{

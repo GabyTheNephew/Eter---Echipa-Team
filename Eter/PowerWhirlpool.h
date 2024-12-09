@@ -16,7 +16,7 @@ public:
 	std::string getName() const;
 	std::string getDescription() const;
 
-	void playPower(Board & board, uint8_t xFirst, uint8_t yFirst, uint8_t xSecound, uint8_t ySecound);
-	bool checkPower(Board& board, uint8_t xFirst, uint8_t yFirst, uint8_t xSecond, uint8_t ySecond);
+	void playPower(Board & board, int16_t xFirst, int16_t yFirst, int16_t xSecound, int16_t ySecound);
+	bool checkPower(Board& board, int16_t xFirst, int16_t yFirst, int16_t xSecond, int16_t ySecond);
 };
 

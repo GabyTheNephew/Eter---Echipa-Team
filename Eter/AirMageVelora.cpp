@@ -17,7 +17,7 @@ std::string AirMageVelora::getDescription() const
 	return m_description;
 }
 
-bool AirMageVelora::playMage(Board& board, Color color, int8_t x, int8_t y, int8_t newX, int8_t newY)
+bool AirMageVelora::playMage(Board& board, Color color, int16_t x, int16_t y, int16_t newX, int16_t newY)
 {
 	if (board[{x,y}].back().getColor() == color)
 	{

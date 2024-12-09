@@ -9,7 +9,7 @@
 class Game
 {
 private:
-    uint8_t m_round_Counter;
+    int16_t m_round_Counter;
     Board m_gameBoard;
     static Game m_current_Instance; 
     Player player1, player2;
@@ -32,7 +32,7 @@ public:
 
     static Game& get_Instance();
 
-    enum class GameType : int8_t
+    enum class GameType : int16_t
     {
         Training,
         MageDuel,

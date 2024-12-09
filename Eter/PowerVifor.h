@@ -17,7 +17,7 @@ public:
 	std::string getName() const;
 	std::string getDescription() const;
 
-	void playPower(Board& board, Player& player1, Player& player2, uint8_t x, uint8_t y);
-	bool checkPower(Board& board, uint8_t x, uint8_t y);
+	void playPower(Board& board, Player& player1, Player& player2, int16_t x, int16_t y);
+	bool checkPower(Board& board, int16_t x, int16_t y);
 
 };
