@@ -17,6 +17,6 @@ public:
 	std::string getName() const;
 	std::string getDescription() const;
 
-	bool playMage(Board& board, Color color, int8_t x, int8_t y);
+	bool playMage(Board& board, Color color, int16_t x, int16_t y);
 };
 

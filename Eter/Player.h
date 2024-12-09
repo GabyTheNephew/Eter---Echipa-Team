@@ -16,7 +16,7 @@ private:
 	// TODO: check int8_t, why is it converted to ascii/ char?
 
 public:
-	using Position = std::tuple<uint8_t, uint8_t>;
+	using Position = std::tuple<int16_t, int16_t>;
 
 public:
 	Player();
@@ -41,7 +41,7 @@ public:
 
 	SimpleCard chooseCard();
 	int numberofValidCards();
-	//void playCard(uint8_t card_value,Board& game_board,Color card_color);
+	//void playCard(int16_t card_value,Board& game_board,Color card_color);
 	void playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& m_pastSimpleCardsVecto, bool& canPlayIllusion);
 	//void playCardandExtend(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& m_pastSimpleCardsVecto, bool& canPlayIllusion);
 	void initiateBoard(Board& board, Position pos);

@@ -22,7 +22,7 @@ Explosion* Explosion::get_Instance()
 #include <set>
 #include <ctime>
 
-void Explosion::vectorInstantiation(uint8_t size)
+void Explosion::vectorInstantiation(int16_t size)
 {
 	
 	std::mt19937 generator(static_cast<unsigned>(std::time(nullptr)));
@@ -52,27 +52,27 @@ void Explosion::vectorInstantiation(uint8_t size)
 
 
 
-void Explosion::rotationLeft(uint8_t size)
+void Explosion::rotationLeft(int16_t size)
 {
 	for (int i = 0; i < positions.size(); i++)
 	{
-		uint8_t save = std::get<0>(positions[i]);
+		int16_t save = std::get<0>(positions[i]);
 		std::get<0>(positions[i]) = size - 1 - std::get<1>(positions[i]);
 		std::get<1>(positions[i]) = save;
 	}
 }
 
-void Explosion::rotationRight(uint8_t size)
+void Explosion::rotationRight(int16_t size)
 {
 	for (int i = 0; i < positions.size(); i++)
 	{
-		uint8_t save = std::get<0>(positions[i]);
+		int16_t save = std::get<0>(positions[i]);
 		std::get<0>(positions[i]) = std::get<1>(positions[i]);
 		std::get<1>(positions[i]) = size - 1 - save;
 	}
 }
 
-void Explosion::rotationDown(uint8_t size)
+void Explosion::rotationDown(int16_t size)
 {
 	for (int i = 0; i < positions.size(); i++)
 	{

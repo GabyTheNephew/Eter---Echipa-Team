@@ -24,9 +24,9 @@ bool PowerGale::checkPower(Player& player)
 
 void PowerGale::playPower(Board& board, Player& player1, Player& player2)
 {
-    for (int row = 0; row < board.getRowSize(); ++row)
+    for (int16_t row = 0; row < board.getRowSize(); ++row)
     {
-        for (int col = 0; col < board.getColumnSize(); ++col) 
+        for (int16_t col = 0; col < board.getColumnSize(); ++col) 
         {
             std::deque<SimpleCard>& stack = board[{row, col}];
 

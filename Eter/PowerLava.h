@@ -18,8 +18,8 @@ public:
 	std::string getName() const;
 	std::string getDescription() const;
 
-	void playPower(Board& board,Player &player1, Player &player2, uint8_t nrLvl);
-	bool checkPower(Board& board, int8_t nrLvl);
+	void playPower(Board& board,Player &player1, Player &player2, int16_t nrLvl);
+	bool checkPower(Board& board, int16_t nrLvl);
 
 };
 

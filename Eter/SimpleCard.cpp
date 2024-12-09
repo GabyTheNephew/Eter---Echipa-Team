@@ -6,7 +6,7 @@ SimpleCard::SimpleCard():
 {
 }
 
-SimpleCard::SimpleCard(uint8_t value, const Color& color):
+SimpleCard::SimpleCard(int16_t value, const Color& color):
 	m_value{value},
 	m_color{color}
 {}
@@ -21,7 +21,7 @@ SimpleCard& SimpleCard::operator=(const SimpleCard& other)
 	return *this;
 }
 
-uint8_t SimpleCard::getValue()const
+int16_t SimpleCard::getValue()const
 {
 	return static_cast<int>(m_value);
 }
@@ -31,7 +31,7 @@ Color SimpleCard::getColor() const
 	return m_color;
 }
 
-void SimpleCard::setValue(uint8_t value)
+void SimpleCard::setValue(int16_t value)
 {
 	m_value = value;
 }

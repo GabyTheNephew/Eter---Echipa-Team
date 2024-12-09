@@ -20,11 +20,11 @@ std::string PowerFire::getDescription() const
 
 
 
-void PowerFire::playPower(Board& board, Player& player1, Player& player2, uint8_t value)
+void PowerFire::playPower(Board& board, Player& player1, Player& player2, int16_t value)
 {
-	for (int i = 0; i < board.getSize(); i++)
+	for (int16_t i = 0; i < board.getSize(); i++)
 	{
-		for (int j = 0; j < board.getSize(); j++)
+		for (int16_t j = 0; j < board.getSize(); j++)
 		{
 			if (board[{i, j}].back().getValue() == value)
 			{
@@ -45,12 +45,12 @@ void PowerFire::playPower(Board& board, Player& player1, Player& player2, uint8_
 	}
 }
 
-bool PowerFire::checkPower(Board& board, uint8_t value)
+bool PowerFire::checkPower(Board& board, int16_t value)
 {
-	uint8_t counter = 0;
-	for (int i = 0; i < board.getSize(); i++)
+	int16_t counter = 0;
+	for (int16_t i = 0; i < board.getSize(); i++)
 	{
-		for (int j = 0; j < board.getSize(); j++)
+		for (int16_t j = 0; j < board.getSize(); j++)
 		{
 			if (board[{i, j}].back().getValue() == value)
 				counter++;

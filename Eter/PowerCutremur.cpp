@@ -19,8 +19,8 @@ std::string PowerCutremur::getDescription() const
 void PowerCutremur::playPower(Board& board)
 {
 
-	for (int i = 0; i < board.getSize(); i++)
-		for (int j = 0; j < board.getSize(); j++)
+	for (int16_t i = 0; i < board.getSize(); i++)
+		for (int16_t j = 0; j < board.getSize(); j++)
 		{
 			if (board[{i, j}].back().getValue() == 1) {
 

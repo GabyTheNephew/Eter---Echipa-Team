@@ -24,11 +24,11 @@ private:
 public:
 	static Explosion* get_Instance();
 
-	void vectorInstantiation(uint8_t size);
+	void vectorInstantiation(int16_t size);
 
-	void rotationLeft(uint8_t size);
-	void rotationRight(uint8_t size);
-	void rotationDown(uint8_t size);
+	void rotationLeft(int16_t size);
+	void rotationRight(int16_t size);
+	void rotationDown(int16_t size);
 
 	const std::vector<std::tuple<int, int, ActionType>>& getPositions() const;
 
