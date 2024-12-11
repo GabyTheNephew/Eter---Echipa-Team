@@ -1,28 +1,30 @@
 #include "PowerGale.h"
 
+
+const std::string PowerGale::m_name = "Gale";
+const std::string PowerGale::m_description = "Remove any cards that are covered by others(yours as well) - they are returned to their owners’ hands. ";
 PowerGale::PowerGale()
-	: m_name{ "PowerGale" }, m_description{ "Remove any cards that are covered by others(yours as well) - they are returned to their owners’ hands. " }
 {
 }
 
 
 
-std::string_view PowerGale::getName()
+std::string_view PowerGale::getName()const
 {
 	return m_name;
 }
 
-std::string_view PowerGale::getDescription()
+std::string_view PowerGale::getDescription()const
 {
 	return m_description;
 }
 
-bool PowerGale::checkPower(Player& player)
+bool PowerGale::checkGalePower(Player& player)
 {
 	return true;
 }
 
-void PowerGale::playPower(Board& board, Player& player1, Player& player2)
+void PowerGale::playGalePower(Board& board, Player& player1, Player& player2)
 {
     for (int16_t row = 0; row < board.getRowSize(); ++row)
     {

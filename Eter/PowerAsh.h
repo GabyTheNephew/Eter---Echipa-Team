@@ -6,17 +6,16 @@
 class PowerAsh
 {
 private:
-	std::string m_name;
-	std::string m_description;
+	static const std::string m_name;
+	static const std::string m_description;
 
 public:
 	PowerAsh();
-	PowerAsh(std::string_view name, std::string_view description);
 
-	std::string_view getName();
-	std::string_view getDescription();
+	std::string_view getName()const;
+	std::string_view getDescription()const;
 
-	bool checkPower(Player& player);
-	void playPower(Board& board,Player& player);
+	bool checkAshPower(Player& player);
+	void playAshPower(Board& board,Player& player);
 };
 

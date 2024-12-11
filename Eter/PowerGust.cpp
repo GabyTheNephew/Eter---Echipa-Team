@@ -1,5 +1,9 @@
 #include "PowerGust.h"
 
+
+const std::string PowerGust::m_name = "Gust";
+const std::string PowerGust::m_description = "Move any card on the playing field horizontally orvertically onto a neighboringcard of a lower value.Affects individual cards not stacks.";
+
 PowerGust::PowerGust()
 {
 }
@@ -14,7 +18,7 @@ std::string_view PowerGust::getDescription() const
 	return std::string_view();
 }
 
-bool PowerGust::checkPower(Board& board,int16_t x,int16_t y)
+bool PowerGust::checkGustPower(Board& board,int16_t x,int16_t y)
 {
 	if (board[{x, y}].empty()) return false;
 	int16_t currentValue = board[{x, y}].front().getValue();
@@ -36,7 +40,7 @@ bool PowerGust::checkPower(Board& board,int16_t x,int16_t y)
 	}
 }
 
-void PowerGust::playPower(Board& board)
+void PowerGust::playGustPower(Board& board)
 {
 	std::cout << "Here you have all the cards on the board:\n";
 	board.print();
@@ -50,7 +54,7 @@ void PowerGust::playPower(Board& board)
 	}
 
 
-	if (!checkPower(board, x, y)) {
+	if (!checkGustPower(board, x, y)) {
 		std::cout << "This card cannot be moved as no valid moves exist.\n";
 		return;
 	}

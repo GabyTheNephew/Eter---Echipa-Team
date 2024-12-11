@@ -1,22 +1,23 @@
-﻿#include "PowerVifor.h"
+﻿#include "PowerSquall.h"
 
-PowerVifor::PowerVifor(std::string_view name, std::string_view description) :
-	m_name{ "SQUALL" },
-	m_description{ "Return to the opponent’s hand any one of his visible cards on the playing field. " }
+const std::string PowerSquall::m_name = "Squall";
+const std::string PowerSquall::m_description = "Return to the opponent’s hand any one of his visible cards on the playing field. ";
+
+PowerSquall::PowerSquall()
 {
 }
 
-std::string PowerVifor::getName() const
+std::string PowerSquall::getName() const
 {
 	return m_name;
 }
 
-std::string PowerVifor::getDescription() const
+std::string PowerSquall::getDescription() const
 {
 	return m_description;
 }
 
-void PowerVifor::playPower(Board& board, Player& player1, Player& player2, int16_t x,int16_t y)//nrLvl - numarul de putere petru o carte
+void PowerSquall::playSquallPower(Board& board, Player& player1, Player& player2, int16_t x,int16_t y)//nrLvl - numarul de putere petru o carte
 {
 	
 	if (ColorToString(board[{x, y}].back().getColor()) == "Red") {
@@ -36,7 +37,7 @@ void PowerVifor::playPower(Board& board, Player& player1, Player& player2, int16
 		
 }
 
-bool PowerVifor::checkPower(Board& board, int16_t x, int16_t y)
+bool PowerSquall::checkSquallPower(Board& board, int16_t x, int16_t y)
 {
 	if (board[{x, y}].back().getValue() != NULL)
 	{

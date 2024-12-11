@@ -1,26 +1,25 @@
 #include "PowerAsh.h"
 
+
+const std::string PowerAsh::m_name = "ASH";
+const std::string PowerAsh::m_description = "Rise like a Phoenix! If one of your cards was removed from play, you can immediately play it again.";
+
 PowerAsh::PowerAsh()
-	:m_name(""), m_description("")
 {
 }
 
-PowerAsh::PowerAsh(std::string_view name, std::string_view description)
-	:m_name{ "ASH" }, m_description{ "Rise like a Phoenix! If one of your cards was removed from play, you can immediately play it again." }
-{
-}
 
-std::string_view PowerAsh::getName()
+std::string_view PowerAsh::getName()const
 {
 	return m_name;
 }
 
-std::string_view PowerAsh::getDescription()
+std::string_view PowerAsh::getDescription()const
 {
 	return m_description;
 }
 
-bool PowerAsh::checkPower(Player& player)
+bool PowerAsh::checkAshPower(Player& player)
 {
 	int16_t cnt1 = 0;
 	int16_t cnt2 = 0;
@@ -50,12 +49,12 @@ bool PowerAsh::checkPower(Player& player)
 
 }
 
-void PowerAsh::playPower(Board& board,Player& player)
+void PowerAsh::playAshPower(Board& board,Player& player)
 {
 	
 	std::string usedColor = (player.GetVectorColor() == "Red") ? "usedRed" : "usedBlue";
 
-	if (checkPower(player) == false)
+	if (checkAshPower(player) == false)
 	{
 		std::cout << "You can't use this power right now!\n";
 		return;

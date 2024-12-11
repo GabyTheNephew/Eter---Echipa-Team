@@ -7,17 +7,17 @@
 class PowerGale
 {
 private:
-	std::string m_name;
-	std::string m_description;
+	static const std::string m_name;
+	static const std::string m_description;
 
 public:
 	PowerGale();
 
-	std::string_view getName();
-	std::string_view getDescription();
+	std::string_view getName()const;
+	std::string_view getDescription()const;
 
-	bool checkPower(Player& player);
-	void playPower(Board& board, Player& player1, Player& player2);
+	bool checkGalePower(Player& player);
+	void playGalePower(Board& board, Player& player1, Player& player2);
 };
 
 

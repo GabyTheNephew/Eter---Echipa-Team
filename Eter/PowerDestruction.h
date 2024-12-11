@@ -7,16 +7,15 @@
 class PowerDestruction
 {
 private:
-	std::string m_name;
-	std::string m_desctiption;
+	static const std::string m_name;
+	static const std::string m_desctiption;
 public:
 	PowerDestruction();
-	PowerDestruction(std::string_view name, std::string_view description);
 
-	std::string_view getName();
-	std::string_view getDescription();
+	std::string_view getName()const;
+	std::string_view getDescription()const;
 
-	bool checkPower(Player& player);
-	void playPower(Player& player);
+	bool checkDestructionPower(Player& player);
+	void playDestructionPower(Player& player);
 };
 
