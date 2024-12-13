@@ -37,7 +37,7 @@ public:
 	void makeCardInvalid(SimpleCard card);
 	void makeCardValid(SimpleCard& card);
 	std::string GetVectorColor();
-	void deleteCardFromPastVector(SimpleCard& card);
+	void deleteCardFromPastVector(SimpleCard& cardToDelete);
 
 	SimpleCard chooseCard();
 	int numberofValidCards();
