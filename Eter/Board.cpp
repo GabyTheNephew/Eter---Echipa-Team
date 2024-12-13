@@ -1,4 +1,4 @@
-#include "Board.h"
+﻿#include "Board.h"
 
 void Board::expandRow(RowExpandDirection direction)
 {
@@ -448,12 +448,31 @@ void Board::resizeBoard(int16_t size)
 
 void Board::print()const
 {
-	for (int16_t i = 0; i < m_board.size(); i++)
+	int16_t rows = m_board.size();
+	int16_t cols = rows > 0 ? m_board[0].size() : 0;
+
+	for (int16_t i = -1; i <= rows; i++)
 	{
-		for (int16_t j = 0; j < m_board[i].size(); j++)
+		for (int16_t j = -1; j <= cols; j++)
 		{
-			if (m_board[i][j].empty())
-				std::cout << " * ";
+			if (i < 0 || i >= rows || j < 0 || j >= cols)
+			{
+				// În afara matricei: verificăm dacă se poate plasa o carte
+				if (canBePlaced(i, j))
+				{
+					std::cout << " * "; // Poziție eligibilă
+				}
+				else
+				{
+					std::cout << " "; // Poziție goală
+				}
+			}
+			else
+				if (m_board[i][j].empty())
+				{
+					std::cout << "  ";
+					continue;
+				}
 			else
 			{
 				if (m_board[i][j].back().getColor() == Color::IlusionRed)
@@ -466,10 +485,11 @@ void Board::print()const
 				}
 				else
 				{
-					std::cout << m_board[i][j].back() << " ";
+					std::cout << m_board[i][j].back() << "  ";
 				}
 			}
 		}
+
 		std::cout << '\n';
 	}
 	std::cout << std::endl;
@@ -529,6 +549,11 @@ void Board::pushCard(const SimpleCard& card, const Position& position)
 bool Board::canBePushed(const SimpleCard& card, const Position& position) const
 {
 	auto& [line, column] = position;
+
+	if (m_board[line][column].empty())
+	{
+		return true;
+	}
 
 	if (card.getValue() > m_board[line][column].back().getValue())
 	{

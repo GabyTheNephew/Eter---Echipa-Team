@@ -103,7 +103,14 @@ void Player::makeCardValid(SimpleCard& card)
 				if (pastCard.getValue() == card.getValue() && pastCard.getColor() == Color::usedRed)
 				{
 					curCard.setColor(Color::Red);
-					m_pastSimpleCardsVector.erase(std::remove(m_pastSimpleCardsVector.begin(), m_pastSimpleCardsVector.end(), pastCard), m_pastSimpleCardsVector.end());
+					m_pastSimpleCardsVector.erase(
+						std::remove_if(m_pastSimpleCardsVector.begin(),
+							m_pastSimpleCardsVector.end(), 
+							[&pastCard](const auto& element)
+							{
+								return element.getValue() == pastCard.getValue();
+							}),
+						m_pastSimpleCardsVector.end());
 					break;
 				}
 			}
@@ -116,7 +123,16 @@ void Player::makeCardValid(SimpleCard& card)
 					if (pastCard.getValue() == card.getValue() && pastCard.getColor() == Color::usedBlue)
 					{
 						curCard.setColor(Color::Blue);
-						m_pastSimpleCardsVector.erase(std::remove(m_pastSimpleCardsVector.begin(), m_pastSimpleCardsVector.end(), pastCard), m_pastSimpleCardsVector.end());
+						m_pastSimpleCardsVector.erase(
+							std::remove_if(m_pastSimpleCardsVector.begin(),
+								m_pastSimpleCardsVector.end(),
+
+								[&pastCard](const auto& element)
+								{
+									return element.getValue() == pastCard.getValue();
+								}),
+
+							m_pastSimpleCardsVector.end());
 						break;
 					}
 				}
@@ -149,7 +165,16 @@ void Player::deleteCardFromPastVector(SimpleCard& card)
 	{
 		if (card.getValue() == card.getValue() && card.getColor() == card.getColor())
 		{
-			m_pastSimpleCardsVector.erase(std::remove(m_pastSimpleCardsVector.begin(), m_pastSimpleCardsVector.end(), card), m_pastSimpleCardsVector.end());
+			m_pastSimpleCardsVector.erase(
+				std::remove_if(m_pastSimpleCardsVector.begin(),
+				m_pastSimpleCardsVector.end(), 
+
+				[&card](const auto& element) 
+				{
+					return element.getValue() == card.getValue();
+				}), 
+
+				m_pastSimpleCardsVector.end());
 			break;
 		}
 	}
@@ -158,15 +183,15 @@ void Player::deleteCardFromPastVector(SimpleCard& card)
 
 SimpleCard Player::chooseCard()
 {
-	uint8_t chosen_card;
+	int16_t chosen_card;
 	std::cout << getName() << " select a card\n";
 	printSimpleCards();
 	std::cout << "\nPick a card\n";
 	std::cin >> chosen_card;
 
-	for (int8_t i = 0; i < m_simpleCardsVector.size(); i++)
+	for (int16_t i = 0; i < m_simpleCardsVector.size(); i++)
 	{
-		if (m_simpleCardsVector[i].getValue() + 48 == chosen_card && (ColorToString(m_simpleCardsVector[i].getColor()) == "Red" || ColorToString(m_simpleCardsVector[i].getColor()) == "Blue"))
+		if (m_simpleCardsVector[i].getValue() == chosen_card && (ColorToString(m_simpleCardsVector[i].getColor()) == "Red" || ColorToString(m_simpleCardsVector[i].getColor()) == "Blue"))
 		{
 			return m_simpleCardsVector[i];
 		}
@@ -229,6 +254,7 @@ void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard
 			{
 				initiateBoard(game_board, pos);
 			}
+
 			if (card.getColor() == Color::IlusionBlue || card.getColor() == Color::IlusionRed)
 			{
 				if (game_board[pos].empty())
@@ -244,7 +270,7 @@ void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard
 					continue;
 				}
 			}
-			else if (game_board[pos].back().getColor() == Color::IlusionBlue)
+			else if (!game_board[pos].empty() && game_board[pos].back().getColor() == Color::IlusionBlue)
 			{
 				if (card.getColor() == Color::Red)
 				{
@@ -253,7 +279,7 @@ void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard
 					break;
 				}
 			}
-			else if (game_board[pos].back().getColor() == Color::IlusionRed)
+			else if (!game_board[pos].empty() && game_board[pos].back().getColor() == Color::IlusionRed)
 			{
 				if (card.getColor() == Color::Blue)
 				{
