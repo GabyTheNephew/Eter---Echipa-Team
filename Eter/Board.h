@@ -11,8 +11,6 @@
 using matrix = std::vector<std::vector<std::deque<SimpleCard>>>;
 
 // TODO: refactoring so that I use ranges and iterators instead of basic i and j when going trough matrix
-// TODO: spune-i lui Radu sa modifice in mages sa foloseasca enum pt culoare
-// TODO: spune-i lui Radu sa faca membrii statici la mages
 // TODO: refactor the code so that it uses CardColor enum instead of std::string
 // TODO: fix usedCard mecanic
 
