@@ -20,11 +20,9 @@ std::string PowerRock::getDescription() const
 void PowerRock::playRockPower(Board& board, Player& player, int16_t x, int16_t y)
 {
 	SimpleCard chosenCard = player.chooseCard();
-	board.pushCard(chosenCard, { x, y });
+	board[{x, y}].push_back(chosenCard);
 	player.makeCardInvalid(chosenCard);
-	std::vector<SimpleCard> pastVector;
-	pastVector.push_back(chosenCard);
-	player.setPastVector(pastVector);
+	player.getPastVector().push_back(chosenCard);
 }
 
 bool PowerRock::checkRockPower(Board& board, int16_t x, int16_t y)

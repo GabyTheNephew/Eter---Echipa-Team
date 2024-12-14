@@ -17,6 +17,6 @@ public:
 	std::string getName() const;
 	std::string getDescription() const;
 
-	bool playMage(Board& board, bool rowOrColumn, int16_t x);
+	bool playMageAqualon(Board& board, bool rowOrColumn, int16_t x);
 };
 

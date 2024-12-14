@@ -16,9 +16,6 @@ private:
 	// TODO: check int8_t, why is it converted to ascii/ char?
 
 public:
-	using Position = std::tuple<int16_t, int16_t>;
-
-public:
 	Player();
 	Player(std::string_view name,std::vector <SimpleCard> simpleCards,std::vector <SimpleCard> simplepastCards);
 	~Player();
@@ -32,7 +29,7 @@ public:
 	void setVector(std::vector<SimpleCard>& simpleCardsVector);
 	void setPastVector(std::vector<SimpleCard>& pastsimpleCardsVector);
 	const std::vector<SimpleCard>& getVector();
-	const std::vector<SimpleCard>& getPastVector();
+	std::vector<SimpleCard>& getPastVector(); /// we need to use push back on it
 
 	void ResetVector();
 

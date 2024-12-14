@@ -58,7 +58,7 @@ const std::vector<SimpleCard>& Player::getVector()
 	return m_simpleCardsVector;
 }
 
-const std::vector<SimpleCard>& Player::getPastVector()
+std::vector<SimpleCard>& Player::getPastVector()
 {
 	return m_pastSimpleCardsVector;
 }
