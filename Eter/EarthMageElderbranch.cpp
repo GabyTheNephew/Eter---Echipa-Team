@@ -19,7 +19,7 @@ std::string EarthMageElderbranch::getDescription() const
 
 bool EarthMageElderbranch::playMageElderbranch(Board& board, Color color, int16_t value, int16_t x, int16_t y)
 {
-	if ((board[{x,y}].back().getColor() != color) && (board[{x,y}].back().getValue() > value))
+	if ((board[{x,y}].back().getColor() != color) && (board[{x, y}].back().getColor() != Color::Hole) && (board[{x,y}].back().getValue() > value))
 	{
 		board[{x,y}].push_back(SimpleCard(value, color));
 		if(color == Color::Red)

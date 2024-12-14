@@ -21,7 +21,7 @@ bool EarthMageBumbleroot::playMageBumbleroot(Board& board, int16_t x, int16_t y)
 {
 	if (board[{x,y}].empty())
 	{
-		///make hole
+		board[{x, y}].push_back({6, Color::Hole });
 	}
 	return false;
 }

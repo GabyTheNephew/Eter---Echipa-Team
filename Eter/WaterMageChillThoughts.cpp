@@ -19,7 +19,7 @@ std::string WaterMageChillThoughts::getDescription() const
 
 bool WaterMageChillThoughts::playMageChillThoughts(Board& board, Color color, int16_t x, int16_t y, int16_t newX, int16_t newY)
 {
-	if (board[{x,y}].back().getColor() != color)
+	if ((board[{x,y}].back().getColor() != color) && (board[{x, y}].back().getColor() != color))
 	{
 		board.moveSpace(x, y, newX, newY);
 		return true;
