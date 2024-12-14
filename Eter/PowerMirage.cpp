@@ -19,7 +19,7 @@ std::string PowerMirage::getDescription() const
 	return m_description;
 }
 
-void PowerMirage::playCrumblePower(Board& board,Player player, int16_t x, int16_t y)
+void PowerMirage::playMiragePower(Board& board,Player player, int16_t x, int16_t y)
 {
 	if (player.GetVectorColor() == "Red") 
 	{
@@ -49,7 +49,7 @@ void PowerMirage::playCrumblePower(Board& board,Player player, int16_t x, int16_
 	
 }
 
-bool PowerMirage::checkCrumblePower(Board& board,Player& player, int16_t x, int16_t y)
+bool PowerMirage::checkMiragePower(Board& board,Player& player, int16_t x, int16_t y)
 {
 	if (player.GetVectorColor() == "Red")
 	{
