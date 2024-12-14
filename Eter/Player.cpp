@@ -159,11 +159,11 @@ std::string Player::GetVectorColor()
 
 }
 
-void Player::deleteCardFromPastVector(SimpleCard& card)
+void Player::deleteCardFromPastVector(SimpleCard& cardToDelete)
 {
 	for (auto& card : m_pastSimpleCardsVector)
 	{
-		if (card.getValue() == card.getValue() && card.getColor() == card.getColor())
+		if (card.getValue() == cardToDelete.getValue() && card.getColor() == cardToDelete.getColor())
 		{
 			m_pastSimpleCardsVector.erase(
 				std::remove_if(m_pastSimpleCardsVector.begin(),
@@ -171,7 +171,7 @@ void Player::deleteCardFromPastVector(SimpleCard& card)
 
 				[&card](const auto& element) 
 				{
-					return element.getValue() == card.getValue();
+					return element.getValue() == card.getValue() && element.getColor()==card.getColor();
 				}), 
 
 				m_pastSimpleCardsVector.end());
