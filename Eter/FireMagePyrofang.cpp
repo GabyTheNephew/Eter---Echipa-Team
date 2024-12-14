@@ -28,7 +28,11 @@ bool FireMagePyrofang::playMagePyrofang(Board& board, Color color, bool rowOrCol
 	{
 		for (int i = 0; i < board.getSize(); i++)
 		{
-			if (board[{x, i}].back().getColor() == color)
+			if (board[{x, i}].back().getColor() == Color::Hole)
+			{
+				break;
+			}
+			else if (board[{x, i}].back().getColor() == color)
 			{
 				ok = true;
 			}
@@ -43,7 +47,11 @@ bool FireMagePyrofang::playMagePyrofang(Board& board, Color color, bool rowOrCol
 	{
 		for (int i = 0; i < board.getSize(); i++)
 		{
-			if (board[{i, x}].back().getColor() == color)
+			if (board[{x, i}].back().getColor() == Color::Hole)
+			{
+				break;
+			}
+			else if (board[{i, x}].back().getColor() == color)
 			{
 				ok = true;
 			}
