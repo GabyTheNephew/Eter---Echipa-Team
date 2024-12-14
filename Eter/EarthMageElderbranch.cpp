@@ -17,7 +17,7 @@ std::string EarthMageElderbranch::getDescription() const
 	return m_description;
 }
 
-bool EarthMageElderbranch::playMage(Board& board, Color color, int16_t value, int16_t x, int16_t y)
+bool EarthMageElderbranch::playMageElderbranch(Board& board, Color color, int16_t value, int16_t x, int16_t y)
 {
 	if ((board[{x,y}].back().getColor() != color) && (board[{x,y}].back().getValue() > value))
 	{

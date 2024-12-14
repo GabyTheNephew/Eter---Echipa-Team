@@ -47,12 +47,18 @@ void Player::setVector(std::vector<SimpleCard>& simpleCardsVector)
 	m_simpleCardsVector = simpleCardsVector;
 }
 
+void Player::setPastVector(std::vector<SimpleCard>& pastsimpleCardsVector)
+{
+	m_pastSimpleCardsVector = pastsimpleCardsVector;
+}
+
+
 const std::vector<SimpleCard>& Player::getVector()
 {
 	return m_simpleCardsVector;
 }
 
-const std::vector<SimpleCard>& Player::getPastVector()
+std::vector<SimpleCard>& Player::getPastVector()
 {
 	return m_pastSimpleCardsVector;
 }

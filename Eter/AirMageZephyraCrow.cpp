@@ -17,7 +17,7 @@ std::string AirMageZephyraCrow::getDescription() const
 	return m_description;
 }
 
-bool AirMageZephyraCrow::playMage(Board& board, Color color, int16_t x, int16_t y)
+bool AirMageZephyraCrow::playMageZephyraCrow(Board& board, Color color, int16_t x, int16_t y)
 {
 	if (board[{x,y}].empty())
 	{

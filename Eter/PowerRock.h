@@ -1,10 +1,9 @@
 #pragma once
-#include "Board.h"
-#include "Player.h"
 #include <iostream>
+#include "Player.h"
 #include <string_view>
 
-class EarthMageElderbranch
+class PowerRock
 {
 private:
 
@@ -13,11 +12,12 @@ private:
 
 public:
 
-	EarthMageElderbranch();
+	PowerRock();
 
 	std::string getName() const;
 	std::string getDescription() const;
 
-	bool playMageElderbranch(Board& board, Color color, int16_t value, int16_t x, int16_t y);
+	void playRockPower(Board& board, Player& player, int16_t x, int16_t y);
+	bool checkRockPower(Board& board, int16_t x, int16_t y);
 };
 
