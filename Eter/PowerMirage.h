@@ -18,7 +18,7 @@ public:
 	std::string getName()const;
 	std::string getDescription()const;
 
-	void playCrumblePower(Board& board, Player player, int16_t x, int16_t y);
-	bool checkCrumblePower(Board& board, Player& player, int16_t x, int16_t y);
+	void playMiragePower(Board& board, Player player, int16_t x, int16_t y);
+	bool checkMiragePower(Board& board, Player& player, int16_t x, int16_t y);
 
 };
