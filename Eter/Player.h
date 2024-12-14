@@ -30,8 +30,10 @@ public:
 	void printPastSimpleCards();
 
 	void setVector(std::vector<SimpleCard>& simpleCardsVector);
+	void setPastVector(std::vector<SimpleCard>& pastsimpleCardsVector);
 	const std::vector<SimpleCard>& getVector();
 	const std::vector<SimpleCard>& getPastVector();
+
 	void ResetVector();
 
 	void makeCardInvalid(SimpleCard card);
