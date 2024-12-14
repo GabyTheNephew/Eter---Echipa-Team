@@ -451,43 +451,59 @@ void Board::print()const
 	int16_t rows = m_board.size();
 	int16_t cols = rows > 0 ? m_board[0].size() : 0;
 
-	for (int16_t i = -1; i <= rows; i++)
+	
+	
+
+	for (int16_t i = rows < 3 && cols < 3 ? -1 : 0; i <= rows; i++)
 	{
-		for (int16_t j = -1; j <= cols; j++)
+		for (int16_t j = rows < 3 && cols < 3 ? -1 : 0; j <= cols; j++)
 		{
-			if (i < 0 || i >= rows || j < 0 || j >= cols)
+			if(rows < 3 && cols < 3)
 			{
-				// În afara matricei: verificăm dacă se poate plasa o carte
-				if (canBePlaced(i, j))
+				if (i < 0 || i >= rows || j < 0 || j >= cols)
 				{
-					std::cout << " * "; // Poziție eligibilă
-				}
-				else
-				{
-					std::cout << " "; // Poziție goală
-				}
-			}
-			else
-				if (m_board[i][j].empty())
-				{
-					std::cout << "  ";
+					// În afara matricei: verificăm dacă se poate plasa o carte
+					if (canBePlaced(i, j))
+					{
+						std::cout << " * "; // Poziție eligibilă
+					}
+					else
+					{
+						std::cout << " "; // Poziție goală
+					}
 					continue;
 				}
-			else
-			{
-				if (m_board[i][j].back().getColor() == Color::IlusionRed)
+				else if (i >= 0 && i < rows && j>=0 && j < cols)
 				{
-					std::cout << "iR" << " ";
+					if(m_board[i][j].empty())
+					{
+						std::cout << " * ";
+						continue;
+					}
 				}
-				else if (m_board[i][j].back().getColor() == Color::IlusionBlue)
+			}
+
+			if(j < cols && i < rows && i >= 0 && j >= 0)
+			{
+				if (!m_board[i][j].empty())
 				{
-					std::cout << "iB" << " ";
+					if (m_board[i][j].back().getColor() == Color::IlusionRed)
+					{
+						std::cout << "iR" << " ";
+					}
+					else if (m_board[i][j].back().getColor() == Color::IlusionBlue)
+					{
+						std::cout << "iB" << " ";
+					}
+					else
+						std::cout << m_board[i][j].back() << " ";
 				}
 				else
 				{
-					std::cout << m_board[i][j].back() << "  ";
+					std::cout << " * ";
 				}
 			}
+
 		}
 
 		std::cout << '\n';

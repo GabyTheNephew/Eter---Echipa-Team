@@ -46,7 +46,6 @@ void Game::startTraining()
 
 	this->m_round_Counter = 1;
 	int16_t maxRounds = 3;
-	m_gameBoard.resizeBoard(1);
 	int matrixMaxSize = 3;
 	std::vector<SimpleCard> PastCards;
 	bool canPlayIllusion;
@@ -68,6 +67,7 @@ void Game::startTraining()
 	while (m_round_Counter <= maxRounds)
 	{
 		PastCards.clear();
+		m_gameBoard.resizeBoard(1);
 		while (true)
 		{
 
