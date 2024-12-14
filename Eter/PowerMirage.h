@@ -2,6 +2,8 @@
 #include <iostream>
 #include "Board.h"
 #include <string_view>
+#include "Player.h"
+#include "SimpleCard.h"
 
 class PowerMirage
 {
@@ -16,7 +18,7 @@ public:
 	std::string getName()const;
 	std::string getDescription()const;
 
-	void playCrumblePower(Board& board, int16_t x, int16_t y);
-	bool checkCrumblePower(Board& board, int16_t x, int16_t y);
+	void playCrumblePower(Board& board, Player player, int16_t x, int16_t y);
+	bool checkCrumblePower(Board& board, Player& player, int16_t x, int16_t y);
 
 };
