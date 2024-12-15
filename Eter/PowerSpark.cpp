@@ -63,7 +63,7 @@ bool PowerSpark::checkSparkPower(Board& board, Player& player)
 		for (int16_t j = 0; j < board.getSize(); j++)
 		{
 			const auto& cards = board[{i, j}];
-			if (ColorToString(cards[0].getColor()) != playerColor)
+			if (ColorToString(cards[cards.size()].getColor()) != playerColor)
 			{
 				if (cards.size() > 1)
 				{
