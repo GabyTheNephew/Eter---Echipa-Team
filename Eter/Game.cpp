@@ -49,6 +49,8 @@ void Game::startTraining()
 	int matrixMaxSize = 3;
 	std::vector<SimpleCard> PastCards;
 	bool canPlayIllusion;
+	int16_t player1RoundsWon = 0;
+	int16_t player2RoundsWon = 0;
 
 	if (m_illusionsEnabled)
 	{
@@ -68,9 +70,10 @@ void Game::startTraining()
 	{
 		PastCards.clear();
 		m_gameBoard.resizeBoard(1);
+		m_gameBoard.print();
+
 		while (true)
 		{
-
 			if (player1.numberofValidCards() > 0)
 			{
 				std::cout << "Player 1's turn\n";
@@ -78,7 +81,6 @@ void Game::startTraining()
 				if (chosenCard.getValue() != 0)
 				{
 					player1.playCard(chosenCard, m_gameBoard, PastCards, canPlayIllusion);
-
 				}
 				m_gameBoard.print();
 
@@ -86,6 +88,7 @@ void Game::startTraining()
 			if (m_gameBoard.checkWin() == Board::State::Win)
 			{
 				std::cout << "Player 1 wins\n";
+				player1RoundsWon++;
 				break;
 			}
 
@@ -103,6 +106,7 @@ void Game::startTraining()
 			if (m_gameBoard.checkWin() == Board::State::Win)
 			{
 				std::cout << "Player 2 wins\n";
+				player2RoundsWon++;
 				break;
 			}
 			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0)
@@ -125,8 +129,20 @@ void Game::startTraining()
 		player2.ResetVector();
 		m_gameBoard.clear();
 		incrementRoundCounter();
+
+		if (player1RoundsWon == 2)
+		{
+			std::cout << "Player 1 won the game! Congratulations!\n";
+			break;
+		}
+		if (player2RoundsWon == 2)
+		{
+			std::cout << "Player 2 won the game! Congratulations!\n";
+			break;
+		}
 	}
 	
+
 }
 
 void Game::startMageDuel()
