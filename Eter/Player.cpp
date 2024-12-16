@@ -363,7 +363,7 @@ void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard
 //	}
 //}
 
-void Player::initiateBoard(Board& board, Position pos)
+void Player::initiateBoard(Board& board, Position& pos)
 {
 	auto& [line, column] = pos;
 
@@ -377,6 +377,7 @@ void Player::initiateBoard(Board& board, Position pos)
 		if (column == -1)
 		{
 			board.expandColumn(Board::ColumnExpandDirection::Left);
+			column = 0;
 		}
 		else
 		{
@@ -385,6 +386,8 @@ void Player::initiateBoard(Board& board, Position pos)
 				board.expandColumn(Board::ColumnExpandDirection::Right);
 			}
 		}
+
+		line = 0;
 		return;
 	}
 	else
@@ -396,6 +399,7 @@ void Player::initiateBoard(Board& board, Position pos)
 			if (column == -1)
 			{
 				board.expandColumn(Board::ColumnExpandDirection::Left);
+				column = 0;
 			}
 			else
 			{
@@ -411,10 +415,12 @@ void Player::initiateBoard(Board& board, Position pos)
 	if (column == -1)
 	{
 		board.expandColumn(Board::ColumnExpandDirection::Left);
+		column = 0;
 
 		if (line == -1)
 		{
 			board.expandRow(Board::RowExpandDirection::Up);
+			line = 0;
 		}
 		else
 		{
@@ -433,6 +439,7 @@ void Player::initiateBoard(Board& board, Position pos)
 			if (line == -1)
 			{
 				board.expandRow(Board::RowExpandDirection::Up);
+				line = 0;
 			}
 			else
 			{

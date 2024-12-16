@@ -5,13 +5,13 @@ void Board::expandRow(RowExpandDirection direction)
 	int16_t newSize = m_board.size() + 1;
 	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(m_board[0].size()));
 
-	if (direction == RowExpandDirection::Down)
+	if (direction == RowExpandDirection::Up)
 	{
-		for (int16_t i = m_board.size() - 1; i >= 0; --i)
+		for (int16_t i = newSize - 1; i > 0; --i)
 		{
-			for (int16_t j = 0; j < m_board[i].size(); j++)
+			for (int16_t j = 0; j < m_board[0].size(); j++)
 			{
-				newMatrix[i][j] = std::move(m_board[i][j]);///////
+				newMatrix[i][j] = std::move(m_board[i - 1][j]);///////
 			}
 		}
 	}
@@ -38,9 +38,9 @@ void Board::expandColumn(ColumnExpandDirection direction)
 	{
 		for (int16_t i = 0; i < m_board.size(); ++i)
 		{
-			for (int16_t j = m_board[0].size() - 1; j >= 0; --j)
+			for (int16_t j = newSize - 1; j > 0; --j)
 			{
-				newMatrix[i][j] = std::move(m_board[i][j]);
+				newMatrix[i][j] = std::move(m_board[i][j - 1]);
 			}
 		}
 	}
@@ -248,7 +248,7 @@ Board::State Board::checkWin()
 	if (chessmanCount == kRows * kColumns)
 	{
 		int16_t redSum = sumPoints(Color::Red);
-		int16_t blueSum = sumPoints(Color::Red);
+		int16_t blueSum = sumPoints(Color::Blue);
 
 		if (redSum != blueSum)
 		{
@@ -443,6 +443,7 @@ Board& Board::operator=(Board&& board) noexcept
 void Board::resizeBoard(int16_t size)
 {
 	m_size = size;
+	this->m_board.clear(); // Resetează complet matricea
 	this->m_board.resize(size, std::vector<std::deque<SimpleCard>>(size));
 }
 

@@ -43,7 +43,7 @@ public:
 	//void playCard(int16_t card_value,Board& game_board,Color card_color);
 	void playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& m_pastSimpleCardsVecto, bool& canPlayIllusion);
 	//void playCardandExtend(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& m_pastSimpleCardsVecto, bool& canPlayIllusion);
-	void initiateBoard(Board& board, Position pos);
+	void initiateBoard(Board& board, Position& pos);
 	//void playIllusion(SimpleCard& card, Board& board, Position pos);
 };
 
