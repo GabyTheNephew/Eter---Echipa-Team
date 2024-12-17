@@ -41,7 +41,7 @@ public:
 	SimpleCard chooseCard();
 	int numberofValidCards();
 	//void playCard(int16_t card_value,Board& game_board,Color card_color);
-	void playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& m_pastSimpleCardsVecto, bool& canPlayIllusion);
+	void playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& m_pastSimpleCardsVecto, std::optional<std::pair<bool, bool>>& canPlayIllusion);
 	//void playCardandExtend(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& m_pastSimpleCardsVecto, bool& canPlayIllusion);
 	void initiateBoard(Board& board, Position& pos);
 	//void playIllusion(SimpleCard& card, Board& board, Position pos);

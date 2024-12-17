@@ -216,27 +216,42 @@ int Player::numberofValidCards()
 	return count;
 }
 
-void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& pastcards, bool& canPlayIllusion)
+void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& pastcards, std::optional<std::pair<bool, bool>>& canPlayIllusion)
 {
 	Position pos;
 
 	auto& [x, y] = pos;
 
-	if (canPlayIllusion)
+	if (canPlayIllusion.has_value())
 	{
 		std::cout << "Do you want to play it as an illusion?\n";
 		std::string answer;
 		std::cin >> answer;
 		if (answer == "yes")
 		{
-			canPlayIllusion = false;
 			if (card.getColor() == Color::Red)
 			{
-				card.setColor(Color::IlusionRed);
+				if (canPlayIllusion->first == true)
+				{
+					card.setColor(Color::IlusionRed);
+					canPlayIllusion->first = false;
+				}
+				else
+					std::cout << "This player already played an illusion this round!\n";
 			}
 			else
 			{
-				card.setColor(Color::IlusionBlue);
+				if (canPlayIllusion->second == true)
+				{
+					card.setColor(Color::IlusionBlue);
+					canPlayIllusion->second = false;
+				}
+				else
+					std::cout << "This player already played an illusion this round!\n";
+			}
+			if (canPlayIllusion->first == false && canPlayIllusion->second == false)
+			{
+				canPlayIllusion = std::nullopt;
 			}
 		}
 	}
@@ -280,18 +295,38 @@ void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard
 			{
 				if (card.getColor() == Color::Red)
 				{
-					game_board.pushCard(card, pos);
-					pastcards.push_back(card);
-					break;
+					if (!game_board.canBePushed(card, pos))
+					{
+						makeCardInvalid(card);
+						std::cout << "You tried to cover an illusion with a lower value card!\n";
+						game_board[pos].back().setColor(Color::Blue);
+						break;
+					}
+					else
+					{
+						game_board.pushCard(card, pos);
+						pastcards.push_back(card);
+						break;
+					}
 				}
 			}
 			else if (!game_board[pos].empty() && game_board[pos].back().getColor() == Color::IlusionRed)
 			{
 				if (card.getColor() == Color::Blue)
 				{
-					game_board.pushCard(card, pos);
-					pastcards.push_back(card);
-					break;
+					if (!game_board.canBePushed(card, pos))
+					{
+						makeCardInvalid(card);
+						std::cout << "You tried to cover an illusion with a lower value card!\n";
+						game_board[pos].back().setColor(Color::Red);
+						break;
+					}
+					else
+					{
+						game_board.pushCard(card, pos);
+						pastcards.push_back(card);
+						break;
+					}
 				}
 			}
 			else
