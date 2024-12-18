@@ -48,17 +48,18 @@ void Game::startTraining()
 	int16_t maxRounds = 3;
 	int matrixMaxSize = 3;
 	std::vector<SimpleCard> PastCards;
-	bool canPlayIllusion;
+	// bool canPlayIllusion;
+	std::optional<std::pair<bool, bool>> canPlayIllusion;
 	int16_t player1RoundsWon = 0;
 	int16_t player2RoundsWon = 0;
 
 	if (m_illusionsEnabled)
 	{
-		canPlayIllusion = true;
+		canPlayIllusion = std::make_pair(true, true);
 	}
 	else
 	{
-		canPlayIllusion = false;
+		canPlayIllusion = std::nullopt;
 	}
 
 	player1 = Player("Name1", { SimpleCard(1,Color::Red),SimpleCard(1,Color::Red),SimpleCard(2,Color::Red) ,SimpleCard(2,Color::Red) ,SimpleCard(3,Color::Red),SimpleCard(3,Color::Red),SimpleCard(4,Color::Red) }, PastCards);
@@ -111,19 +112,26 @@ void Game::startTraining()
 			}
 			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0)
 			{
-				if (m_gameBoard.checkWin() == Board::State::Win)
+				if (m_gameBoard.checkWin(true) == Board::State::RedWin)
 				{
-					std::cout << "Win by\n ";//show the player who won?
+					std::cout << "Win by Player 1\n ";
+					player1RoundsWon++;
+					break;
+				}
+				if (m_gameBoard.checkWin(true) == Board::State::BlueWin)
+				{
+					std::cout << "Win by Player 2\n ";
+					player2RoundsWon++;
 					break;
 				}
 				if (m_gameBoard.checkWin() == Board::State::Draw)
 				{
 					std::cout << "Draw\n";
+					player1RoundsWon++;
+					player2RoundsWon++;
 					break;
 				}
 			}
-
-
 		}
 		player1.ResetVector();
 		player2.ResetVector();

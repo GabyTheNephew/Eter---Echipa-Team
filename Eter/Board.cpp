@@ -188,7 +188,7 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 //	return check;
 //}
 
-Board::State Board::checkWin()
+Board::State Board::checkWin(bool canCountPoints)
 {
 	const int16_t kResults = 8;
 	std::array<int16_t, kResults> results{};
@@ -245,14 +245,21 @@ Board::State Board::checkWin()
 	}
 
 	// check if it's a tie
-	if (chessmanCount == kRows * kColumns)
+	if (chessmanCount == kRows * kColumns && canCountPoints)
 	{
 		int16_t redSum = sumPoints(Color::Red);
 		int16_t blueSum = sumPoints(Color::Blue);
 
-		if (redSum != blueSum)
+		if (redSum > blueSum)
 		{
-			return State::Win;
+			return State::RedWin;
+		}
+		else
+		{
+			if (blueSum > redSum)
+			{
+				return State::BlueWin;
+			}
 		}
 
 		return State::Draw;

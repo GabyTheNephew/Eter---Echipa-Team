@@ -24,6 +24,8 @@ public:
 	{
 		None,
 		Win,
+		RedWin,
+		BlueWin,
 		Draw
 	};
 
@@ -66,7 +68,7 @@ public:
 	/*bool lineWithColor(std::string_view Color)const;
 	bool columnWithColor(std::string_view Color)const;
 	bool diagonalWithColor(std::string_view Color)const;*/
-	State checkWin();
+	State checkWin(bool canCountPoints = false);
 	int16_t sumPoints(const Color& color);
 
 	int16_t getSize()const;
