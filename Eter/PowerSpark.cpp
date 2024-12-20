@@ -101,7 +101,7 @@ void PowerSpark::playSparkPower(Board& board, Player& player)
 		return;
 	}
 
-	bool canPlayIllusion = false;
+	std::optional<std::pair<bool, bool>> canPlayIllusion = std::make_pair(false,false);
 	auto pastvector = player.getPastVector();
 	player.playCard(selectedCard, board, pastvector, canPlayIllusion);
 }

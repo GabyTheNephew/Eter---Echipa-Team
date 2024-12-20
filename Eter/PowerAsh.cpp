@@ -102,7 +102,7 @@ void PowerAsh::playAshPower(Board& board,Player& player)
 			}
 		}
 	}
-	bool canPlayIllusion = false;
+	std::optional<std::pair<bool, bool>> canPlayIllusion = std::make_pair(false, false);
 	std::vector<SimpleCard> PastCards = player.getPastVector();
 	player.makeCardValid(chosenCard); 
 	player.playCard(chosenCard, board, PastCards, canPlayIllusion);
