@@ -114,7 +114,7 @@ void PowerWaterfall::playWaterfallPower(Board& board, Player& player)
 			else
 				if(direction==2)
 			{
-					for (int16_t i = 0; i < board.getRowSize()-1; i++)
+					for (int16_t i = board.getRowSize() - 1; i >=1 ; i--)
 					{
 						mergedStack.insert(mergedStack.end(), board[{index, i}].begin(), board[{index, i}].end());
 						board[{index, i}].clear();
@@ -150,7 +150,7 @@ void PowerWaterfall::playWaterfallPower(Board& board, Player& player)
 				else
 					if (direction == 2)
 					{
-						for (int16_t i = 0; i < board.getColumnSize() - 1; i++)
+						for (int16_t i = board.getColumnSize() - 1; i >=1 ; i--)
 						{
 							mergedStack.insert(mergedStack.end(), board[{i, index}].begin(), board[{i, index}].end());
 							board[{i, index}].clear();
