@@ -62,7 +62,7 @@ void PowerFlame::playFlamePower(Board& board, Player& player)
 	else
 	{
 		SimpleCard card = player.chooseCard();
-		bool canPlayIllusion = false;
+		std::optional<std::pair<bool, bool>> canPlayIllusion = std::make_pair(false, false);
 		std::vector<SimpleCard> pastcards = player.getPastVector();
 
 		std::cout << "You can place the card anywher on the board\n";
