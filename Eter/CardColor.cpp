@@ -11,6 +11,7 @@ std::string ColorToString(const Color& color)
 	if (color == Color::increasedBlue)return "increasedBlue";
 	if (color == Color::decreasedRed)return "decreasedRed";
 	if (color == Color::decreasedBlue)return "decreasedBlue";
+	if (color == Color::Hole)return "Hole";
 }
 
 Color StringToColor(std::string_view color)
@@ -24,4 +25,5 @@ Color StringToColor(std::string_view color)
 	if (color == "increasedBlue")return Color::increasedBlue;
 	if (color == "decreasedRed")return Color::decreasedRed;
 	if (color == "decreasedBlue")return Color::decreasedBlue;
+	if (color == "Hole")return Color::Hole;
 }
