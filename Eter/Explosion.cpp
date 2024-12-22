@@ -1,26 +1,31 @@
 ﻿#include "Explosion.h"
 
-Explosion* Explosion::m_current_Instance = nullptr;
+//Explosion* Explosion::m_current_Instance = nullptr;
+//
+//
+//
+//Explosion* Explosion::get_Instance()
+//{
+//	if (m_current_Instance == nullptr)
+//	{
+//		m_current_Instance = new Explosion();
+//	}
+//
+//	return m_current_Instance;
+//}
 
+#include <random>
+#include <set>
+#include <ctime>
 
+#include <random>
+#include <set>
+#include <ctime>
 
-Explosion* Explosion::get_Instance()
+Explosion::Explosion()
 {
-	if (m_current_Instance == nullptr)
-	{
-		m_current_Instance = new Explosion();
-	}
-
-	return m_current_Instance;
+	this->vectorInstantiation(3);
 }
-
-#include <random>
-#include <set>
-#include <ctime>
-
-#include <random>
-#include <set>
-#include <ctime>
 
 void Explosion::vectorInstantiation(int16_t size)
 {
@@ -86,4 +91,24 @@ const std::vector<std::tuple<int, int, ActionType>>& Explosion::getPositions() c
 	return positions;
 }
 
+std::string ActionTypeToString(const ActionType& actionType)
+{
+	if (actionType == ActionType::explode)
+		return "explode";
+	if (actionType == ActionType::giveBack)
+		return "giveBack";
+	if (actionType == ActionType::hole)
+		return "hole";
+}
 
+std::ostream& operator<<(std::ostream& os, const Explosion& explosion)
+{
+	os << "The explosion has these effects:\n";
+
+	for (const auto& exp : explosion.getPositions())
+	{
+		os << std::get<0>(exp) << " " << std::get<1>(exp) << " " << ActionTypeToString(std::get<2>(exp)) << '\n';
+	}
+
+	return os;
+}
