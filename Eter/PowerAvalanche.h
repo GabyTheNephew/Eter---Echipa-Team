@@ -14,7 +14,7 @@ public:
 
 	std::string_view getName()const;
 	std::string_view getDescription()const;
-	bool checkAvalanchePower(Board& board,bool rowColumn ,int16_t x1, int16_t y1, int16_t x2, int16_t y2);
-	void playAvalanchePower(Board& board, Player& player, bool rowColumn, int16_t x1, int16_t y1, int16_t x2, int16_t y2);
+	bool checkAvalanchePower(Board& board, int16_t x1, int16_t y1, int16_t x2, int16_t y2);
+	void playAvalanchePower(Board& board, Player& player, int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 };
 
