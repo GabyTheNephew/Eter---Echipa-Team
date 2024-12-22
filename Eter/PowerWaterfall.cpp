@@ -92,7 +92,7 @@ void PowerWaterfall::playWaterfallPower(Board& board, Player& player)
 		std::deque<SimpleCard> mergedStack;
 		if (choice == 1)
 		{
-			if (index < 0 || index >= board.getColumnSize()|| board.canBePlaced(index,0)|| board.canBePlaced(index, (board.getColumnSize()-1)))
+			if (index < 0 || index >= board.getColumnSize() || board.canBePlaced(index, 0) || board.canBePlaced(index, (board.getColumnSize() - 1)))
 			{
 				std::cout << "Invalid line index.\n";
 				return;
@@ -100,7 +100,7 @@ void PowerWaterfall::playWaterfallPower(Board& board, Player& player)
 
 			if (direction == 1)
 			{
-				
+
 				for (int16_t i = 1; i < board.getRowSize(); i++)
 				{
 					mergedStack.insert(mergedStack.end(), board[{index, i}].begin(), board[{index, i}].end());
@@ -112,19 +112,19 @@ void PowerWaterfall::playWaterfallPower(Board& board, Player& player)
 				board[{index, 0}] = std::move(mergedStack);
 			}
 			else
-				if(direction==2)
-			{
-					for (int16_t i = board.getRowSize() - 1; i >=1 ; i--)
+				if (direction == 2)
+				{
+					for (int16_t i = board.getRowSize() - 1; i >= 1; i--)
 					{
 						mergedStack.insert(mergedStack.end(), board[{index, i}].begin(), board[{index, i}].end());
 						board[{index, i}].clear();
 					}
-					auto& topStack = board[{index, board.getRowSize()-1}];
+					auto& topStack = board[{index, board.getRowSize() - 1}];
 					mergedStack.insert(mergedStack.end(), topStack.begin(), topStack.end());
 					topStack.clear();
-					board[{index, board.getRowSize()-1}] = std::move(mergedStack);
-			}
-	}
+					board[{index, board.getRowSize() - 1}] = std::move(mergedStack);
+				}
+		}
 		else
 			if (choice == 2)
 			{
@@ -150,7 +150,7 @@ void PowerWaterfall::playWaterfallPower(Board& board, Player& player)
 				else
 					if (direction == 2)
 					{
-						for (int16_t i = board.getColumnSize() - 1; i >=1 ; i--)
+						for (int16_t i = board.getColumnSize() - 1; i >= 1; i--)
 						{
 							mergedStack.insert(mergedStack.end(), board[{i, index}].begin(), board[{i, index}].end());
 							board[{i, index}].clear();
@@ -161,8 +161,9 @@ void PowerWaterfall::playWaterfallPower(Board& board, Player& player)
 						board[{ (board.getRowSize() - 1), index}] = std::move(mergedStack);
 					}
 			}
-	else
-	{
-		std::cout << "No column has at least 3 cards." << std::endl;
+			else
+			{
+				std::cout << "No column has at least 3 cards." << std::endl;
+			}
 	}
 }
