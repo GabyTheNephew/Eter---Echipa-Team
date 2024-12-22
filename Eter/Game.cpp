@@ -78,6 +78,26 @@ void Game::startTraining()
 			if (player1.numberofValidCards() > 0)
 			{
 				std::cout << "Player 1's turn\n";
+
+				//Explosion related
+				if (checkPlayExplosion(m_gameBoard))
+				{
+					std::cout << "Do you want to play the explosion?\n";
+					std::cout << m_explosion.value();
+
+					std::string explosionInput;
+					std::cin >> explosionInput;
+
+					if (explosionInput == "yes")
+					{
+						std::cout << "PLAY THE EXPLOSION\n";
+					}
+					else
+					{
+						m_explosion.reset();
+					}
+				}
+
 				SimpleCard chosenCard = player1.chooseCard();
 				if (chosenCard.getValue() != 0)
 				{
@@ -252,12 +272,13 @@ void Game::startGame(GameType selectedGameType)
 
 void Game::setExplosionsEnabled(bool enabled)
 {
-	m_explosionsEnabled = enabled;
+	//m_explosionsEnabled = enabled;
+	m_explosion.emplace(Explosion());
 }
 
 bool Game::areExplosionsEnabled() const
 {
-	return m_explosionsEnabled;
+	return m_explosion.has_value();
 }
 
 void Game::setIllusionsEnabled(bool enabled)
@@ -278,7 +299,7 @@ void Game::incrementRoundCounter()
 
 bool Game::checkPlayExplosion(Board& m_board)
 {
-	if (!m_explosionsEnabled)
+	if (!m_explosion.has_value())
 	{
 		return false;
 	}

@@ -3,7 +3,7 @@
 #include<cstdint>
 #include "Board.h"
 #include "Player.h"
-//#include "Explosion.h"
+#include "Explosion.h"
 #include <string>
 
 class Game
@@ -14,10 +14,10 @@ private:
     static Game m_current_Instance; 
     Player player1, player2;
     //Explosion m_explosion;
-	bool m_explosionsEnabled;
+    std::optional<Explosion> m_explosion;
     bool m_illusionsEnabled;
     
-    Game() : m_round_Counter{ 0 }, m_gameBoard{}, m_explosionsEnabled{false} {}
+    Game() : m_round_Counter{ 0 }, m_gameBoard{} {}
 
     // Methods for the different game types
     void startTraining();

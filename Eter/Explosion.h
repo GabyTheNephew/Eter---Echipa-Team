@@ -14,15 +14,19 @@ enum class ActionType {
 	giveBack,
 	hole
 };
+
+std::string ActionTypeToString(const ActionType& actionType);
+
 class Explosion
 {
 private:
-
 	std::vector<std::tuple<int, int, ActionType>> positions;
-	static Explosion* m_current_Instance;
+	//static Explosion* m_current_Instance;
 
 public:
-	static Explosion* get_Instance();
+	//static Explosion* get_Instance();
+
+	Explosion();
 
 	void vectorInstantiation(int16_t size);
 
@@ -31,6 +35,8 @@ public:
 	void rotationDown(int16_t size);
 
 	const std::vector<std::tuple<int, int, ActionType>>& getPositions() const;
+
+	friend std::ostream& operator<<(std::ostream& os, const Explosion& explosion);
 
 };
 
