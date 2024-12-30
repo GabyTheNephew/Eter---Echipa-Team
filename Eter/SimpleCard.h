@@ -23,5 +23,7 @@ public:
 	void setValue(int16_t value);
 
 	friend std::ostream& operator<<(std::ostream& os, const SimpleCard& card);
+	bool operator==(const SimpleCard& rhs);
+
 };
 

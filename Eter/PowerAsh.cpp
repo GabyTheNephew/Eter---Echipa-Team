@@ -89,7 +89,7 @@ void PowerAsh::playAshPower(Board& board,Player& player)
 		for (size_t i = 0; i < eligibleCards.size(); ++i) {
 			std::cout << i + 1 << ". "<< "Card Value: " << eligibleCards[i].getValue()<< ", Color: " << ColorToString(eligibleCards[i].getColor())<< '\n';
 	}
-	int choice;
+	int16_t choice;
 		while (true) {
 			std::cout << "Enter your choice (1-" << eligibleCards.size() << "): ";
 			std::cin >> choice;

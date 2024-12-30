@@ -38,13 +38,13 @@ void Explosion::vectorInstantiation(int16_t size)
 	
 	std::discrete_distribution<int> actionDist({ 10, 45, 45 });
 
-	int numActions = numActionsDist(generator);
+	int16_t numActions = numActionsDist(generator);
 
-	std::set<std::pair<int, int>> uniquePositions;
+	std::set<std::pair<int16_t, int16_t>> uniquePositions;
 
 	while (positions.size() < static_cast<size_t>(numActions)) {
-		int x = positionDist(generator);
-		int y = positionDist(generator);
+		int16_t x = positionDist(generator);
+		int16_t y = positionDist(generator);
 
 		ActionType action = static_cast<ActionType>(actionDist(generator));
 
@@ -59,7 +59,7 @@ void Explosion::vectorInstantiation(int16_t size)
 
 void Explosion::rotationLeft(int16_t size)
 {
-	for (int i = 0; i < positions.size(); i++)
+	for (int16_t i = 0; i < positions.size(); i++)
 	{
 		int16_t save = std::get<0>(positions[i]);
 		std::get<0>(positions[i]) = size - 1 - std::get<1>(positions[i]);
@@ -69,7 +69,7 @@ void Explosion::rotationLeft(int16_t size)
 
 void Explosion::rotationRight(int16_t size)
 {
-	for (int i = 0; i < positions.size(); i++)
+	for (int16_t i = 0; i < positions.size(); i++)
 	{
 		int16_t save = std::get<0>(positions[i]);
 		std::get<0>(positions[i]) = std::get<1>(positions[i]);
@@ -79,14 +79,14 @@ void Explosion::rotationRight(int16_t size)
 
 void Explosion::rotationDown(int16_t size)
 {
-	for (int i = 0; i < positions.size(); i++)
+	for (int16_t i = 0; i < positions.size(); i++)
 	{
 		std::get<0>(positions[i]) = size - 1 - std::get<0>(positions[i]);
 		std::get<1>(positions[i]) = size - 1 - std::get<1>(positions[i]);
 	}
 }
 
-const std::vector<std::tuple<int, int, ActionType>>& Explosion::getPositions() const
+const std::vector<std::tuple<int16_t, int16_t, ActionType>>& Explosion::getPositions() const
 {
 	return positions;
 }

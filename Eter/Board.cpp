@@ -61,10 +61,10 @@ void Board::expandColumn(ColumnExpandDirection direction)
 std::vector<int16_t> Board::searchEmptyColumns()
 {
 	std::vector<int16_t> emptyCols;
-	for (int i = 0; i < m_board.size(); i++)
+	for (int16_t i = 0; i < m_board.size(); i++)
 	{
 		bool isEmpty = true;
-		for (int j = 0; j < m_board[i].size(); j++)
+		for (int16_t j = 0; j < m_board[i].size(); j++)
 		{
 			if (m_board[j][i].size() != 0)
 				isEmpty = false;
@@ -82,10 +82,10 @@ std::vector<int16_t> Board::searchEmptyColumns()
 std::vector<int16_t> Board::searchEmptyRows()
 {
 	std::vector<int16_t> emptyRows;
-	for (int i = 0; i < m_board.size(); i++)
+	for (int16_t i = 0; i < m_board.size(); i++)
 	{
 		bool isEmpty = true;
-		for (int j = 0; j < m_board[i].size(); j++)
+		for (int16_t j = 0; j < m_board[i].size(); j++)
 		{
 			if (m_board[i][j].size() != 0)
 				isEmpty = false;
@@ -109,7 +109,7 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 	}*/
 
 	// Check neighbors
-	std::vector<std::pair<int, int>> neighbors = {
+	std::vector<std::pair<int16_t, int16_t>> neighbors = {
 		{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1},
 		{x + 1, y + 1}, {x - 1, y + 1}, {x - 1, y - 1}, {x + 1, y - 1}
 	};
@@ -192,7 +192,7 @@ Board::State Board::checkWin(bool canCountPoints)
 {
 	const int16_t kResults = 8;
 	std::array<int16_t, kResults> results{};
-	int chessmanCount = 0;
+	int16_t chessmanCount = 0;
 
 	int16_t kRows = m_board.size();
 	int16_t kColumns = m_board[0].size();
@@ -533,7 +533,7 @@ void Board::clear()
 bool Board::checkRow(int16_t row)
 {
 	
-	for (int i = 0; i < m_board.size(); i++)
+	for (int16_t i = 0; i < m_board.size(); i++)
 	{
 		if (m_board[row][i].empty())
 		{
@@ -546,7 +546,7 @@ bool Board::checkRow(int16_t row)
 bool Board::checkColumn(int16_t column)
 {
 	
-	for (int i = 0; i < m_board.size(); i++)
+	for (int16_t i = 0; i < m_board.size(); i++)
 	{
 		if (m_board[i][column].empty())
 		{
@@ -630,9 +630,9 @@ Board& Board::operator=(const Board& board)
 		return *this;
 	}
 	
-	for (int i = 0; i < m_board.size(); i++)
+	for (int16_t i = 0; i < m_board.size(); i++)
 	{
-		for (int j = 0; j < m_board[i].size(); j++)
+		for (int16_t j = 0; j < m_board[i].size(); j++)
 		{
 			m_board[i][j] = board.m_board[i][j];
 		}
@@ -655,8 +655,8 @@ void Board::setBoard(const matrix& board)
 
 std::ostream& operator<<(std::ostream& os, const Board& board)
 {
-	for (int i = 0; i < board.m_board.size(); i++) {
-		for (int j = 0; j < board.m_board.size(); j++)
+	for (int16_t i = 0; i < board.m_board.size(); i++) {
+		for (int16_t j = 0; j < board.m_board.size(); j++)
 		{
 			if (board.m_board[i][j].empty() == true) {
 				os << 0 << " ";
@@ -673,8 +673,8 @@ std::ostream& operator<<(std::ostream& os, const Board& board)
 
 std::istream& operator>>(std::istream& in, Board& board)
 {
-	for (int i = 0; i < board.m_board.size(); i++) {
-		for (int j = 0; j < board.m_board.size(); j++)
+	for (int16_t i = 0; i < board.m_board.size(); i++) {
+		for (int16_t j = 0; j < board.m_board.size(); j++)
 		{
 			int16_t val;
 			in >> val;

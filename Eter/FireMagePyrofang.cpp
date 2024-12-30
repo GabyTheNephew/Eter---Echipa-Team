@@ -26,7 +26,7 @@ bool FireMagePyrofang::playMagePyrofang(Board& board, Color color, bool rowOrCol
 
 	if (rowOrColumn)
 	{
-		for (int i = 0; i < board.getSize(); i++)
+		for (int16_t i = 0; i < board.getSize(); i++)
 		{
 			if (board[{x, i}].back().getColor() == Color::Hole)
 			{
@@ -45,7 +45,7 @@ bool FireMagePyrofang::playMagePyrofang(Board& board, Color color, bool rowOrCol
 	}
 	else
 	{
-		for (int i = 0; i < board.getSize(); i++)
+		for (int16_t i = 0; i < board.getSize(); i++)
 		{
 			if (board[{x, i}].back().getColor() == Color::Hole)
 			{

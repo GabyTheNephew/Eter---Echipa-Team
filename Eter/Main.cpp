@@ -1,6 +1,11 @@
-#include <iostream>
+#include "Game.h"
+#include "iostream";
+
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	Game& game = Game::get_Instance();
+	game.startGame(Game::GameType::Training);
+
+
 }

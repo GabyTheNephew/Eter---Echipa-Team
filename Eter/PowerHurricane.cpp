@@ -1,8 +1,8 @@
 #include "PowerHurricane.h"
 
 
-static const std::string m_name = "Hurricane";
-static const std::string m_description = "Move any one full row / column by onecard so that the first card /stack is moved off the playing field.Cards moved outside the playing field return to their owners’ hands.";
+const std::string m_name = "Hurricane";
+const std::string m_description = "Move any one full row / column by onecard so that the first card /stack is moved off the playing field.Cards moved outside the playing field return to their owners’ hands.";
 PowerHurricane::PowerHurricane()
 {
 }
@@ -39,7 +39,7 @@ void PowerHurricane::playHurricanePower(Board& board, Player& player)
 {
 	if (checkHurricanePower(board, player))
 	{
-        int choice;
+        int16_t choice;
         std::cout << "Choose an option: \n1. Move Row\n2. Move Column\n";
         std::cin >> choice;
 		if (choice == 1)

@@ -28,7 +28,7 @@ bool WaterMageAqualon::playMageAqualon(Board& board, bool rowOrColumn, int16_t x
 		{
 			if (board.checkColumn(x))
 			{
-				for (int i = 0; i < board.getSize(); i++)
+				for (int16_t i = 0; i < board.getSize(); i++)
 				{
 					board.moveSpace(i, x, board.getSize()-i, x);
 				}
@@ -39,7 +39,7 @@ bool WaterMageAqualon::playMageAqualon(Board& board, bool rowOrColumn, int16_t x
 		{
 			if (board.checkRow(x))
 			{
-				for (int i = 0; i < board.getSize(); i++)
+				for (int16_t i = 0; i < board.getSize(); i++)
 				{
 					board.moveSpace(x, i, x, board.getSize()-i);
 				}

@@ -19,8 +19,8 @@ std::string_view PowerAvalanche::getDescription() const
 
 bool PowerAvalanche::checkAvalanchePower(Board& board, int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
-	int rowDiff = std::abs(x1 - x2);
-	int colDiff = std::abs(y1 - y2);
+	int16_t rowDiff = std::abs(x1 - x2);
+	int16_t colDiff = std::abs(y1 - y2);
 	if ((rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1))
 	{
 		return true;
