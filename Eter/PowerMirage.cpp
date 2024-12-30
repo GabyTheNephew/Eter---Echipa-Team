@@ -53,8 +53,8 @@ bool PowerMirage::checkMiragePower(Board& board,Player& player, int16_t x, int16
 {
 	if (player.GetVectorColor() == "Red")
 	{
-		for(int i=0;i<board.getSize();i++)
-			for (int j = 0; j < board.getSize(); j++)
+		for(int16_t i=0;i<board.getSize();i++)
+			for (int16_t j = 0; j < board.getSize(); j++)
 			{
 				if (board[{i, j}].back().getColor() == Color::IlusionRed)
 				{
@@ -64,8 +64,8 @@ bool PowerMirage::checkMiragePower(Board& board,Player& player, int16_t x, int16
 	}
 	if (player.GetVectorColor() == "Blue")
 	{
-		for (int i = 0; i < board.getSize(); i++)
-			for (int j = 0; j < board.getSize(); j++)
+		for (int16_t i = 0; i < board.getSize(); i++)
+			for (int16_t j = 0; j < board.getSize(); j++)
 			{
 				if (board[{i, j}].back().getColor() == Color::IlusionBlue)
 				{

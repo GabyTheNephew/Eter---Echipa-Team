@@ -46,7 +46,7 @@ void Game::startTraining()
 
 	this->m_round_Counter = 1;
 	int16_t maxRounds = 3;
-	int matrixMaxSize = 3;
+	const int16_t matrixMaxSize = 3;
 	std::vector<SimpleCard> PastCards;
 	// bool canPlayIllusion;
 	std::optional<std::pair<bool, bool>> canPlayIllusion;

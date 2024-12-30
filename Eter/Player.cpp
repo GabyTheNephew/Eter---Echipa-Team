@@ -207,7 +207,7 @@ SimpleCard Player::chooseCard()
 
 int Player::numberofValidCards()
 {
-	int count = 0;
+	int16_t count = 0;
 	for (auto& card : m_simpleCardsVector)
 	{
 		if (card.getColor() == Color::Red || card.getColor() == Color::Blue)

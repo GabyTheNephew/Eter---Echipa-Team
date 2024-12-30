@@ -46,3 +46,8 @@ std::ostream& operator<<(std::ostream& os, const SimpleCard& card)
 	os << static_cast<int>(card.m_value) << ColorToString(card.m_color);
 	return os;
 }
+
+bool SimpleCard::operator==(const SimpleCard & rhs) {
+	return this->m_value == rhs.m_value && this->m_color == rhs.m_color;
+}
+

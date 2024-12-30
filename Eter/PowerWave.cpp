@@ -1,8 +1,8 @@
 #include "PowerWave.h"
 
 
-static const std::string m_name = "Wave";
-static const std::string m_description = "Move any card/stack to the adjacent empty space,then play a card from your hand to this now empty space.";
+const std::string m_name = "Wave";
+const std::string m_description = "Move any card/stack to the adjacent empty space,then play a card from your hand to this now empty space.";
 
 PowerWave::PowerWave()
 {
@@ -24,7 +24,7 @@ bool PowerWave::checkWavePower(Board& board, Player& player, int16_t x, int16_t 
 	{
 		return false;
 	}
-	std::vector<std::pair<int, int>> neighbors = {
+	std::vector<std::pair<int16_t, int16_t>> neighbors = {
 		{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1},
 		{x + 1, y + 1}, {x - 1, y + 1}, {x - 1, y - 1}, {x + 1, y - 1}
 	};

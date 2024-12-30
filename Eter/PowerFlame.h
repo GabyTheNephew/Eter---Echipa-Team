@@ -1,6 +1,7 @@
 #pragma once
 #include"Player.h"
 #include<iostream>
+#include<string_view>
 
 class PowerFlame
 {

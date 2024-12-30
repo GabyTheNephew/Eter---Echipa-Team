@@ -12,7 +12,7 @@ private:
 	//vector for power
 	//vector for mage
 
-	using Position = std::tuple<int, int>;
+	using Position = std::tuple<int16_t, int16_t>;
 	// TODO: check int8_t, why is it converted to ascii/ char?
 
 public:

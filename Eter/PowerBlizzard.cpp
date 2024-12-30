@@ -51,7 +51,7 @@ void PowerBlizzard::playBlizzardPower(Board& board, Player player1,Player player
 		{
 			SimpleCard chosenCard = player1.chooseCard();
 			std::cin >> pozX >> pozY;
-			std::pair<int, int> poz = { pozX,pozY };
+			std::pair<int16_t, int16_t> poz = { pozX,pozY };
 
 			if (chosenCard.getValue() != 0 && std::find(invalidPos.begin(), invalidPos.end(), poz) == invalidPos.end())
 			{
