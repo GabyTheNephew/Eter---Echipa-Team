@@ -1,11 +1,12 @@
-#include "Game.h"
-#include "iostream";
+﻿#include <QApplication>
+#include <QDir>
+#include "MainWindow.h"
 
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
 
-int main()
-{
-	Game& game = Game::get_Instance();
-	game.startGame(Game::GameType::Training);
+    QString imagePath = QDir::currentPath() + QDir::separator() + "eter.png";
+    MainWindow mainWindow(imagePath);
 
-
+    return app.exec();
 }
