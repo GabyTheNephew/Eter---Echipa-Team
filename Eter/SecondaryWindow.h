@@ -3,11 +3,12 @@
 #include <QWidget>
 #include <QResizeEvent>
 #include <QCloseEvent>
-#include <QVBoxLayout>
+#include <QKeyEvent>
 #include <QApplication>
 #include <QPixmap>
 #include <QPalette>
 #include <QBrush>
+#include "MenuWindow.h"
 
 class SecondaryWindow : public QWidget {
     Q_OBJECT
@@ -21,6 +22,7 @@ signals:
 protected:
     void closeEvent(QCloseEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 
 private:
     QString imagePath;

@@ -1,4 +1,5 @@
 #include "SecondaryWindow.h"
+#include "MenuWindow.h"
 
 SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, QWidget* parent)
     : QWidget(parent), imagePath(imagePath) {
@@ -25,5 +26,23 @@ void SecondaryWindow::resizeEvent(QResizeEvent* event) {
         QPalette palette = this->palette();
         palette.setBrush(QPalette::Window, QBrush(backgroundPixmap.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
         this->setPalette(palette);
+    }
+}
+
+void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Escape) {
+        MenuWindow* menu = new MenuWindow(this);
+        menu->show();
+
+        connect(menu, &MenuWindow::goToHome, this, [this, menu]() {
+            menu->close();
+            emit closed();
+        });
+
+        connect(menu, &MenuWindow::exitApp, []() {
+            QApplication::quit();
+        });
+    } else {
+        QWidget::keyPressEvent(event);
     }
 }
