@@ -6,6 +6,7 @@
 #include <QStringList>
 #include <unordered_map>
 #include "SecondaryWindow.h"
+#include "IntermediateMenu.h"
 
 class MainWindow : public QWidget {
     Q_OBJECT
