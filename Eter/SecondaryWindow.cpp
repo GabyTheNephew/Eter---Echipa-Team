@@ -1,8 +1,8 @@
 #include "SecondaryWindow.h"
-#include "MenuWindow.h"
+
 
 SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, QWidget* parent)
-    : QWidget(parent), imagePath(imagePath) {
+    : QWidget(parent), imagePath(imagePath){
     setWindowTitle(title);
 
     QPalette palette = this->palette();
@@ -11,7 +11,10 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
     this->setAutoFillBackground(true);
 
     this->showFullScreen();
+
+ 
 }
+
 
 void SecondaryWindow::closeEvent(QCloseEvent* event) {
     emit closed();
@@ -36,13 +39,16 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 
         connect(menu, &MenuWindow::goToHome, this, [this, menu]() {
             menu->close();
-            emit closed();
-        });
+            this->close();
+            emit closed(); 
+            });
 
         connect(menu, &MenuWindow::exitApp, []() {
             QApplication::quit();
-        });
-    } else {
+            });
+    }
+    else {
         QWidget::keyPressEvent(event);
     }
 }
+

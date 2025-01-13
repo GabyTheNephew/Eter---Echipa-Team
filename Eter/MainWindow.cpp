@@ -22,15 +22,48 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                 return;
             }
 
-            if (secondaryWindows.find(text) == secondaryWindows.end()) {
-                secondaryWindows[text] = new SecondaryWindow(text, imagePath);
-                connect(secondaryWindows[text], &SecondaryWindow::closed, [this]() {
-                    this->showFullScreen();
-                    });
+            for (auto& child : this->children()) {
+                if (QWidget* widget = qobject_cast<QWidget*>(child)) {
+                    widget->hide();
+                }
             }
 
-            this->hide();
-            secondaryWindows[text]->showFullScreen();
+            IntermediateMenu* menu = new IntermediateMenu(this);
+            menu->show();
+
+            connect(menu, &IntermediateMenu::startSelected, [this, text, menu, imagePath](bool illusions, bool explosions, bool timerActive) {
+                menu->close(); 
+
+                this->hide();
+
+                if (secondaryWindows.find(text) == secondaryWindows.end()) {
+                    secondaryWindows[text] = new SecondaryWindow(text, imagePath);
+
+                   
+                    connect(secondaryWindows[text], &SecondaryWindow::closed, [this]() {
+               
+                        for (auto& child : this->children()) {
+                            if (QWidget* widget = qobject_cast<QWidget*>(child)) {
+                                widget->show();
+                            }
+                        }
+
+                        this->showFullScreen(); 
+                        });
+                }
+
+                secondaryWindows[text]->showFullScreen();
+                });
+
+            connect(menu, &IntermediateMenu::goBackSelected, [this, menu]() {
+                menu->close();
+
+                for (auto& child : this->children()) {
+                    if (QWidget* widget = qobject_cast<QWidget*>(child)) {
+                        widget->show();
+                    }
+                }
+                });
             });
     }
 
