@@ -6,7 +6,7 @@ Game Game::m_current_Instance;
 
 Game& Game::get_Instance()
 {
-	return m_current_Instance; 
+	return m_current_Instance;
 }
 
 Game::GameType Game::stringToGameType(std::string_view word)
@@ -22,11 +22,14 @@ Game::GameType Game::stringToGameType(std::string_view word)
 			else
 				if (word == "Tournament")
 					return GameType::Tournament;
+				else
+					if (word == "MageDuelAndPower")
+						return GameType::MageDuelAndPower;
 }
 
 std::string_view Game::gameTypeToString(GameType gameType) const
 {
-	
+
 	if (gameType == GameType::Training)
 		return "Training";
 	else
@@ -38,7 +41,9 @@ std::string_view Game::gameTypeToString(GameType gameType) const
 			else
 				if (gameType == GameType::Tournament)
 					return "Tournament";
-	
+				else
+					if (gameType == GameType::MageDuelAndPower)
+						return "MageDuelAndPower";
 }
 
 void Game::startTraining()
@@ -169,7 +174,7 @@ void Game::startTraining()
 			break;
 		}
 	}
-	
+
 
 }
 
@@ -200,14 +205,18 @@ void Game::startTournament()
 	//vector
 	//best of 5
 }
+void Game::startMageDuelAndPower()
+{
+
+}
 
 void Game::showExplosionMenu()
 {
 	std::string input;
 
-	
+
 	std::cout << "=== Explosion Menu ===\n";
-	std::cout << 
+	std::cout <<
 		"Type 'explosions' to enable explosions, 'no explosions' to disable them, 'illusions' to enable illusions, 'no illusions' to disable them or 'start' to begin the game:\n";
 
 	while (true)
@@ -247,9 +256,9 @@ void Game::showExplosionMenu()
 }
 
 void Game::startGame(GameType selectedGameType)
-{	
+{
 	showExplosionMenu();
-	
+
 	switch (selectedGameType)
 	{
 	case (GameType::Training):
@@ -264,10 +273,13 @@ void Game::startGame(GameType selectedGameType)
 	case (GameType::Tournament):
 		startTournament();
 		break;
+	case (GameType::MageDuelAndPower):
+		startMageDuelAndPower();
+		break;
 	default:
 		break;
 	}
-	
+
 }
 
 void Game::setExplosionsEnabled(bool enabled)

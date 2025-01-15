@@ -1,4 +1,5 @@
-#include "MainWindow.h"
+﻿#include "MainWindow.h"
+#include "LoadGameMenu.h"
 
 MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
     : QWidget(parent), imagePath(imagePath) {
@@ -6,21 +7,53 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
 
     this->setAutoFillBackground(true);
 
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
-    QStringList buttonTexts = { "Training", "Mage Duel", "Power Duel", "Tournament", "Exit" };
+
+    mainLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    QStringList buttonTexts = { "Load Game", "Training", "Mage Duel", "Power Duel", "Mage and Power Duel", "Tournament", "Exit" };
 
     for (const QString& text : buttonTexts) {
         QPushButton* button = new QPushButton(text, this);
         button->setFixedSize(200, 50);
-        layout->addWidget(button, 0, Qt::AlignCenter);
+        mainLayout->addWidget(button, 0, Qt::AlignCenter);
 
         connect(button, &QPushButton::clicked, [this, text, imagePath]() {
+            if (text == "Load Game") {
+                for (auto& child : this->children()) {
+                    if (QWidget* widget = qobject_cast<QWidget*>(child)) {
+                        if (widget != this) {
+                            widget->hide();
+                        }
+                    }
+                }
+
+
+                LoadGameMenu* loadGameMenu = new LoadGameMenu(this);
+                loadGameMenu->setWindowModality(Qt::ApplicationModal);
+                loadGameMenu->setAttribute(Qt::WA_DeleteOnClose);     
+                loadGameMenu->show();
+
+                connect(loadGameMenu, &LoadGameMenu::goBackSelected, [this, loadGameMenu]() {
+                    loadGameMenu->close();
+                    for (auto& child : this->children()) {
+                        if (QWidget* widget = qobject_cast<QWidget*>(child)) {
+                            if (widget != this) {
+                                widget->show();
+                            }
+                        }
+                    }
+                    });
+
+                return;
+            }
+
             if (text == "Exit") {
                 QApplication::quit();
                 return;
             }
+
 
             for (auto& child : this->children()) {
                 if (QWidget* widget = qobject_cast<QWidget*>(child)) {
@@ -32,23 +65,20 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
             menu->show();
 
             connect(menu, &IntermediateMenu::startSelected, [this, text, menu, imagePath](bool illusions, bool explosions, bool timerActive) {
-                menu->close(); 
+                menu->close();
 
                 this->hide();
 
                 if (secondaryWindows.find(text) == secondaryWindows.end()) {
                     secondaryWindows[text] = new SecondaryWindow(text, imagePath);
 
-                   
                     connect(secondaryWindows[text], &SecondaryWindow::closed, [this]() {
-               
                         for (auto& child : this->children()) {
                             if (QWidget* widget = qobject_cast<QWidget*>(child)) {
                                 widget->show();
                             }
                         }
-
-                        this->showFullScreen(); 
+                        this->showFullScreen();
                         });
                 }
 
@@ -67,7 +97,10 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
             });
     }
 
-    layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    mainLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    this->setLayout(mainLayout);
     this->showFullScreen();
 }
 

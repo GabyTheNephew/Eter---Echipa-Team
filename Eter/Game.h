@@ -11,12 +11,12 @@ class Game
 private:
     int16_t m_round_Counter;
     Board m_gameBoard;
-    static Game m_current_Instance; 
+    static Game m_current_Instance;
     Player player1, player2;
     //Explosion m_explosion;
     std::optional<Explosion> m_explosion;
     bool m_illusionsEnabled;
-    
+
     Game() : m_round_Counter{ 0 }, m_gameBoard{} {}
 
     // Methods for the different game types
@@ -24,7 +24,8 @@ private:
     void startMageDuel();
     void startPowerDuel();
     void startTournament();
-	void showExplosionMenu();
+    void startMageDuelAndPower();
+    void showExplosionMenu();
 
 public:
     Game(const Game&) = delete;
@@ -37,6 +38,7 @@ public:
         Training,
         MageDuel,
         Power,
+        MageDuelAndPower,
         Tournament
     };
 
@@ -48,7 +50,7 @@ public:
     void startGame(GameType selectedGameType);
 
 
-    void setExplosionsEnabled(bool enabled); 
+    void setExplosionsEnabled(bool enabled);
     bool areExplosionsEnabled() const;
 
     void setIllusionsEnabled(bool enabled);
