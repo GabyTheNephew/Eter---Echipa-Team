@@ -33,22 +33,38 @@ void SecondaryWindow::resizeEvent(QResizeEvent* event) {
 }
 
 void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
+    qDebug() << "Key pressed, menu visible:" << (menu && menu->isVisible());
+
     if (event->key() == Qt::Key_Escape) {
-        MenuWindow* menu = new MenuWindow(this);
-        menu->show();
+        if (!menu) {
+            menu = new MenuWindow(this);
 
-        connect(menu, &MenuWindow::goToHome, this, [this, menu]() {
-            menu->close();
-            this->close();
-            emit closed(); 
-            });
+            connect(menu, &MenuWindow::goToHome, this, [this]() {
+                menu->hide();
+                this->close();
+                emit closed();
+                });
 
-        connect(menu, &MenuWindow::exitApp, []() {
-            QApplication::quit();
-            });
+            connect(menu, &MenuWindow::exitApp, []() {
+                QApplication::quit();
+                });
+
+            menu->hide(); 
+        }
+
+        if (menu->isVisible()) {
+            menu->hide();
+        }
+        else {
+            menu->show();
+            menu->raise();
+            menu->activateWindow();
+        }
     }
     else {
         QWidget::keyPressEvent(event);
     }
 }
+
+
 
