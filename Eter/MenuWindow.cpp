@@ -5,18 +5,16 @@ MenuWindow::MenuWindow(QWidget* parent) : QWidget(parent) {
     setFixedSize(600, 400);
 
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    setWindowModality(Qt::NonModal); 
     setAttribute(Qt::WA_TranslucentBackground);
-
 
     backgroundWidget = new QWidget(this);
     backgroundWidget->setStyleSheet("background-color: rgba(0, 0, 0, 0.7); border-radius: 20px;");
     backgroundWidget->setGeometry(100, 0, 400, 400);
 
-
     saveButton = new QPushButton("Save Game", this);
     homeButton = new QPushButton("Home", this);
     exitButton = new QPushButton("Exit", this);
-
 
     QString buttonStyle = R"(
         QPushButton {
@@ -37,23 +35,32 @@ MenuWindow::MenuWindow(QWidget* parent) : QWidget(parent) {
     homeButton->setStyleSheet(buttonStyle);
     exitButton->setStyleSheet(buttonStyle);
 
-    
     QVBoxLayout* buttonLayout = new QVBoxLayout();
     buttonLayout->addWidget(saveButton);
     buttonLayout->addWidget(homeButton);
     buttonLayout->addWidget(exitButton);
-    buttonLayout->setSpacing(20); 
+    buttonLayout->setSpacing(20);
     buttonLayout->setAlignment(Qt::AlignCenter);
 
-    
     buttonContainer = new QWidget(this);
     buttonContainer->setLayout(buttonLayout);
     buttonContainer->setStyleSheet("background: transparent;");
     buttonContainer->setGeometry(0, 0, 600, 400);
 
-    
     connect(exitButton, &QPushButton::clicked, this, &MenuWindow::exitApp);
     connect(homeButton, &QPushButton::clicked, this, &MenuWindow::goToHome);
 
-    this->show();
+    this->hide(); 
+}
+
+void MenuWindow::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Escape) {
+        if (parentWidget()) {
+            parentWidget()->setFocus(); 
+            QCoreApplication::sendEvent(parentWidget(), event); 
+        }
+    }
+    else {
+        QWidget::keyPressEvent(event);
+    }
 }

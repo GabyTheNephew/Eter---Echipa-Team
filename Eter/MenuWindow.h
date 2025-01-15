@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QKeyEvent>
 
 class MenuWindow : public QWidget {
     Q_OBJECT
@@ -13,6 +14,9 @@ public:
 signals:
     void goToHome();
     void exitApp();
+
+protected:
+    void keyPressEvent(QKeyEvent* event) override;
 
 private:
     QPushButton* saveButton;

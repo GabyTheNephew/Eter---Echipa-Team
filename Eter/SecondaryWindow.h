@@ -26,4 +26,5 @@ protected:
 
 private:
     QString imagePath;
+    MenuWindow* menu = nullptr;
 };
