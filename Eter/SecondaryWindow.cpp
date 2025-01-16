@@ -14,6 +14,10 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
     // Adăugăm un spacer extensibil la sfârșit pentru a trage conținutul în sus
     mainLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
 
+    // Layout pentru cărțile jucătorului 1
+    player1CardsLayout = new QHBoxLayout();
+    mainLayout->addLayout(player1CardsLayout);
+
     // Setăm fundalul
     QPalette palette = this->palette();
     palette.setBrush(QPalette::Window,
@@ -85,5 +89,22 @@ void SecondaryWindow::setBoard(Board& board) {
 
     m_boardView->updateView();
 }
+
+void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
+    QLayoutItem* child;
+    while ((child = player1CardsLayout->takeAt(0)) != nullptr) {
+        delete child->widget(); // Eliminăm toate widget-urile existente
+        delete child;
+    }
+
+    for (const auto& card : cards) {
+        auto cardLabel = new QLabel(this);
+        cardLabel->setText(QString::number(card.getValue())); // Afișăm valoarea cărții
+        cardLabel->setAlignment(Qt::AlignCenter);
+        cardLabel->setStyleSheet("border: 1px solid black; background-color: white;");
+        player1CardsLayout->addWidget(cardLabel);
+    }
+}
+
 
 
