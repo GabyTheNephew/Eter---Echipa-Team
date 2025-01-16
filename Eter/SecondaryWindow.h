@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QLabel>
 #include <QResizeEvent>
 #include <QCloseEvent>
 #include <QKeyEvent>
@@ -18,6 +19,7 @@ class SecondaryWindow : public QWidget {
 public:
     explicit SecondaryWindow(const QString& title, const QString& imagePath, QWidget* parent = nullptr);
     void setBoard(Board& board);
+    void setPlayer1Cards(const std::vector<SimpleCard>& cards);
 signals:
     void closed();
 
@@ -31,4 +33,5 @@ private:
     MenuWindow* menu = nullptr;
     BoardView* m_boardView;
     QVBoxLayout* mainLayout;
+    QHBoxLayout* player1CardsLayout;
 };

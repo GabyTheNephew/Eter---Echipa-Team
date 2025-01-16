@@ -73,6 +73,8 @@ void Game::startTraining()
 	auto* trainingWindow = new SecondaryWindow("Training", QDir::currentPath() + QDir::separator() + "eter.png");
 	trainingWindow->setAttribute(Qt::WA_DeleteOnClose);
 	trainingWindow->setBoard(m_gameBoard);
+	trainingWindow->setPlayer1Cards(player1.getVector());
+
 
 	// Debug print pentru a verifica tabla
 	qDebug() << "Board size:" << m_gameBoard.getRowSize() << "x" << m_gameBoard.getColumnSize();
@@ -114,6 +116,8 @@ void Game::startTraining()
 				if (chosenCard.getValue() != 0)
 				{
 					player1.playCard(chosenCard, m_gameBoard, PastCards, canPlayIllusion);
+					trainingWindow->setPlayer1Cards(player1.getVector());
+
 				}
 				//m_gameBoard.print();
 
