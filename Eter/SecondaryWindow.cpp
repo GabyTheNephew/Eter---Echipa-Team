@@ -1,18 +1,22 @@
-#include "SecondaryWindow.h"
+﻿#include "SecondaryWindow.h"
 
 
 SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, QWidget* parent)
-    : QWidget(parent), imagePath(imagePath){
+    : QWidget(parent), imagePath(imagePath) {
     setWindowTitle(title);
-    //m_boardView = new BoardView(boardInstance, this);
+
+    // Create and store the layout
+    mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(50, 50, 50, 50);  // marje mai mari
+    mainLayout->setSpacing(20);  // spacing mai mare
+
+    // Set the background
     QPalette palette = this->palette();
-    palette.setColor(QPalette::Window, Qt::gray);
+    palette.setColor(QPalette::Window, Qt::transparent);
     this->setPalette(palette);
     this->setAutoFillBackground(true);
 
     this->showFullScreen();
-
- 
 }
 
 
@@ -66,5 +70,24 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
     }
 }
 
+void SecondaryWindow::setBoard(Board& board) {
+    // Create BoardView with the provided board
+    m_boardView = new BoardView(board, this);
+
+    // Set fixed size for the grid
+    m_boardView->setFixedSize(400, 400);  // dimensiune fixă mai mare
+
+    // Setăm un background pentru BoardView să fim siguri că e vizibil
+    m_boardView->setStyleSheet("background-color: rgba(255, 255, 255, 30);");
+
+    // Add to layout using mainLayout
+    mainLayout->addWidget(m_boardView, 0, Qt::AlignCenter);
+
+    // Forțăm layout-ul să își actualizeze geometria
+    mainLayout->activate();
+
+    // Force update
+    m_boardView->updateView();
+}
 
 

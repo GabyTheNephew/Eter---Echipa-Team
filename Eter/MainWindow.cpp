@@ -49,6 +49,14 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                 return;
             }
 
+            if (text == "Training") {
+                // Instanțiem jocul folosind metoda de Training din Game
+                qDebug() << "Intrat in if de Training\n";
+                Game& gameInstance = Game::get_Instance();
+                gameInstance.startGame(Game::GameType::Training);
+                return;
+            }
+
             if (text == "Exit") {
                 QApplication::quit();
                 return;
@@ -61,7 +69,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                 }
             }
 
-            IntermediateMenu* menu = new IntermediateMenu(this);
+            /*IntermediateMenu* menu = new IntermediateMenu(this);
             menu->show();
 
             connect(menu, &IntermediateMenu::startSelected, [this, text, menu, imagePath](bool illusions, bool explosions, bool timerActive) {
@@ -93,7 +101,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                         widget->show();
                     }
                 }
-                });
+                });*/
             });
     }
 

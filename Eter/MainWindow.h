@@ -10,6 +10,7 @@
 #include "SecondaryWindow.h"
 #include "IntermediateMenu.h"
 #include "LoadGameMenu.h"
+#include "Game.h"
 
 class MainWindow : public QWidget {
     Q_OBJECT
