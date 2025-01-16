@@ -425,7 +425,7 @@ Board::Board():
 
 Board::Board(int16_t size)
 {
-	m_board.resize(size);
+	this->resizeBoard(size);
 	m_size = size;
 }
 

@@ -5,14 +5,19 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
     : QWidget(parent), imagePath(imagePath) {
     setWindowTitle(title);
 
-    // Create and store the layout
+    // Creăm layout-ul principal pentru întreaga fereastră
     mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(50, 50, 50, 50);  // marje mai mari
-    mainLayout->setSpacing(20);  // spacing mai mare
 
-    // Set the background
+    // Adăugăm un spacer extensibil la început pentru a împinge conținutul în jos
+    mainLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    // Adăugăm un spacer extensibil la sfârșit pentru a trage conținutul în sus
+    mainLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    // Setăm fundalul
     QPalette palette = this->palette();
-    palette.setColor(QPalette::Window, Qt::transparent);
+    palette.setBrush(QPalette::Window,
+        QBrush(QPixmap(imagePath).scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
     this->setPalette(palette);
     this->setAutoFillBackground(true);
 
@@ -71,22 +76,13 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 }
 
 void SecondaryWindow::setBoard(Board& board) {
-    // Create BoardView with the provided board
     m_boardView = new BoardView(board, this);
 
-    // Set fixed size for the grid
-    m_boardView->setFixedSize(400, 400);  // dimensiune fixă mai mare
+    // Am redus dimensiunea la 120x120
+    m_boardView->setFixedSize(350, 350);
 
-    // Setăm un background pentru BoardView să fim siguri că e vizibil
-    m_boardView->setStyleSheet("background-color: rgba(255, 255, 255, 30);");
+    mainLayout->insertWidget(1, m_boardView, 0, Qt::AlignCenter);
 
-    // Add to layout using mainLayout
-    mainLayout->addWidget(m_boardView, 0, Qt::AlignCenter);
-
-    // Forțăm layout-ul să își actualizeze geometria
-    mainLayout->activate();
-
-    // Force update
     m_boardView->updateView();
 }
 
