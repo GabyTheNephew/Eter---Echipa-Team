@@ -9,6 +9,8 @@
 #include <QPalette>
 #include <QBrush>
 #include "MenuWindow.h"
+#include "BoardView.h"
+#include "Board.h"
 
 class SecondaryWindow : public QWidget {
     Q_OBJECT
@@ -27,4 +29,5 @@ protected:
 private:
     QString imagePath;
     MenuWindow* menu = nullptr;
+    BoardView* m_boardView;
 };

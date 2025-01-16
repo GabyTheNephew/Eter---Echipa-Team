@@ -4,7 +4,7 @@
 SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, QWidget* parent)
     : QWidget(parent), imagePath(imagePath){
     setWindowTitle(title);
-
+    //m_boardView = new BoardView(boardInstance, this);
     QPalette palette = this->palette();
     palette.setColor(QPalette::Window, Qt::gray);
     this->setPalette(palette);
