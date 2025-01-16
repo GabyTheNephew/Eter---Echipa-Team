@@ -17,7 +17,7 @@ class SecondaryWindow : public QWidget {
 
 public:
     explicit SecondaryWindow(const QString& title, const QString& imagePath, QWidget* parent = nullptr);
-
+    void setBoard(Board& board);
 signals:
     void closed();
 
@@ -30,4 +30,5 @@ private:
     QString imagePath;
     MenuWindow* menu = nullptr;
     BoardView* m_boardView;
+    QVBoxLayout* mainLayout;
 };

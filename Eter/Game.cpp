@@ -48,7 +48,7 @@ std::string_view Game::gameTypeToString(GameType gameType) const
 
 void Game::startTraining()
 {
-
+	m_gameBoard = Board(1);
 	this->m_round_Counter = 1;
 	int16_t maxRounds = 3;
 	const int16_t matrixMaxSize = 3;
@@ -71,7 +71,12 @@ void Game::startTraining()
 	player2 = Player("Name2", { SimpleCard(1,Color::Blue),SimpleCard(1,Color::Blue),SimpleCard(2,Color::Blue) ,SimpleCard(2,Color::Blue) ,SimpleCard(3,Color::Blue),SimpleCard(3,Color::Blue),SimpleCard(4,Color::Blue) }, PastCards);
 
 	auto* trainingWindow = new SecondaryWindow("Training", QDir::currentPath() + QDir::separator() + "eter.png");
-	trainingWindow->setAttribute(Qt::WA_DeleteOnClose); // Șterge automat fereastra la închidere
+	trainingWindow->setAttribute(Qt::WA_DeleteOnClose);
+	trainingWindow->setBoard(m_gameBoard);
+
+	// Debug print pentru a verifica tabla
+	qDebug() << "Board size:" << m_gameBoard.getRowSize() << "x" << m_gameBoard.getColumnSize();
+
 	trainingWindow->show();
 	return;
 	while (m_round_Counter <= maxRounds)
