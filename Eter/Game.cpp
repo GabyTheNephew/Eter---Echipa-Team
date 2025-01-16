@@ -48,7 +48,7 @@ std::string_view Game::gameTypeToString(GameType gameType) const
 
 void Game::startTraining()
 {
-	m_gameBoard = Board(1);
+	m_gameBoard = Board(3);
 	this->m_round_Counter = 1;
 	int16_t maxRounds = 3;
 	const int16_t matrixMaxSize = 3;
