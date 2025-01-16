@@ -5,6 +5,9 @@
 #include "Player.h"
 #include "Explosion.h"
 #include <string>
+#include <QApplication>
+#include <QDir>
+#include <SecondaryWindow.h>
 
 class Game
 {
