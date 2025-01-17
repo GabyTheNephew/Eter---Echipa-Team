@@ -7,7 +7,7 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
     // Creăm layout-ul principal
     mainLayout = new QVBoxLayout(this);
 
-    connect(m_boardView, &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
+    //connect(m_boardView, &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
 
     // Layout pentru cărțile albastre (sus)
     player2CardsLayout = new QHBoxLayout();
@@ -89,7 +89,7 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 }
 
 void SecondaryWindow::setBoard(Board& board) {
-    if (!m_boardView) {
+    if (!m_boardView) { // Creăm `m_boardView` doar dacă nu există deja
         m_boardView = new BoardView(board, this);
         m_boardView->setFixedSize(350, 350);
 
@@ -191,22 +191,22 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
         return;
     }
 
-    qDebug() << "Placing card: Color ="
-        << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
+    qDebug() << "Attempting to place card at (" << row << ", " << col << "):"
+        << "Color =" << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
         << ", Value =" << selectedCard.getValue();
 
-    if (m_boardView->canPlaceCard(row, col)) {
-        m_boardView->placeCard(selectedCard, row, col); // Transmitem selectedCard
-        qDebug() << "Card placed: Color ="
-            << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
-            << ", Value =" << selectedCard.getValue() << " at row =" << row << ", col =" << col;
+    Board::Position pos = { row, col };
+    if (!m_boardView->canPlaceCard(selectedCard, row, col)) {
+        qDebug() << "Position is not valid for placement.";
+        return;
+    }
 
-        selectedCard = SimpleCard(); // Resetăm selecția
-    }
-    else {
-        qDebug() << "Cannot place card at:" << row << col;
-    }
+    // Plasăm cartea
+    m_boardView->placeCard(selectedCard, row, col);
+    selectedCard = SimpleCard(); // Resetăm selecția
+    qDebug() << "Card placed successfully.";
 }
+
 
 
 

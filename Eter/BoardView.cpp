@@ -22,22 +22,13 @@ void BoardView::updateView() {
         delete item;           // Ștergem item-ul din layout
     }
 
-    // Calculăm dimensiunea celulelor
-    int availableSize = width() - (2 * 10); // Dimensiunea disponibilă pe lățime (margini incluse)
-    int cellSize = (availableSize) / board.getRowSize();
-
-    // Setăm spațierea între celule
-    gridLayout->setSpacing(15);
-
     // Construim grila de celule
     for (int row = 0; row < board.getRowSize(); ++row) {
         for (int col = 0; col < board.getColumnSize(); ++col) {
             QPushButton* cellButton = new QPushButton(this);
 
-            // Setăm dimensiunea fixă pentru celule (pătrată)
-            cellButton->setFixedSize(cellSize, cellSize);
-
-            // Stilizare celule
+            // Setăm dimensiunea și stilul pentru celulă
+            cellButton->setFixedSize(100, 100); // Exemplu de dimensiune
             cellButton->setStyleSheet(
                 "QPushButton {"
                 "    background-color: rgba(255, 255, 255, 50);"
@@ -56,7 +47,7 @@ void BoardView::updateView() {
             // Adăugăm butonul în grilă
             gridLayout->addWidget(cellButton, row, col);
 
-            // Conectăm clicul pe celulă la semnalul `cellClicked`
+            // **Conectăm clicul pe celulă la semnalul `cellClicked`**
             connect(cellButton, &QPushButton::clicked, [this, row, col]() {
                 emit cellClicked(row, col); // Emită semnalul cu coordonatele celulei clicate
                 });
@@ -68,50 +59,51 @@ void BoardView::updateView() {
 }
 
 
-bool BoardView::canPlaceCard(int row, int col) const {
-    return true; // Verificăm dacă celula este goală
+
+bool BoardView::canPlaceCard(const SimpleCard& card, int row, int col) const {
+    Board::Position pos = {row, col};
+    
+    // Verifică dacă poziția este validă și dacă cartea respectă regulile de plasare
+    return /*board.canBePlaced(row, col) &&*/ board.canBePushed(card, pos);
 }
 
 
 void BoardView::placeCard(const SimpleCard& card, int row, int col) {
-    qDebug() << "Placing card in BoardView: Color ="
-        << (card.getColor() == Color::Red ? "Red" : "Blue")
-        << ", Value =" << card.getValue();
+    Board::Position pos = { row, col };
 
-    if (canPlaceCard(row, col)) {
-        // Adăugăm cartea în modelul de date
-        board[{row, col}].push_back(card);
+    // Verificăm dacă poziția permite plasarea cărții
+    if (!canPlaceCard(card, row, col)) {
+        qDebug() << "Cannot place card at position (" << row << "," << col << ")";
+        return;
+    }
 
-        // Găsim butonul corespunzător în grilă
-        QLayoutItem* item = gridLayout->itemAtPosition(row, col);
-        if (item) {
-            QPushButton* cellButton = qobject_cast<QPushButton*>(item->widget());
-            if (cellButton) {
-                // Construim calea imaginii pe baza culorii și valorii cărții
-                QString imagePath = (card.getColor() == Color::Red ? "red" : "blue");
-                imagePath += QString::number(card.getValue()) + ".jpg";
+    // Plasăm cartea folosind `pushCard` din `Board`
+    board.pushCard(card, pos);
 
-                QPixmap pixmap(imagePath);
-                if (!pixmap.isNull()) {
-                    // Setăm imaginea pe buton
-                    QSize cellSize = cellButton->size();
-                    cellButton->setIcon(QIcon(pixmap));
-                    cellButton->setIconSize(cellSize);
-                }
-                else {
-                    qDebug() << "Image not found for card: Value =" << card.getValue()
-                        << ", Color =" << (card.getColor() == Color::Red ? "Red" : "Blue");
-                    cellButton->setText(QString::number(card.getValue())); // Fallback la text
-                }
+    // Actualizăm vizualizarea celulei în grilă
+    QLayoutItem* item = gridLayout->itemAtPosition(row, col);
+    if (item) {
+        QPushButton* cellButton = qobject_cast<QPushButton*>(item->widget());
+        if (cellButton) {
+            // Construim calea imaginii
+            QString imagePath = (card.getColor() == Color::Red ? "red" : "blue");
+            imagePath += QString::number(card.getValue()) + ".jpg";
+
+            QPixmap pixmap(imagePath);
+            if (!pixmap.isNull()) {
+                // Setăm imaginea pe buton
+                QSize cellSize = cellButton->size();
+                cellButton->setIcon(QIcon(pixmap));
+                cellButton->setIconSize(cellSize);
+            }
+            else {
+                qDebug() << "Image not found for card: Value =" << card.getValue()
+                    << ", Color =" << (card.getColor() == Color::Red ? "Red" : "Blue");
+                cellButton->setText(QString::number(card.getValue())); // Fallback la text
             }
         }
+    }
 
-        qDebug() << "Card placed: Color ="
-            << (card.getColor() == Color::Red ? "Red" : "Blue")
-            << ", Value =" << card.getValue()
-            << " at row =" << row << ", col =" << col;
-    }
-    else {
-        qDebug() << "Cannot place card at:" << row << col;
-    }
+    qDebug() << "Card placed successfully at position (" << row << "," << col << ")";
 }
+
