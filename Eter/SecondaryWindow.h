@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <QWidget>
 #include <QLabel>
@@ -21,6 +21,8 @@ public:
     void setBoard(Board& board);
     void setPlayer1Cards(const std::vector<SimpleCard>& cards);
     void setPlayer2Cards(const std::vector<SimpleCard>& cards);
+
+
 signals:
     void closed();
 
@@ -36,4 +38,9 @@ private:
     QVBoxLayout* mainLayout;
     QHBoxLayout* player1CardsLayout;
     QHBoxLayout* player2CardsLayout;
+    SimpleCard selectedCard;
+
+private slots:
+    void onCardSelected(const SimpleCard& card); // Gestionare selecție carte
+    void onBoardClicked(int row, int col);
 };

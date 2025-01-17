@@ -7,6 +7,8 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
     // Creăm layout-ul principal
     mainLayout = new QVBoxLayout(this);
 
+    connect(m_boardView, &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
+
     // Layout pentru cărțile albastre (sus)
     player2CardsLayout = new QHBoxLayout();
     mainLayout->addLayout(player2CardsLayout);
@@ -89,20 +91,15 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 void SecondaryWindow::setBoard(Board& board) {
     if (!m_boardView) {
         m_boardView = new BoardView(board, this);
-
-        // Setăm dimensiunea tablei de joc
         m_boardView->setFixedSize(350, 350);
 
-        // Eliminăm orice widget sau spacer existent pe poziția tablei
-        QLayoutItem* item = mainLayout->itemAt(1); // Poziția 1 în layout
-        if (item) {
-            mainLayout->removeItem(item);
-            delete item;
-        }
-
-        // Adăugăm tabla de joc, centrată
+        // Adăugăm tabla în layout-ul principal
         mainLayout->insertWidget(1, m_boardView, 0, Qt::AlignHCenter | Qt::AlignVCenter);
 
+        // Conectăm semnalul `cellClicked` la slotul `onBoardClicked`
+        connect(m_boardView, &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
+
+        // Actualizăm vizualizarea tablei
         m_boardView->updateView();
     }
 }
@@ -110,39 +107,40 @@ void SecondaryWindow::setBoard(Board& board) {
 
 
 
+
 void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
     QLayoutItem* child;
     while ((child = player1CardsLayout->takeAt(0)) != nullptr) {
-        delete child->widget(); // Eliminăm toate widget-urile existente
+        delete child->widget();
         delete child;
     }
 
     for (const auto& card : cards) {
-        auto cardLabel = new QLabel(this);
+        auto cardButton = new QPushButton(this);
 
-        // Determinăm imaginea corespunzătoare cărții pe baza valorii și culorii
-        QString imagePath;
-        if (card.getColor() != Color::usedRed) {
-            imagePath += (card.getColor() == Color::Red ? "red" : "blue");
-            imagePath += QString::number(card.getValue()) + ".jpg";
+        QString imagePath = "red";
+        imagePath += QString::number(card.getValue()) + ".jpg";
 
-
-            // Setăm imaginea ca fundal al QLabel-ului
-            QPixmap pixmap(imagePath);
-            if (!pixmap.isNull()) {
-                cardLabel->setPixmap(pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
-            }
-            else {
-                cardLabel->setText("Image not found");
-                cardLabel->setStyleSheet("border: 1px solid black; background-color: white;");
-            }
-
-
-            cardLabel->setAlignment(Qt::AlignCenter);
-            player1CardsLayout->addWidget(cardLabel);
+        QPixmap pixmap(imagePath);
+        if (!pixmap.isNull()) {
+            QIcon buttonIcon(pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
+            cardButton->setIcon(buttonIcon);
+            cardButton->setIconSize(QSize(150, 150));
         }
+        else {
+            cardButton->setText("Card not found");
+        }
+
+        cardButton->setStyleSheet("border: none;");
+        player1CardsLayout->addWidget(cardButton);
+
+        // Conectăm clicul pe buton la selecția cărții
+        connect(cardButton, &QPushButton::clicked, this, [this, card]() {
+            onCardSelected(card);
+            });
     }
 }
+
 
 void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
     QLayoutItem* child;
@@ -179,5 +177,26 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
     }
 }
 
+void SecondaryWindow::onBoardClicked(int row, int col) {
+    if (!selectedCard.getValue()) {
+        qDebug() << "No card selected!";
+        return;
+    }
+
+    if (m_boardView->canPlaceCard(row, col)) {
+        m_boardView->placeCard(selectedCard, row, col); // Plasăm cartea
+        selectedCard = SimpleCard();                   // Resetăm selecția
+        qDebug() << "Card placed at:" << row << col;
+    }
+    else {
+        qDebug() << "Cannot place card at:" << row << col;
+    }
+}
+
+
+void SecondaryWindow::onCardSelected(const SimpleCard& card) {
+    selectedCard = card; // Memorăm cartea selectată
+    qDebug() << "Card selected: " << card.getValue();
+}
 
 
