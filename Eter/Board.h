@@ -13,7 +13,7 @@ using matrix = std::vector<std::vector<std::deque<SimpleCard>>>;
 // TODO: refactoring so that I use ranges and iterators instead of basic i and j when going trough matrix
 // TODO: refactor the code so that it uses CardColor enum instead of std::string
 // TODO: fix usedCard mecanic
-
+//comment commit
 class Board
 {
 private:
