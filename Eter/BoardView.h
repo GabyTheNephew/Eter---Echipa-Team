@@ -15,7 +15,7 @@ public:
 
     void updateView();
 
-    bool canPlaceCard(int row, int col) const;
+    bool canPlaceCard(const SimpleCard& card, int row, int col) const;
     void placeCard(const SimpleCard& card, int row, int col);
 
 signals:
