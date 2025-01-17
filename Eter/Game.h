@@ -6,11 +6,16 @@
 #include "Explosion.h"
 #include <string>
 #include <QApplication>
+#include <QObject>
+#include <QWidget>
 #include <QDir>
-#include <SecondaryWindow.h>
+#include "SecondaryWindow.h"
+#include "IntermediateMenu.h"
+
 
 class Game
 {
+
 private:
     int16_t m_round_Counter;
     Board m_gameBoard;

@@ -149,33 +149,41 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
         delete child;
     }
 
-    // Configurare spațiere și dimensiune imagini
-    int imageWidth = 150; // Lățimea imaginii
+    int imageWidth = 150;  // Lățimea imaginii
     int imageHeight = 200; // Înălțimea imaginii
-    int spacing = 20; // Spațiul dintre imagini
+    int spacing = 20;      // Spațiul dintre imagini
     player2CardsLayout->setSpacing(spacing);
 
     for (const auto& card : cards) {
-        auto cardLabel = new QLabel(this);
+        auto cardButton = new QPushButton(this);
 
-        // Determinăm imaginea corespunzătoare cărții albastre
-        QString imagePath = "blue_";
+        QString imagePath = "blue";
         imagePath += QString::number(card.getValue()) + ".jpg";
 
-        // Setăm imaginea ca fundal al QLabel-ului
         QPixmap pixmap(imagePath);
         if (!pixmap.isNull()) {
-            cardLabel->setPixmap(pixmap.scaled(imageWidth, imageHeight, Qt::KeepAspectRatio));
+            QIcon buttonIcon(pixmap.scaled(imageWidth, imageHeight, Qt::KeepAspectRatio));
+            cardButton->setIcon(buttonIcon);
+            cardButton->setIconSize(QSize(imageWidth, imageHeight));
         }
         else {
-            cardLabel->setText("Image not found");
-            cardLabel->setStyleSheet("border: 1px solid black; background-color: white;");
+            cardButton->setText("Card not found");
+            cardButton->setStyleSheet("border: 1px solid black; background-color: white;");
         }
 
-        cardLabel->setAlignment(Qt::AlignCenter);
-        player2CardsLayout->addWidget(cardLabel);
+        cardButton->setStyleSheet("border: none;");
+        player2CardsLayout->addWidget(cardButton);
+
+        // Conectăm clicul pe buton la selecția cărții albastre
+        connect(cardButton, &QPushButton::clicked, this, [this, card]() {
+            onCardSelected(card);
+            });
+
     }
 }
+
+
+
 
 void SecondaryWindow::onBoardClicked(int row, int col) {
     if (!selectedCard.getValue()) {
@@ -183,10 +191,17 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
         return;
     }
 
+    qDebug() << "Placing card: Color ="
+        << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
+        << ", Value =" << selectedCard.getValue();
+
     if (m_boardView->canPlaceCard(row, col)) {
-        m_boardView->placeCard(selectedCard, row, col); // Plasăm cartea
-        selectedCard = SimpleCard();                   // Resetăm selecția
-        qDebug() << "Card placed at:" << row << col;
+        m_boardView->placeCard(selectedCard, row, col); // Transmitem selectedCard
+        qDebug() << "Card placed: Color ="
+            << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
+            << ", Value =" << selectedCard.getValue() << " at row =" << row << ", col =" << col;
+
+        selectedCard = SimpleCard(); // Resetăm selecția
     }
     else {
         qDebug() << "Cannot place card at:" << row << col;
@@ -194,9 +209,13 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
 }
 
 
+
+
 void SecondaryWindow::onCardSelected(const SimpleCard& card) {
-    selectedCard = card; // Memorăm cartea selectată
-    qDebug() << "Card selected: " << card.getValue();
+    selectedCard = card;
+    qDebug() << "Card selected: Color ="
+        << (card.getColor() == Color::Red ? "Red" : "Blue")
+        << ", Value =" << card.getValue();
 }
 
 
