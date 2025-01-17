@@ -50,10 +50,55 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
             }
 
             if (text == "Training") {
-                // Instanțiem jocul folosind metoda de Training din Game
                 qDebug() << "Intrat in if de Training\n";
-                Game& gameInstance = Game::get_Instance();
-                gameInstance.startGame(Game::GameType::Training);
+
+                // Creează o fereastră cu fundal pentru IntermediateMenu
+                auto* backgroundWindow = new QWidget();
+                backgroundWindow->setWindowTitle("Training Setup");
+                backgroundWindow->setAttribute(Qt::WA_DeleteOnClose);
+                backgroundWindow->setWindowModality(Qt::ApplicationModal);
+                backgroundWindow->setAutoFillBackground(true);
+
+                // Setează fundalul
+                QPalette palette = backgroundWindow->palette();
+                palette.setBrush(QPalette::Window,
+                    QBrush(QPixmap(imagePath).scaled(QGuiApplication::primaryScreen()->size(),
+                        Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
+                backgroundWindow->setPalette(palette);
+
+                // Creează layout-ul principal
+                QVBoxLayout* mainLayout = new QVBoxLayout(backgroundWindow);
+                mainLayout->setAlignment(Qt::AlignCenter);
+
+                // Adaugă IntermediateMenu centrat
+                auto* intermediateMenu = new IntermediateMenu(backgroundWindow);
+                mainLayout->addWidget(intermediateMenu);
+
+                // Ascunde fereastra principală
+                this->hide();
+
+                // Conectează semnalul `startSelected` pentru a începe jocul
+                connect(intermediateMenu, &IntermediateMenu::startSelected, this, [this, backgroundWindow](bool illusions, bool explosions, bool timer) {
+                    backgroundWindow->close();
+
+                    // Configurează jocul
+                    Game& gameInstance = Game::get_Instance();
+                    gameInstance.setIllusionsEnabled(illusions);
+                    gameInstance.setExplosionsEnabled(explosions);
+
+                    // Lansează metoda pentru Training
+                    gameInstance.startGame(Game::GameType::Training);
+                    });
+
+                // Conectează semnalul `goBackSelected` pentru a reveni la fereastra principală
+                connect(intermediateMenu, &IntermediateMenu::goBackSelected, this, [this, backgroundWindow]() {
+                    backgroundWindow->close();
+                    this->show(); // Reafișează fereastra principală
+                    });
+
+                // Afișează fereastra intermediară
+                backgroundWindow->showFullScreen();
+
                 return;
             }
 
