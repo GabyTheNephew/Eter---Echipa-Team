@@ -1,20 +1,26 @@
 ﻿#include "SecondaryWindow.h"
 
-
 SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, QWidget* parent)
     : QWidget(parent), imagePath(imagePath) {
     setWindowTitle(title);
 
-    // Creăm layout-ul principal pentru întreaga fereastră
+    // Creăm layout-ul principal
     mainLayout = new QVBoxLayout(this);
 
-    // Adăugăm un spacer extensibil la început pentru a împinge conținutul în jos
-    mainLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+    // Layout pentru cărțile albastre (sus)
+    player2CardsLayout = new QHBoxLayout();
+    mainLayout->addLayout(player2CardsLayout);
 
-    // Adăugăm un spacer extensibil la sfârșit pentru a trage conținutul în sus
-    mainLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+    // Spacer între cărțile albastre și tabla de joc
+    mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
 
-    // Layout pentru cărțile jucătorului 1
+    // Placeholder pentru tabla de joc
+    m_boardView = nullptr;
+
+    // Spacer între tabla de joc și cărțile roșii
+    mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
+
+    // Layout pentru cărțile roșii (jos)
     player1CardsLayout = new QHBoxLayout();
     mainLayout->addLayout(player1CardsLayout);
 
@@ -27,6 +33,7 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
 
     this->showFullScreen();
 }
+
 
 
 void SecondaryWindow::closeEvent(QCloseEvent* event) {
@@ -80,15 +87,28 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 }
 
 void SecondaryWindow::setBoard(Board& board) {
-    m_boardView = new BoardView(board, this);
+    if (!m_boardView) {
+        m_boardView = new BoardView(board, this);
 
-    // Am redus dimensiunea la 120x120
-    m_boardView->setFixedSize(350, 350);
+        // Setăm dimensiunea tablei de joc
+        m_boardView->setFixedSize(350, 350);
 
-    mainLayout->insertWidget(1, m_boardView, 0, Qt::AlignCenter);
+        // Eliminăm orice widget sau spacer existent pe poziția tablei
+        QLayoutItem* item = mainLayout->itemAt(1); // Poziția 1 în layout
+        if (item) {
+            mainLayout->removeItem(item);
+            delete item;
+        }
 
-    m_boardView->updateView();
+        // Adăugăm tabla de joc, centrată
+        mainLayout->insertWidget(1, m_boardView, 0, Qt::AlignHCenter | Qt::AlignVCenter);
+
+        m_boardView->updateView();
+    }
 }
+
+
+
 
 void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
     QLayoutItem* child;
@@ -99,10 +119,63 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
 
     for (const auto& card : cards) {
         auto cardLabel = new QLabel(this);
-        cardLabel->setText(QString::number(card.getValue())); // Afișăm valoarea cărții
+
+        // Determinăm imaginea corespunzătoare cărții pe baza valorii și culorii
+        QString imagePath;
+        if (card.getColor() != Color::usedRed) {
+            imagePath += (card.getColor() == Color::Red ? "red" : "blue");
+            imagePath += QString::number(card.getValue()) + ".jpg";
+
+
+            // Setăm imaginea ca fundal al QLabel-ului
+            QPixmap pixmap(imagePath);
+            if (!pixmap.isNull()) {
+                cardLabel->setPixmap(pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
+            }
+            else {
+                cardLabel->setText("Image not found");
+                cardLabel->setStyleSheet("border: 1px solid black; background-color: white;");
+            }
+
+
+            cardLabel->setAlignment(Qt::AlignCenter);
+            player1CardsLayout->addWidget(cardLabel);
+        }
+    }
+}
+
+void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
+    QLayoutItem* child;
+    while ((child = player2CardsLayout->takeAt(0)) != nullptr) {
+        delete child->widget(); // Eliminăm toate widget-urile existente
+        delete child;
+    }
+
+    // Configurare spațiere și dimensiune imagini
+    int imageWidth = 150; // Lățimea imaginii
+    int imageHeight = 200; // Înălțimea imaginii
+    int spacing = 20; // Spațiul dintre imagini
+    player2CardsLayout->setSpacing(spacing);
+
+    for (const auto& card : cards) {
+        auto cardLabel = new QLabel(this);
+
+        // Determinăm imaginea corespunzătoare cărții albastre
+        QString imagePath = "blue_";
+        imagePath += QString::number(card.getValue()) + ".jpg";
+
+        // Setăm imaginea ca fundal al QLabel-ului
+        QPixmap pixmap(imagePath);
+        if (!pixmap.isNull()) {
+            cardLabel->setPixmap(pixmap.scaled(imageWidth, imageHeight, Qt::KeepAspectRatio));
+        }
+        else {
+            cardLabel->setText("Image not found");
+            cardLabel->setStyleSheet("border: 1px solid black; background-color: white;");
+        }
+
         cardLabel->setAlignment(Qt::AlignCenter);
-        cardLabel->setStyleSheet("border: 1px solid black; background-color: white;");
-        player1CardsLayout->addWidget(cardLabel);
+        player2CardsLayout->addWidget(cardLabel);
     }
 }
 

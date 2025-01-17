@@ -20,6 +20,7 @@ public:
     explicit SecondaryWindow(const QString& title, const QString& imagePath, QWidget* parent = nullptr);
     void setBoard(Board& board);
     void setPlayer1Cards(const std::vector<SimpleCard>& cards);
+    void setPlayer2Cards(const std::vector<SimpleCard>& cards);
 signals:
     void closed();
 
@@ -34,4 +35,5 @@ private:
     BoardView* m_boardView;
     QVBoxLayout* mainLayout;
     QHBoxLayout* player1CardsLayout;
+    QHBoxLayout* player2CardsLayout;
 };

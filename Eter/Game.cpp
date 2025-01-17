@@ -74,6 +74,7 @@ void Game::startTraining()
 	trainingWindow->setAttribute(Qt::WA_DeleteOnClose);
 	trainingWindow->setBoard(m_gameBoard);
 	trainingWindow->setPlayer1Cards(player1.getVector());
+	trainingWindow->setPlayer2Cards(player2.getVector());
 
 
 	// Debug print pentru a verifica tabla
@@ -136,6 +137,7 @@ void Game::startTraining()
 				if (chosenCard.getValue() != 0)
 				{
 					player2.playCard(chosenCard, m_gameBoard, PastCards, canPlayIllusion);
+					trainingWindow->setPlayer2Cards(player2.getVector());
 				}
 
 				//m_gameBoard.print();
