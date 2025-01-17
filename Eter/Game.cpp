@@ -95,7 +95,7 @@ void Game::startTraining()
 				std::cout << "Player 1's turn\n";
 
 				//Explosion related
-				if (checkPlayExplosion(m_gameBoard))
+				/*if (checkPlayExplosion(m_gameBoard))
 				{
 					std::cout << "Do you want to play the explosion?\n";
 					std::cout << m_explosion.value();
@@ -111,7 +111,7 @@ void Game::startTraining()
 					{
 						m_explosion.reset();
 					}
-				}
+				}*/
 
 				SimpleCard chosenCard = player1.chooseCard();
 				if (chosenCard.getValue() != 0)

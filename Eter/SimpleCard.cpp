@@ -17,7 +17,9 @@ SimpleCard& SimpleCard::operator=(const SimpleCard& other)
 {
 	if (this != &other) {    
 		m_value = other.m_value;
+		m_color = other.m_color;
 	}
+	
 	return *this;
 }
 

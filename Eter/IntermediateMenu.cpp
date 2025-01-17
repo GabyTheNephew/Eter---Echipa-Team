@@ -1,4 +1,4 @@
-#include "IntermediateMenu.h"
+﻿#include "IntermediateMenu.h"
 
 
 IntermediateMenu::IntermediateMenu(QWidget* parent) : QWidget(parent) {
