@@ -1,4 +1,4 @@
-#include "Player.h"
+﻿#include "Player.h"
 
 Player::Player()
 {
@@ -190,9 +190,9 @@ void Player::deleteCardFromPastVector(SimpleCard& cardToDelete)
 SimpleCard Player::chooseCard()
 {
 	int16_t chosen_card;
-	std::cout << getName() << " select a card\n";
+	//std::cout << getName() << " select a card\n";
 	printSimpleCards();
-	std::cout << "\nPick a card\n";
+	//std::cout << "\nPick a card\n";
 	std::cin >> chosen_card;
 
 	for (int16_t i = 0; i < m_simpleCardsVector.size(); i++)
@@ -494,3 +494,15 @@ void Player::initiateBoard(Board& board, Position& pos)
 //
 //	}
 //}
+
+bool Player::hasSelectedCard()  {
+	return selectedCard.getValue() != 0; // Returnează true dacă o carte este selectată
+}
+
+SimpleCard Player::getSelectedCard()  {
+	return selectedCard;
+}
+
+void Player::setSelectedCard(const SimpleCard& card) {
+	selectedCard = card;
+}

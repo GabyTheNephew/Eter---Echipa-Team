@@ -46,150 +46,122 @@ std::string_view Game::gameTypeToString(GameType gameType) const
 						return "MageDuelAndPower";
 }
 
-void Game::startTraining()
-{
+void Game::startTraining() {
 	m_gameBoard = Board(3);
 	this->m_round_Counter = 1;
 	int16_t maxRounds = 3;
-	const int16_t matrixMaxSize = 3;
 	std::vector<SimpleCard> PastCards;
-	// bool canPlayIllusion;
 	std::optional<std::pair<bool, bool>> canPlayIllusion;
 	int16_t player1RoundsWon = 0;
 	int16_t player2RoundsWon = 0;
 
-	if (m_illusionsEnabled)
-	{
+	if (m_illusionsEnabled) {
 		canPlayIllusion = std::make_pair(true, true);
 	}
-	else
-	{
+	else {
 		canPlayIllusion = std::nullopt;
 	}
 
-	player1 = Player("Name1", { SimpleCard(1,Color::Red),SimpleCard(1,Color::Red),SimpleCard(2,Color::Red) ,SimpleCard(2,Color::Red) ,SimpleCard(3,Color::Red),SimpleCard(3,Color::Red),SimpleCard(4,Color::Red) }, PastCards);
-	player2 = Player("Name2", { SimpleCard(1,Color::Blue),SimpleCard(1,Color::Blue),SimpleCard(2,Color::Blue) ,SimpleCard(2,Color::Blue) ,SimpleCard(3,Color::Blue),SimpleCard(3,Color::Blue),SimpleCard(4,Color::Blue) }, PastCards);
+	player1 = Player("Name1", { SimpleCard(1, Color::Red), SimpleCard(2, Color::Red), SimpleCard(3, Color::Red) }, PastCards);
+	player2 = Player("Name2", { SimpleCard(1, Color::Blue), SimpleCard(2, Color::Blue), SimpleCard(3, Color::Blue) }, PastCards);
 
-	auto* trainingWindow = new SecondaryWindow("Training", QDir::currentPath() + QDir::separator() + "eter.png");
+	auto* trainingWindow = new SecondaryWindow("Training", QDir::currentPath() + QDir::separator() + "eter.png", &Game::get_Instance());
+
+
 	trainingWindow->setAttribute(Qt::WA_DeleteOnClose);
 	trainingWindow->setBoard(m_gameBoard);
 	trainingWindow->setPlayer1Cards(player1.getVector());
 	trainingWindow->setPlayer2Cards(player2.getVector());
 
-
-	// Debug print pentru a verifica tabla
-	qDebug() << "Board size:" << m_gameBoard.getRowSize() << "x" << m_gameBoard.getColumnSize();
+	connect(trainingWindow, &SecondaryWindow::boardClicked, this, &Game::handleBoardClick);
 
 	trainingWindow->show();
-	return;
-	while (m_round_Counter <= maxRounds)
-	{
+
+	currentPlayer = Color::Red; // Player 1 începe
+	playerMoveCompleted = false;
+
+	while (m_round_Counter <= maxRounds) {
 		PastCards.clear();
-		m_gameBoard.resizeBoard(1);
-		m_gameBoard.print();
 
-		while (true)
-		{
-			if (player1.numberofValidCards() > 0)
-			{
-				std::cout << "Player 1's turn\n";
+		// Începem runda
+		trainingWindow->setCurrentPlayer(currentPlayer);
 
-				//Explosion related
-				/*if (checkPlayExplosion(m_gameBoard))
-				{
-					std::cout << "Do you want to play the explosion?\n";
-					std::cout << m_explosion.value();
+		bool roundInProgress = true;
+		while (roundInProgress) {
+			QCoreApplication::processEvents(); // Procesează evenimentele interfeței
 
-					std::string explosionInput;
-					std::cin >> explosionInput;
-
-					if (explosionInput == "yes")
-					{
-						std::cout << "PLAY THE EXPLOSION\n";
-					}
-					else
-					{
-						m_explosion.reset();
-					}
-				}*/
-
-				SimpleCard chosenCard = player1.chooseCard();
-				if (chosenCard.getValue() != 0)
-				{
-					player1.playCard(chosenCard, m_gameBoard, PastCards, canPlayIllusion);
-					trainingWindow->setPlayer1Cards(player1.getVector());
-
+			if (playerMoveCompleted) {
+				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
+					trainingWindow->setCurrentPlayer(Color::Blue);
+					currentPlayer = Color::Blue;
+					qDebug() << "Player 1's turn.";
 				}
-				//m_gameBoard.print();
-
-			}
-			if (m_gameBoard.checkWin() == Board::State::Win)
-			{
-				std::cout << "Player 1 wins\n";
-				player1RoundsWon++;
-				break;
-			}
-
-			if (player2.numberofValidCards() > 0)
-			{
-				std::cout << "Player 2's turn\n";
-				SimpleCard chosenCard = player2.chooseCard();
-				if (chosenCard.getValue() != 0)
-				{
-					player2.playCard(chosenCard, m_gameBoard, PastCards, canPlayIllusion);
-					trainingWindow->setPlayer2Cards(player2.getVector());
+				else if (currentPlayer == Color::Blue && player2.numberofValidCards() > 0) {
+					trainingWindow->setCurrentPlayer(Color::Red);
+					currentPlayer = Color::Red;
+					qDebug() << "Player 2's turn.";
 				}
+			}
 
-				//m_gameBoard.print();
+			if (playerMoveCompleted) {
+				playerMoveCompleted = false; // Resetăm starea pentru următoarea mutare
 			}
-			if (m_gameBoard.checkWin() == Board::State::Win)
-			{
-				std::cout << "Player 2 wins\n";
-				player2RoundsWon++;
-				break;
+			else {
+				continue; // Așteptăm finalizarea mutării
 			}
-			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0)
-			{
-				if (m_gameBoard.checkWin(true) == Board::State::RedWin)
-				{
-					std::cout << "Win by Player 1\n ";
+
+			// Verificăm câștigătorul
+			if (m_gameBoard.checkWin() == Board::State::Win) {
+				if (currentPlayer == Color::Red) {
+					qDebug() << "Player 1 wins!";
 					player1RoundsWon++;
-					break;
 				}
-				if (m_gameBoard.checkWin(true) == Board::State::BlueWin)
-				{
-					std::cout << "Win by Player 2\n ";
+				else {
+					qDebug() << "Player 2 wins!";
 					player2RoundsWon++;
-					break;
 				}
-				if (m_gameBoard.checkWin() == Board::State::Draw)
-				{
-					std::cout << "Draw\n";
+				roundInProgress = false;
+			}
+
+			// Condiții de egalitate
+			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
+				auto state = m_gameBoard.checkWin(true);
+				if (state == Board::State::RedWin) {
+					qDebug() << "Player 1 wins the round.";
+					player1RoundsWon++;
+				}
+				else if (state == Board::State::BlueWin) {
+					qDebug() << "Player 2 wins the round.";
+					player2RoundsWon++;
+				}
+				else if (state == Board::State::Draw) {
+					qDebug() << "Round is a draw.";
 					player1RoundsWon++;
 					player2RoundsWon++;
-					break;
 				}
+				roundInProgress = false;
 			}
 		}
+
+		// Resetăm pentru următoarea rundă
 		player1.ResetVector();
 		player2.ResetVector();
 		m_gameBoard.clear();
 		incrementRoundCounter();
 
-		if (player1RoundsWon == 2)
-		{
-			std::cout << "Player 1 won the game! Congratulations!\n";
+		if (player1RoundsWon == 2) {
+			qDebug() << "Player 1 won the game!";
 			break;
 		}
-		if (player2RoundsWon == 2)
-		{
-			std::cout << "Player 2 won the game! Congratulations!\n";
+
+		if (player2RoundsWon == 2) {
+			qDebug() << "Player 2 won the game!";
 			break;
 		}
 	}
-
-
 }
+
+
 
 void Game::startMageDuel()
 {
@@ -276,6 +248,7 @@ void Game::startGame(GameType selectedGameType)
 	switch (selectedGameType)
 	{
 	case (GameType::Training):
+
 		startTraining();
 		break;
 	case (GameType::MageDuel):
@@ -347,6 +320,31 @@ bool Game::checkPlayExplosion(Board& m_board)
 		}
 	}
 	return false;
+}
+
+
+void Game::handleBoardClick(int row, int col) {
+	qDebug() << "Clicked on board at (" << row << ", " << col << ")";
+
+	if (!m_gameBoard.canBePlaced(row, col)) {
+		qDebug() << "Position is not valid for placement.";
+		return;
+	}
+
+	if (currentPlayer == Color::Red) {
+		SimpleCard selectedCard = player1.chooseCard();
+		m_gameBoard.pushCard(selectedCard, { row, col });
+		qDebug() << "Player 1 placed card at (" << row << ", " << col << ")";
+		currentPlayer = Color::Blue; // Trecem la Player 2
+	}
+	else if (currentPlayer == Color::Blue) {
+		SimpleCard selectedCard = player2.chooseCard();
+		m_gameBoard.pushCard(selectedCard, { row, col });
+		qDebug() << "Player 2 placed card at (" << row << ", " << col << ")";
+		currentPlayer = Color::Red; // Trecem la Player 1
+	}
+
+	playerMoveCompleted = true; // Mutarea curentă este completă
 }
 
 

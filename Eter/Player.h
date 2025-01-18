@@ -9,6 +9,7 @@ private:
 	std::string m_name;
 	std::vector<SimpleCard> m_simpleCardsVector;
 	std::vector<SimpleCard> m_pastSimpleCardsVector;
+	SimpleCard selectedCard;
 	//vector for power
 	//vector for mage
 
@@ -45,5 +46,8 @@ public:
 	//void playCardandExtend(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& m_pastSimpleCardsVecto, bool& canPlayIllusion);
 	void initiateBoard(Board& board, Position& pos);
 	//void playIllusion(SimpleCard& card, Board& board, Position pos);
+	bool hasSelectedCard(); 
+	SimpleCard getSelectedCard();
+	void setSelectedCard(const SimpleCard& card);
 };
 

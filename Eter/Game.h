@@ -11,10 +11,13 @@
 #include <QDir>
 #include "SecondaryWindow.h"
 #include "IntermediateMenu.h"
+#include "BoardView.h"
 
 
-class Game
+
+class Game:public QObject
 {
+    Q_OBJECT
 
 private:
     int16_t m_round_Counter;
@@ -24,6 +27,8 @@ private:
     //Explosion m_explosion;
     std::optional<Explosion> m_explosion;
     bool m_illusionsEnabled;
+    Color currentPlayer;
+
 
     Game() : m_round_Counter{ 0 }, m_gameBoard{} {}
 
@@ -34,6 +39,8 @@ private:
     void startTournament();
     void startMageDuelAndPower();
     void showExplosionMenu();
+
+    bool playerMoveCompleted;
 
 public:
     Game(const Game&) = delete;
@@ -63,4 +70,12 @@ public:
 
     void setIllusionsEnabled(bool enabled);
     bool areIllusionsEnabled()const;
+
+    bool getPlayerMoveCompleted() const { return playerMoveCompleted; }
+    void setPlayerMoveCompleted(bool completed) { playerMoveCompleted = completed; }
+
+public slots:
+    void handleBoardClick(int row, int col);
+signals:
+    void playerActionComplete();
 };

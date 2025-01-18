@@ -1,7 +1,7 @@
 ﻿#include "SecondaryWindow.h"
 
-SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, QWidget* parent)
-    : QWidget(parent), imagePath(imagePath) {
+SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance, QWidget* parent)
+    : QWidget(parent), imagePath(imagePath), game(gameInstance) {
     setWindowTitle(title);
 
     // Creăm layout-ul principal
@@ -182,6 +182,13 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
     }
 }
 
+void SecondaryWindow::setCurrentPlayer(Color player) {
+    currentPlayer = player; 
+}
+
+
+
+
 
 
 
@@ -200,11 +207,17 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
         qDebug() << "Position is not valid for placement.";
         return;
     }
-
-    // Plasăm cartea
-    m_boardView->placeCard(selectedCard, row, col);
-    selectedCard = SimpleCard(); // Resetăm selecția
-    qDebug() << "Card placed successfully.";
+    qDebug() << "Current Player:::::::"<< ColorToString(currentPlayer)<<"\n";
+    if (selectedCard.getColor() == currentPlayer)
+    {
+        // Plasăm cartea
+        m_boardView->placeCard(selectedCard, row, col);
+        selectedCard = SimpleCard(); // Resetăm selecția
+        qDebug() << "Card placed successfully.";
+        selectedCard.getColor() == Color::Red ? "Red" : "Blue";
+        game->setPlayerMoveCompleted(true);
+    }
+    
 }
 
 
