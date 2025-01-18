@@ -22,16 +22,35 @@ bool WaterMageAqualon::playMageAqualon(Board& board, bool rowOrColumn, int16_t x
 	///row == false
 	///column == true
 
-	if(board.getSize() >= 3 && (x==0 || x==board.getSize()))
+	std::vector<std::deque<SimpleCard>> moved;
+
+	if(board.getSize() >= 3 && (x==0 || x==board.getSize()-1))
 	{
 		if (rowOrColumn)
 		{
 			if (board.checkColumn(x))
 			{
-				for (int16_t i = 0; i < board.getSize(); i++)
+				for (int i = 0; i < board.getSize(); i++)
 				{
-					board.moveSpace(i, x, board.getSize()-i, x);
+					moved.push_back(board[{i, x}]);
 				}
+
+				if (x == 0)
+				{
+					board.removeColumn(0);
+					board.expandColumn(Board::ColumnExpandDirection::Right);
+				}
+				else if (x == board.getSize() - 1)
+				{
+					board.removeColumn(board.getSize() - 1);
+					board.expandColumn(Board::ColumnExpandDirection::Left);
+				}
+
+				for (int i = 0; i < board.getSize(); i++)
+				{
+					board[{i, board.getSize() - 1 - x}] = moved[i];
+				}
+
 				return true;
 			}
 		}
@@ -39,10 +58,27 @@ bool WaterMageAqualon::playMageAqualon(Board& board, bool rowOrColumn, int16_t x
 		{
 			if (board.checkRow(x))
 			{
-				for (int16_t i = 0; i < board.getSize(); i++)
+				for (int i = 0; i < board.getSize(); i++)
 				{
-					board.moveSpace(x, i, x, board.getSize()-i);
+					moved.push_back(board[{x, i}]);
 				}
+
+				if (x == 0)
+				{
+					board.removeRow(0);
+					board.expandRow(Board::RowExpandDirection::Down);
+				}
+				else if (x == board.getSize() - 1)
+				{
+					board.removeRow(board.getSize() - 1);
+					board.expandRow(Board::RowExpandDirection::Up);
+				}
+
+				for (int i = 0; i < board.getSize(); i++)
+				{
+					board[{board.getSize() - 1 - x, i}] = moved[i];
+				}
+
 				return true;
 			}
 		}
