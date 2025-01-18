@@ -207,33 +207,42 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
         << "Color =" << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
         << ", Value =" << selectedCard.getValue();
 
-   /* Board::Position pos = { row, col };
-    if (!m_boardView->canPlaceCard(selectedCard, row, col)) {
-        qDebug() << "Position is not valid for placement.";
-        return;
-    }*/
+    // Obține ultima carte de pe poziție
+   
+    Board::Position pos = { row, col };
+
+   
 
     if (selectedCard.getColor() == currentPlayer) {
-        // Plasăm cartea
-        m_boardView->placeCard(selectedCard, row, col);
 
-        // Apelăm metoda makeCardInvalid pe jucătorul curent
-        game->getCurrentPlayer().makeCardInvalid(selectedCard);
-		game->getCurrentPlayer().getPastVector().push_back(selectedCard);
-        if (currentPlayer == Color::Red)
-        {
+        if (!m_boardView->canPlaceCard(selectedCard, row, col)) {
+            qDebug() << "Position is not valid for placement.";
+            return;
+        }
+        
+            // Plasăm cartea
+            m_boardView->placeCard(selectedCard, row, col);
+
+            // Apelăm metoda makeCardInvalid pe jucătorul curent
+            game->getCurrentPlayer().makeCardInvalid(selectedCard);
+            game->getCurrentPlayer().getPastVector().push_back(selectedCard);
+        
+
+        // Actualizăm cărțile jucătorului curent
+        if (currentPlayer == Color::Red) {
             setPlayer1Cards(game->getCurrentPlayer().getVector());
         }
-        else
-        {
+        else {
             setPlayer2Cards(game->getCurrentPlayer().getVector());
         }
+
         selectedCard = SimpleCard(); // Resetăm selecția
         qDebug() << "Card placed successfully.";
 
         game->setPlayerMoveCompleted(true); // Indică faptul că mutarea a fost completă
     }
 }
+
 
 
 
