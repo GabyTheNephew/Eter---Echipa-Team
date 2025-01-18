@@ -73,6 +73,7 @@ public:
 
     bool getPlayerMoveCompleted() const { return playerMoveCompleted; }
     void setPlayerMoveCompleted(bool completed) { playerMoveCompleted = completed; }
+    Player& getCurrentPlayer();
 
 public slots:
     void handleBoardClick(int row, int col);

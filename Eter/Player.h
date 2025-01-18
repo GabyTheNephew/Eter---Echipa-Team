@@ -29,12 +29,12 @@ public:
 
 	void setVector(std::vector<SimpleCard>& simpleCardsVector);
 	void setPastVector(std::vector<SimpleCard>& pastsimpleCardsVector);
-	const std::vector<SimpleCard>& getVector();
+	const std::vector<SimpleCard> getVector();
 	std::vector<SimpleCard>& getPastVector(); /// we need to use push back on it
 
 	void ResetVector();
 
-	void makeCardInvalid(SimpleCard card);
+	void makeCardInvalid(SimpleCard& card);
 	void makeCardValid(SimpleCard& card);
 	std::string GetVectorColor();
 	void deleteCardFromPastVector(SimpleCard& cardToDelete);

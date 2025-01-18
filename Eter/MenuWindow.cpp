@@ -56,7 +56,7 @@ MenuWindow::MenuWindow(QWidget* parent) : QWidget(parent) {
 void MenuWindow::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Escape) {
         if (parentWidget()) {
-            parentWidget()->setFocus(); 
+            parentWidget()->show(); 
             QCoreApplication::sendEvent(parentWidget(), event); 
         }
     }
