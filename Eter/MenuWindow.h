@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QApplication>
 #include <QKeyEvent>
 
 class MenuWindow : public QWidget {

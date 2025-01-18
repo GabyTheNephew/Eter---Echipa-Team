@@ -62,8 +62,9 @@ void Game::startTraining() {
 		canPlayIllusion = std::nullopt;
 	}
 
-	player1 = Player("Name1", { SimpleCard(1, Color::Red), SimpleCard(2, Color::Red), SimpleCard(3, Color::Red) }, PastCards);
-	player2 = Player("Name2", { SimpleCard(1, Color::Blue), SimpleCard(2, Color::Blue), SimpleCard(3, Color::Blue) }, PastCards);
+	player1 = Player("Name1", { SimpleCard(1, Color::usedRed),SimpleCard(1, Color::Red), SimpleCard(2, Color::Red),SimpleCard(2, Color::Red),SimpleCard(3, Color::Red), SimpleCard(3, Color::Red),SimpleCard(4, Color::Red) }, PastCards);
+	player2 = Player("Name1", { SimpleCard(1, Color::Blue),SimpleCard(1, Color::Blue), SimpleCard(2, Color::Blue),SimpleCard(2, Color::Blue),SimpleCard(3, Color::Blue), SimpleCard(3, Color::Blue),SimpleCard(4, Color::Blue) }, PastCards);
+
 
 	auto* trainingWindow = new SecondaryWindow("Training", QDir::currentPath() + QDir::separator() + "eter.png", &Game::get_Instance());
 
@@ -289,6 +290,11 @@ bool Game::areIllusionsEnabled() const
 {
 	return m_illusionsEnabled;
 }
+
+Player& Game::getCurrentPlayer() {
+	return (currentPlayer == Color::Red) ? player1 : player2;
+}
+
 
 
 void Game::incrementRoundCounter()

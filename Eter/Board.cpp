@@ -109,6 +109,7 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 	}*/
 
 	// Check neighbors
+	bool check = false;
 	std::vector<std::pair<int16_t, int16_t>> neighbors = {
 		{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1},
 		{x + 1, y + 1}, {x - 1, y + 1}, {x - 1, y - 1}, {x + 1, y - 1}
@@ -117,10 +118,12 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 	for (const auto& [nx, ny] : neighbors) {
 		if (nx >= 0 && nx < rows && ny >= 0 && ny < columns) {
 			if (!m_board[nx][ny].empty()) {
-				return true; 
+				check = true;
+				break;
 			}
 		}
 	}
+	
 
 	if (m_size == 1)
 	{

@@ -116,6 +116,9 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
     }
 
     for (const auto& card : cards) {
+        if (card.getColor() == Color::usedRed) {
+            continue; // Sărim peste cărțile roșii folosite
+        }
         auto cardButton = new QPushButton(this);
 
         QString imagePath = "red";
@@ -155,6 +158,9 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
     player2CardsLayout->setSpacing(spacing);
 
     for (const auto& card : cards) {
+        if (card.getColor() == Color::usedBlue) {
+            continue; // Sărim peste cărțile roșii folosite
+        }
         auto cardButton = new QPushButton(this);
 
         QString imagePath = "blue";
@@ -191,7 +197,6 @@ void SecondaryWindow::setCurrentPlayer(Color player) {
 
 
 
-
 void SecondaryWindow::onBoardClicked(int row, int col) {
     if (!selectedCard.getValue()) {
         qDebug() << "No card selected!";
@@ -202,22 +207,32 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
         << "Color =" << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
         << ", Value =" << selectedCard.getValue();
 
-    Board::Position pos = { row, col };
+   /* Board::Position pos = { row, col };
     if (!m_boardView->canPlaceCard(selectedCard, row, col)) {
         qDebug() << "Position is not valid for placement.";
         return;
-    }
-    qDebug() << "Current Player:::::::"<< ColorToString(currentPlayer)<<"\n";
-    if (selectedCard.getColor() == currentPlayer)
-    {
+    }*/
+
+    if (selectedCard.getColor() == currentPlayer) {
         // Plasăm cartea
         m_boardView->placeCard(selectedCard, row, col);
+
+        // Apelăm metoda makeCardInvalid pe jucătorul curent
+        game->getCurrentPlayer().makeCardInvalid(selectedCard);
+		game->getCurrentPlayer().getPastVector().push_back(selectedCard);
+        if (currentPlayer == Color::Red)
+        {
+            setPlayer1Cards(game->getCurrentPlayer().getVector());
+        }
+        else
+        {
+            setPlayer2Cards(game->getCurrentPlayer().getVector());
+        }
         selectedCard = SimpleCard(); // Resetăm selecția
         qDebug() << "Card placed successfully.";
-        selectedCard.getColor() == Color::Red ? "Red" : "Blue";
-        game->setPlayerMoveCompleted(true);
+
+        game->setPlayerMoveCompleted(true); // Indică faptul că mutarea a fost completă
     }
-    
 }
 
 

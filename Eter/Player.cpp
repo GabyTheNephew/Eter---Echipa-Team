@@ -53,7 +53,7 @@ void Player::setPastVector(std::vector<SimpleCard>& pastsimpleCardsVector)
 }
 
 
-const std::vector<SimpleCard>& Player::getVector()
+const std::vector<SimpleCard> Player::getVector()
 {
 	return m_simpleCardsVector;
 }
@@ -75,7 +75,7 @@ void Player::ResetVector()
 	}
 }
 
-void Player::makeCardInvalid(SimpleCard card)
+void Player::makeCardInvalid(SimpleCard& card)
 {
 	for (auto& curCard : m_simpleCardsVector)
 	{
@@ -83,6 +83,7 @@ void Player::makeCardInvalid(SimpleCard card)
 		{
 			if (card.getColor() == Color::Red || card.getColor() == Color::IlusionRed)
 			{
+				
 				curCard.setColor(Color::usedRed);
 
 				break;
