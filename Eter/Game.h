@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <string_view>
 #include<cstdint>
 #include "Board.h"
@@ -74,6 +74,9 @@ public:
     bool getPlayerMoveCompleted() const { return playerMoveCompleted; }
     void setPlayerMoveCompleted(bool completed) { playerMoveCompleted = completed; }
     Player& getCurrentPlayer();
+
+    Board& getBoard(); // Metodă pentru a obține referința către tablă
+    const Board& getBoard() const; // Supraincarcare pentru acces constant
 
 public slots:
     void handleBoardClick(int row, int col);

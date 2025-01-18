@@ -46,6 +46,7 @@ private:
     SimpleCard selectedCard;
     Color currentPlayer;
     Game* game;
+    
 
 private slots:
     void onCardSelected(const SimpleCard& card); // Gestionare selecție carte

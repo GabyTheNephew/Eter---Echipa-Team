@@ -352,5 +352,12 @@ void Game::handleBoardClick(int row, int col) {
 
 	playerMoveCompleted = true; // Mutarea curentă este completă
 }
+Board& Game::getBoard() {
+	return m_gameBoard; // Returnează referința către m_gameBoard
+}
+
+const Board& Game::getBoard() const {
+	return m_gameBoard; // Returnează referința constantă
+}
 
 
