@@ -109,7 +109,6 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 	}*/
 
 	// Check neighbors
-	bool check = false;
 	std::vector<std::pair<int16_t, int16_t>> neighbors = {
 		{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1},
 		{x + 1, y + 1}, {x - 1, y + 1}, {x - 1, y - 1}, {x + 1, y - 1}
@@ -118,12 +117,10 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 	for (const auto& [nx, ny] : neighbors) {
 		if (nx >= 0 && nx < rows && ny >= 0 && ny < columns) {
 			if (!m_board[nx][ny].empty()) {
-				check = true;
-				break;
+				return true; 
 			}
 		}
 	}
-	
 
 	if (m_size == 1)
 	{
@@ -357,7 +354,7 @@ void Board::removeRow(int16_t row)
 	{
 		for (int16_t i = 0; i < newSize; i++)
 		{
-			for (int16_t j = 0; j < newSize; j++)
+			for (int16_t j = 0; j < newSize+1; j++)
 			{
 				newMatrix[i][j] = std::move(m_board[i + 1][j]);
 			}
@@ -369,7 +366,7 @@ void Board::removeRow(int16_t row)
 		{
 			for (int16_t i = 0; i < newSize; i++)
 			{
-				for (int16_t j = 0; j < newSize; j++)
+				for (int16_t j = 0; j < newSize+1; j++)
 				{
 					newMatrix[i][j] = std::move(m_board[i][j]);
 				}
@@ -390,7 +387,7 @@ void Board::removeColumn(int16_t column)
 	matrix newMatrix(newSize + 1, std::vector<std::deque<SimpleCard>>(newSize));
 	if (column == 0)
 	{
-		for (int16_t i = 0; i < newSize; i++)
+		for (int16_t i = 0; i < newSize+1; i++)
 		{
 			for (int16_t j = 0; j < newSize; j++)
 			{
@@ -400,9 +397,9 @@ void Board::removeColumn(int16_t column)
 	}
 	else
 	{
-		if (column == newSize - 1)
+		if (column == m_board.size() - 1)
 		{
-			for (int16_t i = 0; i < newSize; i++)
+			for (int16_t i = 0; i < newSize+1; i++)
 			{
 				for (int16_t j = 0; j < newSize; j++)
 				{

@@ -8,7 +8,6 @@
 #include <tuple>
 #include "CardColor.h"
 
-
 using matrix = std::vector<std::vector<std::deque<SimpleCard>>>;
 
 // TODO: refactoring so that I use ranges and iterators instead of basic i and j when going trough matrix

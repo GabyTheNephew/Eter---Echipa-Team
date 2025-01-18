@@ -1,5 +1,6 @@
 #pragma once
 #include "Board.h"
+#include <deque>
 #include <iostream>
 #include <string_view>
 
