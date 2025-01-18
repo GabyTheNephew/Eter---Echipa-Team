@@ -12,7 +12,7 @@ private:
 
 public:
 
-	EterCard(std::string_view color);
+	EterCard(const Color& color);
 	~EterCard();
 
 	std::string getName();
