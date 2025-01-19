@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <vector>
 #include <tuple>
-//to do - 10 % chance for hole 
+
 enum class ActionType {
 	explode,
 	giveBack,
@@ -21,10 +21,10 @@ class Explosion
 {
 private:
 	std::vector<std::tuple<int16_t, int16_t, ActionType>> positions;
-	//static Explosion* m_current_Instance;
+
 
 public:
-	//static Explosion* get_Instance();
+
 
 	Explosion();
 

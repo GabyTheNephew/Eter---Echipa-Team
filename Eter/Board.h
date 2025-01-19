@@ -11,10 +11,6 @@
 
 using matrix = std::vector<std::vector<std::deque<SimpleCard>>>;
 
-// TODO: refactoring so that I use ranges and iterators instead of basic i and j when going trough matrix
-// TODO: refactor the code so that it uses CardColor enum instead of std::string
-// TODO: fix usedCard mecanic
-//comment commit
 class Board
 {
 private:
@@ -46,14 +42,14 @@ public:
 
 public:
 	Board(const Board& board);
-	Board();//defaul constuctor
+	Board();
 	Board(int16_t size);
 	Board(Board&& board)noexcept;
 
 	Board& operator=(Board&& board)noexcept;
 	Board& operator=(const Board& board);
 	
-	// matrix& getBoard();  
+  
 	void setBoard(const matrix& board); 
 
 	std::deque<SimpleCard>& operator[] (const Position& position);
@@ -62,13 +58,11 @@ public:
 	void expandRow(RowExpandDirection direction);
 	void expandColumn(ColumnExpandDirection direction);
 
-	std::vector<int16_t> searchEmptyColumns(); //returns a vector with indices to empty cols
-	std::vector<int16_t> searchEmptyRows(); //returns a vector with indices to empty rows
+	std::vector<int16_t> searchEmptyColumns();
+	std::vector<int16_t> searchEmptyRows();
 	bool canBePlaced(int16_t x, int16_t y)const;
 
-	/*bool lineWithColor(std::string_view Color)const;
-	bool columnWithColor(std::string_view Color)const;
-	bool diagonalWithColor(std::string_view Color)const;*/
+
 	State checkWin(bool canCountPoints = false, int16_t boardMaxSize = 3);
 	int16_t sumPoints(const Color& color);
 
@@ -83,8 +77,8 @@ public:
 	void resizeBoard(int16_t size);
 	void print()const;
 	void clear();
-	bool checkRow(int16_t row); // checks if a row is full , for Explosions
-	bool checkColumn(int16_t column); // checks if a column is full , for Explosions
+	bool checkRow(int16_t row); 
+	bool checkColumn(int16_t column);
 	void pushCard(const SimpleCard& card, const Position& position);
 	bool canBePushed(const SimpleCard& card, const Position& position)const;
 	void popCard(const Position& position);
@@ -104,6 +98,6 @@ public:
 	int getIndexOfLastColumnOfBoard();
 
 	friend std::ostream& operator<<(std::ostream& os, const Board& board);
-	friend std::istream& operator>>(std::istream& in, Board& board); // this is just for test
+	friend std::istream& operator>>(std::istream& in, Board& board); 
 };
 

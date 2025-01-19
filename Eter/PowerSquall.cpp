@@ -17,7 +17,7 @@ std::string PowerSquall::getDescription() const
 	return m_description;
 }
 
-void PowerSquall::playSquallPower(Board& board, Player& player1, Player& player2, int16_t x,int16_t y)//nrLvl - numarul de putere petru o carte
+void PowerSquall::playSquallPower(Board& board, Player& player1, Player& player2, int16_t x,int16_t y)
 {
 	
 	if (ColorToString(board[{x, y}].back().getColor()) == "Red") {

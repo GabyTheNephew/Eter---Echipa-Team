@@ -11,7 +11,7 @@ void Board::expandRow(RowExpandDirection direction)
 		{
 			for (int16_t j = 0; j < m_board[0].size(); j++)
 			{
-				newMatrix[i][j] = std::move(m_board[i - 1][j]);///////
+				newMatrix[i][j] = std::move(m_board[i - 1][j]);
 			}
 		}
 	}
@@ -104,11 +104,7 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 	int16_t rows = m_board.size();
 	int16_t columns = m_board[0].size();
 
-	/*if (x < 0 || x >= rows || y < 0 || y >= columns) {
-		return false;
-	}*/
-
-	// Check neighbors
+	
 	bool check = false;
 	std::vector<std::pair<int16_t, int16_t>> neighbors = {
 		{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1},
@@ -133,63 +129,6 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 }
 
 
-//bool Board::lineWithColor(std::string_view Color) const
-//{
-//	bool check = true;
-//	for (int i = 0; i < m_board.size(); i++)
-//	{
-//		check = true;
-//
-//		for (int j = 0; j < m_board[i].size(); j++)
-//		{
-//			if (m_board[i][j].front().getColor() != Color)
-//			{
-//				check = false;
-//				break;
-//			}
-//		}
-//	}
-//	return check;
-//}
-
-//bool Board::columnWithColor(std::string_view Color) const
-//{
-//
-//	bool check = true;
-//	for (int i = 0; i < m_board.size(); i++)
-//	{
-//		check = true;
-//		for (int j = 0; j < m_board[i].size(); j++)
-//		{
-//			if (m_board[j][i].front().getColor() != Color)
-//			{
-//				check = false;
-//				break;
-//			}
-//		}
-//	}
-//	return check;
-//}
-//
-//bool Board::diagonalWithColor(std::string_view Color) const
-//{
-//	bool check = true;
-//	for(int i=0;i<m_board.size();i++)
-//		if (m_board[i][i].front().getColor() != Color)
-//		{
-//			check = false;
-//			break;
-//		}
-//
-//	for (int i = 0; i < m_board.size(); i++)
-//		if (m_board[i][m_board.size()-1-i].front().getColor() != Color)
-//		{
-//			check = false;
-//			break;
-//		}
-//
-//	return check;
-//}
 
 Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
 {
@@ -222,14 +161,14 @@ Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
 					value = 0;
 				}
 
-				// rows
+	
 				results[i] += value;
-				// columns
+				
 				results[3 + j] += value;
-				// primary diagonal
+			
 				if (i == j)
 					results[6] += value;
-				// secondary diagonal
+				
 				if (i == kColumns - 1 - j)
 					results[7] += value;
 
@@ -238,7 +177,7 @@ Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
 		}
 	}
 
-	// check if we have winner
+
 	for (auto result : results)
 	{
 		if (result == boardMaxSize || result == -boardMaxSize)
@@ -247,7 +186,7 @@ Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
 		}
 	}
 
-	// check if it's a tie
+
 	if (chessmanCount == kRows * kColumns && canCountPoints)
 	{
 		int16_t redSum = sumPoints(Color::Red);
@@ -296,19 +235,6 @@ int16_t Board::sumPoints(const Color& color)
 	return sum;
 }
 
-//std::string_view Board::win()
-//{
-//	bool checkRed = lineWithColor("red") || columnWithColor("red")|| diagonalWithColor("red");
-//	bool checkBlue = lineWithColor("blue") || columnWithColor("blue") || diagonalWithColor("blue");
-//	if (checkRed)
-//	{
-//		return "Red";
-//	}
-//	if (checkBlue)
-//	{
-//		return "Blue";
-//	}
-//}
 
 
 
@@ -421,7 +347,7 @@ void Board::removeColumn(int16_t column)
 
 Board::Board():
 	 m_board{},
-	m_size{ 0 }//def constructor
+	m_size{ 0 }
 {
 
 }
@@ -453,7 +379,7 @@ Board& Board::operator=(Board&& board) noexcept
 void Board::resizeBoard(int16_t size)
 {
 	m_size = size;
-	this->m_board.clear(); // Resetează complet matricea
+	this->m_board.clear(); 
 	this->m_board.resize(size, std::vector<std::deque<SimpleCard>>(size));
 }
 
@@ -473,14 +399,14 @@ void Board::print()const
 			{
 				if (i < 0 || i >= rows || j < 0 || j >= cols)
 				{
-					// În afara matricei: verificăm dacă se poate plasa o carte
+					
 					if (canBePlaced(i, j))
 					{
-						debug << " * "; // Poziție eligibilă
+						debug << " * "; 
 					}
 					else
 					{
-						debug << " "; // Poziție goală
+						debug << " "; 
 					}
 					continue;
 				}
@@ -788,10 +714,6 @@ Board& Board::operator=(const Board& board)
 	return *this;
 }
 
-//matrix& Board::getBoard()
-//{
-//	return m_board;
-//}
 
 void Board::setBoard(const matrix& board)
 {

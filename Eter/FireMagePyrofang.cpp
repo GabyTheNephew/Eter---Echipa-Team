@@ -19,8 +19,6 @@ std::string FireMagePyrofang::getDescription() const
 
 bool FireMagePyrofang::playMagePyrofang(Board& board, Color color, bool rowOrColumn, int16_t x)
 {
-	///row == false
-	///column == true
 	
 	bool ok = false;
 
