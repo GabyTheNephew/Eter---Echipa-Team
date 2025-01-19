@@ -191,7 +191,7 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 //	return check;
 //}
 
-Board::State Board::checkWin(bool canCountPoints)
+Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
 {
 	const int16_t kResults = 8;
 	std::array<int16_t, kResults> results{};
@@ -241,7 +241,7 @@ Board::State Board::checkWin(bool canCountPoints)
 	// check if we have winner
 	for (auto result : results)
 	{
-		if (result == 3 || result == -3)
+		if (result == boardMaxSize || result == -boardMaxSize)
 		{
 			return State::Win;
 		}
@@ -314,7 +314,7 @@ int16_t Board::sumPoints(const Color& color)
 
 int16_t Board::getSize() const
 {
-	return m_size;
+	return m_board.size();
 }
 
 int16_t Board::getRowSize() const 
