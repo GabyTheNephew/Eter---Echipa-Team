@@ -1,5 +1,6 @@
 ﻿#include "SecondaryWindow.h"
 
+
 SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance, QWidget* parent)
     : QWidget(parent), imagePath(imagePath), game(gameInstance) {
     setWindowTitle(title);
@@ -104,6 +105,15 @@ void SecondaryWindow::setBoard(Board& board) {
     }
 }
 
+void SecondaryWindow::showWinner(const QString& winnerName) {
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle("Game Over");
+    msgBox.setText("The winner is: " + winnerName);
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.exec();
+
+    emit closed(); // Semnal pentru a închide fereastra curentă
+}
 
 
 
@@ -191,6 +201,7 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
 void SecondaryWindow::setCurrentPlayer(Color player) {
     currentPlayer = player; 
 }
+
 
 
 

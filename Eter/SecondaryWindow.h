@@ -14,6 +14,8 @@
 #include "Board.h"
 #include "Game.h"
 #include <algorithm>
+#include <QMessageBox>
+
 
 class Game;
 class SecondaryWindow : public QWidget {
@@ -26,8 +28,8 @@ public:
     void setPlayer2Cards(const std::vector<SimpleCard>& cards);
 
     void setCurrentPlayer(Color player);
-
-
+    void resetBoard();
+    void showWinner(const QString& winnerName);
 
 signals:
     void closed();

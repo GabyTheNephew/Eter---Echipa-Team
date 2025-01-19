@@ -70,7 +70,7 @@ void Game::startTraining() {
 		canPlayIllusion = std::nullopt;
 	}
 
-	player1 = Player("Name1", { SimpleCard(1, Color::usedRed),SimpleCard(1, Color::Red), SimpleCard(2, Color::Red),SimpleCard(2, Color::Red),SimpleCard(3, Color::Red), SimpleCard(3, Color::Red),SimpleCard(4, Color::Red) }, PastCards);
+	player1 = Player("Name1", { SimpleCard(1, Color::Red),SimpleCard(1, Color::Red), SimpleCard(2, Color::Red),SimpleCard(2, Color::Red),SimpleCard(3, Color::Red), SimpleCard(3, Color::Red),SimpleCard(4, Color::Red) }, PastCards);
 	player2 = Player("Name1", { SimpleCard(1, Color::Blue),SimpleCard(1, Color::Blue), SimpleCard(2, Color::Blue),SimpleCard(2, Color::Blue),SimpleCard(3, Color::Blue), SimpleCard(3, Color::Blue),SimpleCard(4, Color::Blue) }, PastCards);
 
 
@@ -86,12 +86,12 @@ void Game::startTraining() {
 
 	trainingWindow->show();
 
-	currentPlayer = Color::Red; // Player 1 începe
-	playerMoveCompleted = false;
+
 
 	while (m_round_Counter <= maxRounds) {
 		PastCards.clear();
-
+		currentPlayer = Color::Red; // Player 1 începe
+		playerMoveCompleted = false;
 		// Începem runda
 		trainingWindow->setCurrentPlayer(currentPlayer);
 
@@ -122,12 +122,29 @@ void Game::startTraining() {
 			// Verificăm câștigătorul
 			if (m_gameBoard.checkWin() == Board::State::Win) {
 				if (currentPlayer == Color::Red) {
-					qDebug() << "Player 1 wins!";
+					qDebug() << "Player 2 wins!";
 					player1RoundsWon++;
+					player1.ResetVector();
+					player2.ResetVector();
+					trainingWindow->setPlayer1Cards(player1.getVector());
+					trainingWindow->setPlayer2Cards(player2.getVector());
+					m_gameBoard.resizeBoard(1);
+					incrementRoundCounter();
+					
+
+
 				}
 				else {
-					qDebug() << "Player 2 wins!";
+					qDebug() << "Player 1 wins!";
 					player2RoundsWon++;
+					player1.ResetVector();
+					player2.ResetVector();
+					trainingWindow->setPlayer1Cards(player1.getVector());
+					trainingWindow->setPlayer2Cards(player2.getVector());
+					m_gameBoard.resizeBoard(1);
+					incrementRoundCounter();
+			
+		
 				}
 				roundInProgress = false;
 			}
@@ -153,20 +170,18 @@ void Game::startTraining() {
 		}
 
 		// Resetăm pentru următoarea rundă
-		player1.ResetVector();
-		player2.ResetVector();
-		m_gameBoard.clear();
-		incrementRoundCounter();
+		
 
 		if (player1RoundsWon == 2) {
-			qDebug() << "Player 1 won the game!";
+			trainingWindow->showWinner("Player 2");
 			break;
 		}
 
 		if (player2RoundsWon == 2) {
-			qDebug() << "Player 2 won the game!";
+			trainingWindow->showWinner("Player 1");
 			break;
 		}
+
 	}
 }
 

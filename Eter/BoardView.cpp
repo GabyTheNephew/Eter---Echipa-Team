@@ -83,7 +83,7 @@ bool BoardView::canPlaceCard(const SimpleCard& card, int row, int col) const {
     Board::Position pos = {row, col};
     
     // Verifică dacă poziția este validă și dacă cartea respectă regulile de plasare
-    return board.canBePlaced(row, col) &&  board.canBePushed(card, pos);
+    return board.canBePlaced(row, col) && board.canBePushed(card, pos);
 }
 
 
