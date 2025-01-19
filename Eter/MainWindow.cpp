@@ -155,6 +155,112 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                 return;
             }
 
+            if (text == "Power Duel") {
+                qDebug() << "Intrat în Power Duel.";
+
+                // Creează o fereastră cu fundal pentru IntermediateMenu
+                auto* backgroundWindow = new QWidget();
+                backgroundWindow->setWindowTitle("Power Duel Setup");
+                backgroundWindow->setAttribute(Qt::WA_DeleteOnClose);
+                backgroundWindow->setWindowModality(Qt::ApplicationModal);
+                backgroundWindow->setAutoFillBackground(true);
+
+                // Setează fundalul
+                QPalette palette = backgroundWindow->palette();
+                palette.setBrush(QPalette::Window,
+                    QBrush(QPixmap(imagePath).scaled(QGuiApplication::primaryScreen()->size(),
+                        Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
+                backgroundWindow->setPalette(palette);
+
+                // Creează layout-ul principal
+                QVBoxLayout* mainLayout = new QVBoxLayout(backgroundWindow);
+                mainLayout->setAlignment(Qt::AlignCenter);
+
+                // Adaugă IntermediateMenu centrat
+                auto* intermediateMenu = new IntermediateMenu(backgroundWindow);
+                mainLayout->addWidget(intermediateMenu);
+
+                // Ascunde fereastra principală
+                this->hide();
+
+                // Conectează semnalul `startSelected` pentru a începe Mage Duel
+                connect(intermediateMenu, &IntermediateMenu::startSelected, this, [this, backgroundWindow](bool illusions, bool explosions, bool timer) {
+                    backgroundWindow->close();
+
+                    // Configurează jocul
+                    Game& gameInstance = Game::get_Instance();
+                    gameInstance.setIllusionsEnabled(illusions);
+                    gameInstance.setExplosionsEnabled(explosions);
+
+                    // Lansează metoda pentru Mage Duel
+                    gameInstance.startGame(Game::GameType::Power);
+                    });
+
+                // Conectează semnalul `goBackSelected` pentru a reveni la fereastra principală
+                connect(intermediateMenu, &IntermediateMenu::goBackSelected, this, [this, backgroundWindow]() {
+                    backgroundWindow->close();
+                    this->show(); // Reafișează fereastra principală
+                    });
+
+                // Afișează fereastra intermediară
+                backgroundWindow->showFullScreen();
+
+                return;
+            }
+
+            if (text == "Mage and Power Duel") {
+                qDebug() << "Intrat în Mage and Power Duel.";
+
+                // Creează o fereastră cu fundal pentru IntermediateMenu
+                auto* backgroundWindow = new QWidget();
+                backgroundWindow->setWindowTitle("Mage and Power Duel Setup");
+                backgroundWindow->setAttribute(Qt::WA_DeleteOnClose);
+                backgroundWindow->setWindowModality(Qt::ApplicationModal);
+                backgroundWindow->setAutoFillBackground(true);
+
+                // Setează fundalul
+                QPalette palette = backgroundWindow->palette();
+                palette.setBrush(QPalette::Window,
+                    QBrush(QPixmap(imagePath).scaled(QGuiApplication::primaryScreen()->size(),
+                        Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
+                backgroundWindow->setPalette(palette);
+
+                // Creează layout-ul principal
+                QVBoxLayout* mainLayout = new QVBoxLayout(backgroundWindow);
+                mainLayout->setAlignment(Qt::AlignCenter);
+
+                // Adaugă IntermediateMenu centrat
+                auto* intermediateMenu = new IntermediateMenu(backgroundWindow);
+                mainLayout->addWidget(intermediateMenu);
+
+                // Ascunde fereastra principală
+                this->hide();
+
+                // Conectează semnalul `startSelected` pentru a începe Mage Duel
+                connect(intermediateMenu, &IntermediateMenu::startSelected, this, [this, backgroundWindow](bool illusions, bool explosions, bool timer) {
+                    backgroundWindow->close();
+
+                    // Configurează jocul
+                    Game& gameInstance = Game::get_Instance();
+                    gameInstance.setIllusionsEnabled(illusions);
+                    gameInstance.setExplosionsEnabled(explosions);
+
+                    // Lansează metoda pentru Mage Duel
+                    gameInstance.startGame(Game::GameType::MageDuelAndPower);
+                    });
+
+                // Conectează semnalul `goBackSelected` pentru a reveni la fereastra principală
+                connect(intermediateMenu, &IntermediateMenu::goBackSelected, this, [this, backgroundWindow]() {
+                    backgroundWindow->close();
+                    this->show(); // Reafișează fereastra principală
+                    });
+
+                // Afișează fereastra intermediară
+                backgroundWindow->showFullScreen();
+
+                return;
+            }
+
             if (text == "Exit") {
                 QApplication::quit();
                 return;
