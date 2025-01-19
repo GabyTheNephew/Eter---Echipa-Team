@@ -257,24 +257,30 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
 
         if(m_boardView->getMaxSize() > m_boardView->getBoard().getRowSize() - 1)
         {
-            if (row == 0)
+            if (m_boardView->getIsMaxSize() == false)
             {
-                m_boardView->getBoard().expandRow(Board::RowExpandDirection::Up);
-            }
-            if (row == rowSizeBeforeChange)
-            {
-                m_boardView->getBoard().expandRow(Board::RowExpandDirection::Down);
+                if (row == 0)
+                {
+                    m_boardView->getBoard().expandRow(Board::RowExpandDirection::Up);
+                }
+                if (row == rowSizeBeforeChange)
+                {
+                    m_boardView->getBoard().expandRow(Board::RowExpandDirection::Down);
+                }
             }
         }
         if (m_boardView->getMaxSize() > m_boardView->getBoard().getColumnSize() - 1)
         {
-            if (col == 0)
+            if(m_boardView->getIsMaxSize() == false)
             {
-                m_boardView->getBoard().expandColumn(Board::ColumnExpandDirection::Left);
-            }
-            if (col == colSizeBeforeChange)
-            {
-                m_boardView->getBoard().expandColumn(Board::ColumnExpandDirection::Right);
+                if (col == 0)
+                {
+                    m_boardView->getBoard().expandColumn(Board::ColumnExpandDirection::Left);
+                }
+                if (col == colSizeBeforeChange)
+                {
+                    m_boardView->getBoard().expandColumn(Board::ColumnExpandDirection::Right);
+                }
             }
         }
 
@@ -282,8 +288,48 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
             m_boardView->getBoard().getNumberOfColumnsWithCards() >= m_boardView->getMaxSize())
                 m_boardView->setIsMaxSize(true);*/
 
+        if (m_boardView->getBoard().getNumberOfRowsWithCards() == m_boardView->getMaxSize())
+        {
+            if (m_boardView->getBoard().isFirstRowEmpty())
+            {
+                if (!m_boardView->getBoard().isLastRowEmpty())
+                {
+                    m_boardView->getBoard().removeRow(0);
+                    m_boardView->getBoard().print();
+                }
+            }
+            if (m_boardView->getBoard().isLastRowEmpty())
+            {
+                if (!m_boardView->getBoard().isFirstRowEmpty())
+                {
+                    m_boardView->getBoard().removeRow(m_boardView->getBoard().getRowSize() - 1);
+                    m_boardView->getBoard().print();
+                }
+            }
+        }
+
+        if (m_boardView->getBoard().getNumberOfColumnsWithCards() == m_boardView->getMaxSize())
+        {
+            if (m_boardView->getBoard().isFirstColumnEmpty())
+            {
+                if (!m_boardView->getBoard().isLastColumnEmpty())
+                {
+                    m_boardView->getBoard().removeColumn(0);
+                    m_boardView->getBoard().print();
+                }
+            }
+            if (m_boardView->getBoard().isLastColumnEmpty())
+            {
+                if (!m_boardView->getBoard().isFirstColumnEmpty())
+                {
+                    m_boardView->getBoard().removeColumn(m_boardView->getBoard().getColumnSize() - 1);
+                    m_boardView->getBoard().print();
+                }
+            }
+        }
+
         if (m_boardView->getBoard().getNumberOfRowsWithCards() >= m_boardView->getMaxSize() && 
-            m_boardView->getBoard().getNumberOfColumnsWithCards() >= m_boardView->getMaxSize())
+            m_boardView->getBoard().getNumberOfColumnsWithCards() >= m_boardView->getMaxSize() && m_boardView->getIsMaxSize() == false)
         {
             m_boardView->setIsMaxSize(true);
             m_boardView->getBoard().print();
@@ -325,6 +371,16 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
     }
     m_boardView->getBoard().print();
     m_boardView->updateView();
+}
+
+void SecondaryWindow::updateBoardView()
+{
+    m_boardView->updateView();
+}
+
+void SecondaryWindow::resetView()
+{
+    m_boardView->setIsMaxSize(false);
 }
 
 

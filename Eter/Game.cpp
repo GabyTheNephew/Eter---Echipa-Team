@@ -129,10 +129,8 @@ void Game::startTraining() {
 					trainingWindow->setPlayer1Cards(player1.getVector());
 					trainingWindow->setPlayer2Cards(player2.getVector());
 					m_gameBoard.resizeBoard(1);
+					trainingWindow->resetView();
 					incrementRoundCounter();
-					
-
-
 				}
 				else {
 					qDebug() << "Player 1 wins!";
@@ -142,10 +140,10 @@ void Game::startTraining() {
 					trainingWindow->setPlayer1Cards(player1.getVector());
 					trainingWindow->setPlayer2Cards(player2.getVector());
 					m_gameBoard.resizeBoard(1);
+					trainingWindow->resetView();
 					incrementRoundCounter();
-			
-		
 				}
+				trainingWindow->updateBoardView();
 				roundInProgress = false;
 			}
 
