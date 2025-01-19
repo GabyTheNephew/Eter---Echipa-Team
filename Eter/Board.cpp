@@ -352,12 +352,12 @@ void Board::emptyColumn(int16_t column)
 void Board::removeRow(int16_t row)
 {
 	int16_t newSize = m_board.size() - 1;
-	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(newSize + 1));
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(m_board[0].size()));
 	if (row == 0)
 	{
 		for (int16_t i = 0; i < newSize; i++)
 		{
-			for (int16_t j = 0; j < newSize; j++)
+			for (int16_t j = 0; j < newSize + 1; j++)
 			{
 				newMatrix[i][j] = std::move(m_board[i + 1][j]);
 			}
@@ -369,7 +369,7 @@ void Board::removeRow(int16_t row)
 		{
 			for (int16_t i = 0; i < newSize; i++)
 			{
-				for (int16_t j = 0; j < newSize; j++)
+				for (int16_t j = 0; j < newSize + 1; j++)
 				{
 					newMatrix[i][j] = std::move(m_board[i][j]);
 				}
@@ -652,7 +652,7 @@ int Board::getNumberOfColumnsWithCards() const
 	return nr;
 }
 
-bool Board::isFirstColumnEmpty()
+bool Board::isFirstColumnEmpty() const
 {
 	for (int i = 0;i < m_board.size();i++)
 	{
@@ -662,17 +662,17 @@ bool Board::isFirstColumnEmpty()
 	return true;
 }
 
-bool Board::isLastColumnEmpty()
+bool Board::isLastColumnEmpty()const
 {
 	for (int i = 0;i < m_board.size();i++)
 	{
-		if (!m_board[0][getColumnSize() - 1].empty())
+		if (!m_board[i][getColumnSize() - 1].empty())
 			return false;
 	}
 	return true;
 }
 
-bool Board::isFirstRowEmpty()
+bool Board::isFirstRowEmpty()const
 {
 	for (int i = 0;i < m_board.size();i++)
 	{
@@ -682,7 +682,7 @@ bool Board::isFirstRowEmpty()
 	return true;
 }
 
-bool Board::isLastRowEmpty()
+bool Board::isLastRowEmpty()const
 {
 	for (int i = 0;i < m_board.size();i++)
 	{
