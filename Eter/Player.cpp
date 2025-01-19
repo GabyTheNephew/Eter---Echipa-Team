@@ -125,17 +125,11 @@ void Player::makeCardValid(SimpleCard& card)
 				if (pastCard.getValue() == card.getValue() && pastCard.getColor() == Color::usedRed)
 				{
 					curCard.setColor(Color::Red);
-					m_pastSimpleCardsVector.erase(
-						std::remove_if(m_pastSimpleCardsVector.begin(),
-							m_pastSimpleCardsVector.end(),
-							[&pastCard](const auto& element)
-							{
-								return element.getValue() == pastCard.getValue();
-							}),
-						m_pastSimpleCardsVector.end());
+					
 					break;
 				}
 			}
+			curCard.setColor(Color::Red);
 		}
 		else
 			if (curCard.getValue() == card.getValue() && curCard.getColor() == Color::usedBlue)
@@ -145,20 +139,13 @@ void Player::makeCardValid(SimpleCard& card)
 					if (pastCard.getValue() == card.getValue() && pastCard.getColor() == Color::usedBlue)
 					{
 						curCard.setColor(Color::Blue);
-						m_pastSimpleCardsVector.erase(
-							std::remove_if(m_pastSimpleCardsVector.begin(),
-								m_pastSimpleCardsVector.end(),
-
-								[&pastCard](const auto& element)
-								{
-									return element.getValue() == pastCard.getValue();
-								}),
-
-							m_pastSimpleCardsVector.end());
+						
 						break;
 					}
 				}
+
 			}
+
 	}
 
 }
@@ -286,13 +273,6 @@ void Player::playCard(SimpleCard& card, Board& game_board, std::vector<SimpleCar
 		std::cin >> x >> y;
 
 
-		/*if (game_board.getSize() == 1)
-		{
-			game_board.pushCard(card, { 0, 0});
-			makeCardInvalid(card);
-			break;
-		}*/
-
 		if (game_board.canBePlaced(x, y))
 		{
 			if (game_board.getSize() < 3)
@@ -372,42 +352,34 @@ void Player::playMage(Mages mage, Board& game_board) {
 	switch (mage) {
 	case Mages::AirMageVelora: {
 		AirMageVelora AirMageVelora;
-		// AirMageVelora.playMageVelora(game_board);
 		break;
 	}
 	case Mages::AirMageZephyraCrow: {
 		AirMageZephyraCrow AirMageZephyraCrow;
-		// AirMageZephyraCrow.playMageZephyraCrow();
 		break;
 	}
 	case Mages::EarthMageBumbleroot: {
 		EarthMageBumbleroot EarthMageBumbleroot;
-		// EarthMageBumbleroot.playMageBumbleroot();
 		break;
 	}
 	case Mages::EarthMageElderbranch: {
 		EarthMageElderbranch EarthMageElderbranch;
-		// EarthMageElderbranch.playMageElderbranch();
 		break;
 	}
 	case Mages::FireMageIgnara: {
 		FireMageIgnara FireMageIgnara;
-		// FireMageIgnara.playMageIgnara();
 		break;
 	}
 	case Mages::FireMagePyrofang: {
 		FireMagePyrofang FireMagePyrofang;
-		// FireMagePyrofang.playMagePyrofang();
 		break;
 	}
 	case Mages::WaterMageAqualon: {
 		WaterMageAqualon WaterMageAqualon;
-		// WaterMageAqualon.playMageAqualon();
 		break;
 	}
 	case Mages::WaterMageChillThoughts: {
 		WaterMageChillThoughts WaterMageChillThoughts;
-		// WaterMageChillThoughts.playMageChillThoughts();
 		break;
 	}
 	default:
@@ -464,60 +436,6 @@ std::string Player::getMage()
 }
 
 
-
-//void Player::playCardandExtend(SimpleCard& card, Board& game_board,
-//	std::vector<SimpleCard>& pastcards, bool& canPlayIllusion)
-//{
-//	Position pos;
-//	auto& [line, column] = pos;
-//
-//	if (canPlayIllusion)
-//	{
-//		std::cout << "Do you want to play it as an illusion?\n";
-//		std::string answer;
-//		std::cin >> answer;
-//		if (answer == "yes")
-//		{
-//			canPlayIllusion = false;
-//			if (card.getColor() == Color::Red)
-//			{
-//				card.setColor(Color::IlusionRed);
-//			}
-//			else
-//			{
-//				card.setColor(Color::IlusionBlue);
-//			}
-//		}
-//	}
-//
-//	std::cout << "Enter the coordinates of the card\n";
-//	while (true)
-//	{
-//		std::cin >> line >> column;
-//
-//
-//		/*if (game_board.getSize() == 1)
-//		{
-//			game_board.pushCard(card, { 0, 0});
-//			makeCardInvalid(card);
-//			break;
-//		}*/
-//
-//		if (game_board.canBePlaced(line, column))
-//		{
-//			initiateBoard(game_board, pos);
-//			game_board.pushCard(card, { line, column });
-//			makeCardInvalid(card);
-//			pastcards.push_back(card);
-//			break;
-//		}
-//		else
-//		{
-//			std::cout << "Invalid coordinates\n";
-//		}
-//
-//	}
-//}
 
 void Player::initiateBoard(Board& board, Position& pos)
 {
@@ -608,10 +526,19 @@ void Player::initiateBoard(Board& board, Position& pos)
 	}
 }
 
-//void Player::playIllusion(SimpleCard& card, Board& board, Position pos)
-//{
-//	if (card.getIllusionState())
-//	{
-//
-//	}
-//}
+
+
+void Player::assignPower() {
+	std::random_device random;
+	std::mt19937 generator(random());
+	std::uniform_int_distribution<int> dist(0, 4);
+	m_power = static_cast<Power>(dist(generator));
+}
+
+void Player::reassignPower() {
+	assignPower();
+}
+
+Power Player::getPower() const {
+	return m_power;
+}

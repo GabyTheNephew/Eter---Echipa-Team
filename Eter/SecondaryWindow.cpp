@@ -1,40 +1,46 @@
 ﻿#include "SecondaryWindow.h"
 
 
-SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,const QString& mage1Name, const QString& mage2Name, bool checkMage, QWidget* parent)
+SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name, bool checkMage,bool checkPower, QWidget* parent)
     : QWidget(parent), imagePath(imagePath), game(gameInstance) {
     setWindowTitle(title);
 
-    // Creăm layout-ul principal
+    
     mainLayout = new QVBoxLayout(this);
 
-    // Layout pentru cărțile albastre (sus)
+    
     player2CardsLayout = new QHBoxLayout();
     mainLayout->addLayout(player2CardsLayout);
 
-    // Spacer între cărțile albastre și tabla de joc
+    
     mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
 
-    // Placeholder pentru tabla de joc
+    
     m_boardView = nullptr;
 
-    // Spacer între tabla de joc și cărțile roșii
+    
     mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
 
-    // Layout pentru cărțile roșii (jos)
+    
     player1CardsLayout = new QHBoxLayout();
     mainLayout->addLayout(player1CardsLayout);
 
-    // Setăm fundalul
+    
     QPalette palette = this->palette();
     palette.setBrush(QPalette::Window,
         QBrush(QPixmap(imagePath).scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
     this->setPalette(palette);
     this->setAutoFillBackground(true);
 
-    // Afișăm magii doar pentru tipul de joc `MageDuel`
-    if (checkMage) {
+    
+    if (checkMage && checkPower) {
+        setMagesAndPowers(mage1Name, mage2Name, power1Name, power2Name);
+    }
+    else if (checkMage) {
         setMages(mage1Name, mage2Name);
+    }
+    else if (checkPower) {
+        setPowers(power1Name, power2Name);
     }
 
     this->showFullScreen();
@@ -94,17 +100,17 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 }
 
 void SecondaryWindow::setBoard(Board& board, int setMaxSize) {
-    if (!m_boardView) { // Creăm `m_boardView` doar dacă nu există deja
+    if (!m_boardView) { 
         m_boardView = new BoardView(board, this, setMaxSize);
         m_boardView->setFixedSize(350, 350);
 
-        // Adăugăm tabla în layout-ul principal
+        
         mainLayout->insertWidget(1, m_boardView, 0, Qt::AlignHCenter | Qt::AlignVCenter);
 
-        // Conectăm semnalul `cellClicked` la slotul `onBoardClicked`
+        
         connect(m_boardView, &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
 
-        // Actualizăm vizualizarea tablei
+        
         m_boardView->updateView();
     }
 }
@@ -116,7 +122,7 @@ void SecondaryWindow::showWinner(const QString& winnerName) {
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.exec();
 
-    emit closed(); // Semnal pentru a închide fereastra curentă
+    emit closed();
 }
 
 
@@ -131,7 +137,7 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
 
     for (const auto& card : cards) {
         if (card.getColor() == Color::usedRed) {
-            continue; // Sărim peste cărțile roșii folosite
+            continue; 
         }
         auto cardButton = new QPushButton(this);
 
@@ -151,7 +157,7 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
         cardButton->setStyleSheet("border: none;");
         player1CardsLayout->addWidget(cardButton);
 
-        // Conectăm clicul pe buton la selecția cărții
+        
         connect(cardButton, &QPushButton::clicked, this, [this, card]() {
             onCardSelected(card);
             });
@@ -162,18 +168,18 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
 void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
     QLayoutItem* child;
     while ((child = player2CardsLayout->takeAt(0)) != nullptr) {
-        delete child->widget(); // Eliminăm toate widget-urile existente
+        delete child->widget(); 
         delete child;
     }
 
-    int imageWidth = 150;  // Lățimea imaginii
-    int imageHeight = 200; // Înălțimea imaginii
-    int spacing = 20;      // Spațiul dintre imagini
+    int imageWidth = 150;  
+    int imageHeight = 200; 
+    int spacing = 20;
     player2CardsLayout->setSpacing(spacing);
 
     for (const auto& card : cards) {
         if (card.getColor() == Color::usedBlue) {
-            continue; // Sărim peste cărțile roșii folosite
+            continue;
         }
         auto cardButton = new QPushButton(this);
 
@@ -194,7 +200,6 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
         cardButton->setStyleSheet("border: none;");
         player2CardsLayout->addWidget(cardButton);
 
-        // Conectăm clicul pe buton la selecția cărții albastre
         connect(cardButton, &QPushButton::clicked, this, [this, card]() {
             onCardSelected(card);
             });
@@ -222,7 +227,7 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
         << "Color =" << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
         << ", Value =" << selectedCard.getValue();
 
-    // Obține ultima carte de pe poziție
+
 
     Board::Position pos = { row, col };
 
@@ -235,15 +240,15 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
             return;
         }
 
-        // Plasăm cartea
+
         m_boardView->placeCard(selectedCard, row, col);
 
-        // Apelăm metoda makeCardInvalid pe jucătorul curent
+
         game->getCurrentPlayer().makeCardInvalid(selectedCard);
         game->getCurrentPlayer().getPastVector().push_back(selectedCard);
 
 
-        // Actualizăm cărțile jucătorului curent
+
         if (currentPlayer == Color::Red) {
             setPlayer1Cards(game->getCurrentPlayer().getVector());
         }
@@ -251,10 +256,10 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
             setPlayer2Cards(game->getCurrentPlayer().getVector());
         }
 
-        selectedCard = SimpleCard(); // Resetăm selecția
+        selectedCard = SimpleCard(); 
         qDebug() << "Card placed successfully.";
 
-        game->setPlayerMoveCompleted(true); // Indică faptul că mutarea a fost completă
+        game->setPlayerMoveCompleted(true); 
 
         int rowSizeBeforeChange = m_boardView->getBoard().getRowSize() - 1;
         int colSizeBeforeChange = m_boardView->getBoard().getColumnSize() - 1;
@@ -288,9 +293,7 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
             }
         }
 
-        /*if (m_boardView->getBoard().getNumberOfRowsWithCards() >= m_boardView->getMaxSize() ||
-            m_boardView->getBoard().getNumberOfColumnsWithCards() >= m_boardView->getMaxSize())
-                m_boardView->setIsMaxSize(true);*/
+     
 
         if (m_boardView->getBoard().getNumberOfRowsWithCards() == m_boardView->getMaxSize())
         {
@@ -380,7 +383,6 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
 void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 {
     qDebug() << "Mage clicked:" << mageName;
-    /*QMessageBox::information(this, "Mage Clicked", "You clicked on mage: " + mageName);*/
 
     if (m_boardView->getBoard().getSize() < m_boardView->getMaxSize())
     {
@@ -397,36 +399,34 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
         {
             bool ok;
 
-            // Introducem rândul și coloana de început
+         
             int startRow = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-            if (!ok) break; // Utilizatorul a anulat
+            if (!ok) break; 
 
             int startCol = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-            if (!ok) break; // Utilizatorul a anulat
+            if (!ok) break; 
 
-            // Introducem rândul și coloana de final
+
             int endRow = QInputDialog::getInt(this, "Input End Row", "Enter end row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-            if (!ok) break; // Utilizatorul a anulat
+            if (!ok) break; 
 
             int endCol = QInputDialog::getInt(this, "Input End Column", "Enter end column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-            if (!ok) break; // Utilizatorul a anulat
+            if (!ok) break; 
 
-            // Apelăm funcția playMageVelora cu matricea și pozițiile introduse
+
             AirMageVelora AirMageVelora;
             returnedValue = AirMageVelora.playMageVelora(m_boardView->getBoard(), color, startRow, startCol, endRow, endCol);
         } while (returnedValue == false);
-        //qDebug() << "Start: (" << startRow << ", " << startCol << "), End: (" << endRow << ", " << endCol << ")";
         break;
     }
     case Mages::AirMageZephyraCrow: {
         bool ok;
 
-        // Introducem rândul și coloana de început
         int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         AirMageZephyraCrow AirMageZephyraCrow;
         AirMageZephyraCrow.playMageZephyraCrow(m_boardView->getBoard(), color, row, col);
@@ -437,31 +437,31 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 
         bool ok;
 
-        // Introducem rândul și coloana de început
+
         int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         EarthMageBumbleroot.playMageBumbleroot(m_boardView->getBoard(), row, col);
         break;
     }
     case Mages::EarthMageElderbranch: {
         EarthMageElderbranch EarthMageElderbranch;
-        //EarthMageElderbranch.playMageElderbranch(board, color,);
+
         break;
     }
     case Mages::FireMageIgnara: {
 
         bool ok;
 
-        // Introducem rândul și coloana de început
+
         int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         FireMageIgnara FireMageIgnara;
         FireMageIgnara.playMageIgnara(m_boardView->getBoard(), color, row, col);
@@ -471,12 +471,12 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 
         bool ok;
 
-        // Introducem rândul și coloana de început
+
         int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         bool rowOrColumn = QInputDialog::getInt(this, "Input Row Or Column", "Enter 0 for column or 1 for row:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
 
         FireMagePyrofang FireMagePyrofang;
@@ -487,12 +487,12 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 
         bool ok;
 
-        // Introducem rândul și coloana de început
+
         int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         bool rowOrColumn = QInputDialog::getInt(this, "Input Row Or Column", "Enter 0 for column or 1 for row:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         WaterMageAqualon WaterMageAqualon;
         WaterMageAqualon.playMageAqualon(m_boardView->getBoard(),rowOrColumn, row);
@@ -502,19 +502,17 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 
         bool ok;
 
-        // Introducem rândul și coloana de început
         int startRow = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         int startCol = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
-        // Introducem rândul și coloana de final
         int endRow = QInputDialog::getInt(this, "Input End Row", "Enter end row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         int endCol = QInputDialog::getInt(this, "Input End Column", "Enter end column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; // Utilizatorul a anulat
+        if (!ok) break; 
 
         WaterMageChillThoughts WaterMageChillThoughts;
         WaterMageChillThoughts.playMageChillThoughts(m_boardView->getBoard(), color, startRow, startCol, endRow, endCol);
@@ -526,6 +524,109 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 
     m_boardView->updateView();
 }
+
+void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& color)
+{
+    qDebug() << "Power clicked:" << powerName;
+
+    if (m_boardView->getBoard().getSize() < m_boardView->getMaxSize()) {
+        QMessageBox::information(this, "Power Clicked", "You cannot use a power if the board is not fully defined yet!");
+        return;
+    }
+
+    Power power = fromQStringToPower(powerName);
+
+    switch (power) {
+    case Power::PowerEarthquake: {
+        PowerEarthquake earthquakePower;
+        if (earthquakePower.checkEarthquakePower(m_boardView->getBoard())) {
+            earthquakePower.playEarthquakePower(m_boardView->getBoard());
+            QMessageBox::information(this, "Power Activated", "Earthquake has been used!");
+        }
+        else {
+            QMessageBox::information(this, "Power Failed", "No valid targets for Earthquake.");
+        }
+        break;
+    }
+    case Power::PowerTide: {
+        bool ok;
+        int x1 = QInputDialog::getInt(this, "Input Row 1", "Enter row 1:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
+        if (!ok) break;
+        int y1 = QInputDialog::getInt(this, "Input Column 1", "Enter column 1:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
+        if (!ok) break;
+        int x2 = QInputDialog::getInt(this, "Input Row 2", "Enter row 2:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
+        if (!ok) break;
+        int y2 = QInputDialog::getInt(this, "Input Column 2", "Enter column 2:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
+        if (!ok) break;
+
+        PowerTide tidePower;
+        if (tidePower.checkTidePower(m_boardView->getBoard(), x1, y1, x2, y2)) {
+            tidePower.playTidePower(m_boardView->getBoard(), x1, y1, x2, y2);
+            QMessageBox::information(this, "Power Activated", "Tide has swapped two stacks!");
+        }
+        else {
+            QMessageBox::information(this, "Power Failed", "Invalid stacks for Tide.");
+        }
+        break;
+    }
+    case Power::PowerStorm: {
+        bool ok;
+        int x = QInputDialog::getInt(this, "Input Row", "Enter row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
+        if (!ok) break;
+        int y = QInputDialog::getInt(this, "Input Column", "Enter column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
+        if (!ok) break;
+
+        PowerStorm stormPower;
+        if (stormPower.checkStormPower(m_boardView->getBoard(), x, y)) {
+            stormPower.playStormPower(m_boardView->getBoard(), x, y);
+            QMessageBox::information(this, "Power Activated", "Storm has cleared the stack!");
+        }
+        else {
+            QMessageBox::information(this, "Power Failed", "Invalid stack for Storm.");
+        }
+        break;
+    }
+    case Power::PowerSquall: {
+        bool ok;
+        int x = QInputDialog::getInt(this, "Input Row", "Enter row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
+        if (!ok) break;
+        int y = QInputDialog::getInt(this, "Input Column", "Enter column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
+        if (!ok) break;
+
+        PowerSquall squallPower;
+        squallPower.playSquallPower(m_boardView->getBoard(), game->getCurrentPlayer(), game->getCurrentPlayer(), x, y);
+        QMessageBox::information(this, "Power Activated", "Squall has returned the opponent's card to their hand!");
+        break;
+    }
+    case Power::PowerGale: {
+        PowerGale galePower;
+        galePower.playGalePower(m_boardView->getBoard(), game->getCurrentPlayer(), game->getCurrentPlayer());
+        QMessageBox::information(this, "Power Activated", "Gale has removed covered cards!");
+
+        auto& currentPlayer = game->getCurrentPlayer();
+
+        qDebug() << "Active cards for current player:";
+        for (const auto& card : currentPlayer.getVector()) {
+            qDebug() << "Value:" << card.getValue() << ", Color:" << (card.getColor() == Color::Red ? "Red" : "Blue");
+        }
+
+        qDebug() << "Past cards for current player:";
+        for (const auto& card : currentPlayer.getPastVector()) {
+            qDebug() << "Value:" << card.getValue() << ", Color:" << (card.getColor() == Color::usedRed ? "UsedRed" : "UsedBlue");
+        }
+
+        break;
+    }
+
+    default:
+        QMessageBox::information(this, "Power Clicked", "This power is not implemented yet!");
+        break;
+    }
+
+    m_boardView->updateView();
+}
+
+
 
 void SecondaryWindow::updateBoardView()
 {
@@ -549,23 +650,12 @@ void SecondaryWindow::onCardSelected(const SimpleCard& card) {
 }
 
 void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Name) {
-    // Layout pentru Player 1 (stânga jos)
-    /*QLabel* mage1Label = new QLabel(this);
-    QString mage1ImagePath = mage1Name + ".jpg";
-    QPixmap mage1Pixmap(mage1ImagePath);
-    if (!mage1Pixmap.isNull()) {
-        mage1Label->setPixmap(mage1Pixmap.scaled(150, 150, Qt::KeepAspectRatio));
-    }
-    else {
-        mage1Label->setText("Mage 1 Image not found");
-    }
-    mage1Label->setAlignment(Qt::AlignCenter);*/
+    
 
     QString mage1ImagePath = mage1Name + ".jpg";
     QPixmap mage1Pixmap(mage1ImagePath);
     QIcon mage1Icon(mage1Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
 
-    // Adăugăm un buton transparent peste QLabel pentru magul 1
     QPushButton* mage1Button = new QPushButton(this);
     mage1Button->setStyleSheet("background-color: transparent; border: none;");
     mage1Button->setFixedSize(150, 150);
@@ -575,69 +665,172 @@ void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Nam
         onMageClicked(mage1Name, Color::Red);
         });
 
-    //// Layout comun pentru imagine și buton
-    //QVBoxLayout* mage1Layout = new QVBoxLayout();
-    //mage1Layout->addWidget(mage1Label);
-    //mage1Layout->addWidget(mage1Button);
-    //mage1Layout->setAlignment(Qt::AlignCenter);
-    //player1CardsLayout->addLayout(mage1Layout);
+    
 
-    // Creăm layout-ul pentru magul 1
+   
     QVBoxLayout* player1MageLayout = new QVBoxLayout();
-    player1MageLayout->addSpacerItem(new QSpacerItem(0, 420, QSizePolicy::Minimum, QSizePolicy::Fixed)); // Adăugăm spațiu sub mag
-    //player1MageLayout->addWidget(mage1Label, 0, Qt::AlignLeft);
+    player1MageLayout->addSpacerItem(new QSpacerItem(0, 420, QSizePolicy::Minimum, QSizePolicy::Fixed)); 
     player1MageLayout->addWidget(mage1Button, 0, Qt::AlignLeft);
     player1CardsLayout->addLayout(player1MageLayout);
 
-    // Layout pentru Player 2 (dreapta jos)
-    /*QLabel* mage2Label = new QLabel(this);
-    QString mage2ImagePath = mage2Name + ".jpg";
-    QPixmap mage2Pixmap(mage2ImagePath);
-    if (!mage2Pixmap.isNull()) {
-        mage2Label->setPixmap(mage2Pixmap.scaled(150, 150, Qt::KeepAspectRatio));
-    }
-    else {
-        mage2Label->setText("Mage 2 Image not found");
-    }
-    mage2Label->setAlignment(Qt::AlignCenter);*/
 
     QString mage2ImagePath = mage2Name + ".jpg";
     QPixmap mage2Pixmap(mage2ImagePath);
 
     QIcon mage2Icon(mage2Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
 
-    // Adăugăm un buton transparent peste QLabel pentru magul 2
+   
     QPushButton* mage2Button = new QPushButton(this);
-    //mage2Button->setStyleSheet("background-color: transparent; border: none;");
+   
     mage2Button->setFixedSize(150, 150);
     mage2Button->setIcon(mage2Icon);
     mage2Button->setIconSize(QSize(150, 150));
-    //mage2Button->move(mage2Label->pos()); // Suprapunem butonul peste QLabel
+    
     connect(mage2Button, &QPushButton::clicked, this, [this, mage2Name]() {
         onMageClicked(mage2Name, Color::Blue);
         });
     
     mage2Button->setStyleSheet("background-color: rgba(0, 255, 0, 0.3); border: 10px;");
 
-    //// Layout comun pentru imagine și buton
-    //QVBoxLayout* mage2Layout = new QVBoxLayout();
-    //mage2Layout->addWidget(mage2Label);
-    //mage2Layout->addWidget(mage2Button);
-    //mage2Layout->setAlignment(Qt::AlignCenter);
-    //player1CardsLayout->addLayout(mage2Layout);
+    
 
-    // Creăm layout-ul pentru magul 2
+   
     QVBoxLayout* player2MageLayout = new QVBoxLayout();
 
-    // Setăm margini personalizate pentru a controla poziționarea
-    player2MageLayout->setContentsMargins(0, 170, 0, 0); // Margini: stânga, sus, dreapta, jos
+    
+    player2MageLayout->setContentsMargins(0, 170, 0, 0); 
 
-    // Adăugăm magul în layout
-    //player2MageLayout->addWidget(mage2Label, 0, Qt::AlignRight);
+    
     player2MageLayout->addWidget(mage2Button);
-    // Adăugăm un spacer flexibil (opțional, dacă mai e nevoie)
+    
     player2MageLayout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
 
-    // Adăugăm layout-ul magului în layout-ul cărților roșii
+   
     player1CardsLayout->addLayout(player2MageLayout);
+}
+
+void SecondaryWindow::setPowers(const QString& mage1Name, const QString& mage2Name) {
+   
+
+    QString mage1ImagePath = mage1Name + ".jpg";
+    QPixmap mage1Pixmap(mage1ImagePath);
+    QIcon mage1Icon(mage1Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
+
+    
+    QPushButton* mage1Button = new QPushButton(this);
+    mage1Button->setStyleSheet("background-color: transparent; border: none;");
+    mage1Button->setFixedSize(150, 150);
+    mage1Button->setIcon(mage1Icon);
+    mage1Button->setIconSize(QSize(150, 150));
+    connect(mage1Button, &QPushButton::clicked, this, [this, mage1Name]() {
+        onPowerClicked(mage1Name, Color::Red);
+        });
+
+    
+
+    
+    QVBoxLayout* player1MageLayout = new QVBoxLayout();
+    player1MageLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Fixed)); 
+    player1MageLayout->addWidget(mage1Button, 0, Qt::AlignLeft);
+    player1CardsLayout->addLayout(player1MageLayout);
+
+
+    QString mage2ImagePath = mage2Name + ".jpg";
+    QPixmap mage2Pixmap(mage2ImagePath);
+
+    QIcon mage2Icon(mage2Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
+
+   
+    QPushButton* mage2Button = new QPushButton(this);
+   
+    mage2Button->setFixedSize(150, 150);
+    mage2Button->setIcon(mage2Icon);
+    mage2Button->setIconSize(QSize(150, 150));
+   
+    connect(mage2Button, &QPushButton::clicked, this, [this, mage2Name]() {
+        onPowerClicked(mage2Name, Color::Blue);
+        });
+
+    mage2Button->setStyleSheet("background-color: rgba(0, 255, 0, 0.3); border: 10px;");
+
+   
+    QVBoxLayout* player2MageLayout = new QVBoxLayout();
+
+    
+    player2MageLayout->setContentsMargins(0, 400, 0, 0); 
+
+    
+    player2MageLayout->addWidget(mage2Button);
+    
+    player2MageLayout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    
+    player1CardsLayout->addLayout(player2MageLayout);
+}
+
+void SecondaryWindow::setMagesAndPowers(const QString& mage1Name, const QString& mage2Name,
+    const QString& power1Name, const QString& power2Name) {
+    QVBoxLayout* player1CombinedLayout = new QVBoxLayout();
+
+    
+    QString mage1ImagePath = mage1Name + ".jpg";
+    QPixmap mage1Pixmap(mage1ImagePath);
+    QIcon mage1Icon(mage1Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
+    QPushButton* mage1Button = new QPushButton(this);
+    mage1Button->setIcon(mage1Icon);
+    mage1Button->setIconSize(QSize(100, 100));
+    mage1Button->setStyleSheet("background-color: transparent; border: none;");
+    connect(mage1Button, &QPushButton::clicked, this, [this, mage1Name]() {
+        onMageClicked(mage1Name, Color::Red);
+        });
+
+    
+    QString power1ImagePath = power1Name + ".jpg";
+    QPixmap power1Pixmap(power1ImagePath);
+    QIcon power1Icon(power1Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
+    QPushButton* power1Button = new QPushButton(this);
+    power1Button->setIcon(power1Icon);
+    power1Button->setIconSize(QSize(100, 100));
+    power1Button->setStyleSheet("background-color: transparent; border: none;");
+    connect(power1Button, &QPushButton::clicked, this, [this, power1Name]() {
+        onPowerClicked(power1Name, Color::Red);
+        });
+
+    
+    player1CombinedLayout->addWidget(mage1Button, 0, Qt::AlignLeft);
+    player1CombinedLayout->addWidget(power1Button, 0, Qt::AlignLeft);
+
+    player1CardsLayout->addLayout(player1CombinedLayout);
+
+    
+    QVBoxLayout* player2CombinedLayout = new QVBoxLayout();
+
+    
+    QString mage2ImagePath = mage2Name + ".jpg";
+    QPixmap mage2Pixmap(mage2ImagePath);
+    QIcon mage2Icon(mage2Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
+    QPushButton* mage2Button = new QPushButton(this);
+    mage2Button->setIcon(mage2Icon);
+    mage2Button->setIconSize(QSize(100, 100));
+    mage2Button->setStyleSheet("background-color: transparent; border: none;");
+    connect(mage2Button, &QPushButton::clicked, this, [this, mage2Name]() {
+        onMageClicked(mage2Name, Color::Blue);
+        });
+
+    
+    QString power2ImagePath = power2Name + ".jpg";
+    QPixmap power2Pixmap(power2ImagePath);
+    QIcon power2Icon(power2Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
+    QPushButton* power2Button = new QPushButton(this);
+    power2Button->setIcon(power2Icon);
+    power2Button->setIconSize(QSize(100, 100));
+    power2Button->setStyleSheet("background-color: transparent; border: none;");
+    connect(power2Button, &QPushButton::clicked, this, [this, power2Name]() {
+        onPowerClicked(power2Name, Color::Blue);
+        });
+
+    player2CombinedLayout->addWidget(mage2Button, 0, Qt::AlignRight);
+    player2CombinedLayout->addWidget(power2Button, 0, Qt::AlignRight);
+
+    player1CardsLayout->addLayout(player2CombinedLayout);
 }
