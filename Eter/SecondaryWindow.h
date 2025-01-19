@@ -13,6 +13,11 @@
 #include "BoardView.h"
 #include "Board.h"
 #include "Game.h"
+#include "PowerGale.h"
+#include "PowerEarthquake.h"
+#include "PowerTide.h"
+#include "PowerStorm.h"
+#include "PowerSquall.h"
 #include <algorithm>
 #include <QMessageBox>
 #include <QInputDialog>
@@ -23,7 +28,7 @@ class SecondaryWindow : public QWidget {
 
 public:
     explicit SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,
-        const QString& mage1Name, const QString& mage2Name, bool checkMage, QWidget* parent = nullptr);
+        const QString& mage1Name, const QString& mage2Name,  const QString& power1Name, const QString& power2Name ,bool checkMage, bool checkPower, QWidget* parent = nullptr);
     void setBoard(Board& board, int boardMaxSize);
     void setPlayer1Cards(const std::vector<SimpleCard>& cards);
     void setPlayer2Cards(const std::vector<SimpleCard>& cards);
@@ -35,6 +40,11 @@ public:
     void resetView();
 
     void setMages(const QString& mage1Name, const QString& mage2Name);
+
+    void setPowers(const QString& power1Name, const QString& power2Name);
+
+    void setMagesAndPowers(const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name);
+
 
 
 
@@ -58,9 +68,11 @@ private:
     Game* game;
 
 private slots:
-    void onCardSelected(const SimpleCard& card); // Gestionare selecție carte
+    void onCardSelected(const SimpleCard& card); 
     void onBoardClicked(int row, int col);
-    void onMageClicked(const QString& mageName, const Color& color); 
+    void onMageClicked(const QString& mageName, const Color& color);
+    void onPowerClicked(const QString& powerName, const Color& color);
+
 
 
 signals:
