@@ -22,7 +22,7 @@ public:
 
     int getMaxSize();
     void setIsMaxSize(bool isMaxSized);
-
+    bool getIsMaxSize()const;
 
 signals:
     void cellClicked(int row, int col);

@@ -30,6 +30,8 @@ public:
     void setCurrentPlayer(Color player);
     void resetBoard();
     void showWinner(const QString& winnerName);
+    void updateBoardView();
+    void resetView();
 
 signals:
     void closed();
@@ -57,5 +59,4 @@ private slots:
 
 signals:
     void boardClicked(int row, int col, int player);
-
 };

@@ -357,7 +357,7 @@ void Board::removeRow(int16_t row)
 	{
 		for (int16_t i = 0; i < newSize; i++)
 		{
-			for (int16_t j = 0; j < newSize + 1; j++)
+			for (int16_t j = 0; j < newMatrix[0].size(); j++)
 			{
 				newMatrix[i][j] = std::move(m_board[i + 1][j]);
 			}
@@ -369,7 +369,7 @@ void Board::removeRow(int16_t row)
 		{
 			for (int16_t i = 0; i < newSize; i++)
 			{
-				for (int16_t j = 0; j < newSize + 1; j++)
+				for (int16_t j = 0; j < newMatrix[0].size(); j++)
 				{
 					newMatrix[i][j] = std::move(m_board[i][j]);
 				}
@@ -674,7 +674,7 @@ bool Board::isLastColumnEmpty()const
 
 bool Board::isFirstRowEmpty()const
 {
-	for (int i = 0;i < m_board.size();i++)
+	for (int i = 0;i < m_board[0].size();i++)
 	{
 		if (!m_board[0][i].empty())
 			return false;
@@ -684,7 +684,7 @@ bool Board::isFirstRowEmpty()const
 
 bool Board::isLastRowEmpty()const
 {
-	for (int i = 0;i < m_board.size();i++)
+	for (int i = 0;i < m_board[0].size();i++)
 	{
 		if (!m_board[getRowSize() - 1][i].empty())
 			return false;

@@ -145,3 +145,8 @@ void BoardView::setIsMaxSize(bool isMaxSized)
     this->isMaxSize = isMaxSized;
 }
 
+bool BoardView::getIsMaxSize() const
+{
+    return isMaxSize;;
+}
+
