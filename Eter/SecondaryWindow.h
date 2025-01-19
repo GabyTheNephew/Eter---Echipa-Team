@@ -22,8 +22,8 @@ class SecondaryWindow : public QWidget {
     Q_OBJECT
 
 public:
-    explicit SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance, bool checkMgae = false,
-        QWidget* parent = nullptr );
+    explicit SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,
+        const QString& mage1Name, const QString& mage2Name, bool checkMage, QWidget* parent = nullptr);
     void setBoard(Board& board, int boardMaxSize);
     void setPlayer1Cards(const std::vector<SimpleCard>& cards);
     void setPlayer2Cards(const std::vector<SimpleCard>& cards);

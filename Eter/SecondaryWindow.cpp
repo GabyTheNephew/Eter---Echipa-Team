@@ -1,7 +1,7 @@
 ﻿#include "SecondaryWindow.h"
 
 
-SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,  bool checkMgae ,QWidget* parent)
+SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,const QString& mage1Name, const QString& mage2Name, bool checkMage, QWidget* parent)
     : QWidget(parent), imagePath(imagePath), game(gameInstance) {
     setWindowTitle(title);
 
@@ -33,8 +33,8 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
     this->setAutoFillBackground(true);
 
     // Afișăm magii doar pentru tipul de joc `MageDuel`
-    if (checkMgae) {
-        setMages("AirMageVelora", "WaterMageAqualon");
+    if (checkMage) {
+        setMages(mage1Name, mage2Name);
     }
 
     this->showFullScreen();

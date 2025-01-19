@@ -11,8 +11,9 @@ Player::Player(std::string_view name, std::vector <SimpleCard> simpleCards, std:
 }
 
 Player::Player(std::string_view name, std::vector<SimpleCard> simpleCards, std::vector<SimpleCard> simplePastCards, bool checkMage) :
-	m_name{ name }, m_mage{ asignMage() }, m_simpleCardsVector{ simpleCards }, m_pastSimpleCardsVector(simplePastCards)
+	m_name{ name }, m_simpleCardsVector{ simpleCards }, m_pastSimpleCardsVector(simplePastCards)
 {
+	m_mage =static_cast<Mages>(asignMage());
 }
 
 Player::~Player()
@@ -27,6 +28,11 @@ void Player::setName(std::string_view name)
 std::string_view Player::getName()
 {
 	return m_name;
+}
+
+int Player::getMageAssignment()
+{
+	return static_cast<int>(m_mage);
 }
 
 void Player::printSimpleCards()
@@ -45,6 +51,11 @@ void Player::printPastSimpleCards()
 		if (card.getColor() == Color::usedBlue || card.getColor() == Color::usedRed)
 			std::cout << card << '\n';
 	}
+}
+
+void Player::reasignMage()
+{
+	m_mage = static_cast<Mages>(asignMage());
 }
 
 void Player::setVector(std::vector<SimpleCard>& simpleCardsVector)
@@ -405,7 +416,7 @@ void Player::playMage(Mages mage, Board& game_board) {
 }
 
 
-std::string_view Player::getMage()
+std::string Player::getMage()
 {
 	
 	switch (this->m_mage)
