@@ -4,6 +4,7 @@
 #include "Board.h"
 #include "Player.h"
 #include "Explosion.h"
+#include "Mages.h"
 #include <string>
 #include <QApplication>
 #include <QObject>
@@ -12,6 +13,8 @@
 #include "SecondaryWindow.h"
 #include "IntermediateMenu.h"
 #include "BoardView.h"
+#include <cstdlib>
+#include <ctime>
 
 
 
@@ -77,6 +80,7 @@ public:
 
     Board& getBoard(); // Metodă pentru a obține referința către tablă
     const Board& getBoard() const; // Supraincarcare pentru acces constant
+
 
 public slots:
     void handleBoardClick(int row, int col);

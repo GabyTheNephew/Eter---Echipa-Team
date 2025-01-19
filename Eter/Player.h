@@ -1,15 +1,26 @@
 #pragma once
 #include <string_view>
 #include<vector>
+#include <random>
 #include "SimpleCard.h"
+#include "Mages.h"
 #include "Board.h"
+#include "AirMageVelora.h"
+#include "AirMageZephyraCrow.h"
+#include "EarthMageBumbleroot.h"
+#include "EarthMageElderbranch.h"
+#include "FireMageIgnara.h"
+#include "FireMagePyrofang.h"
+#include "WaterMageAqualon.h"
+#include "WaterMageChillThoughts.h"
+
 class Player
 {
 private:
 	std::string m_name;
+	Mages m_mage;
 	std::vector<SimpleCard> m_simpleCardsVector;
 	std::vector<SimpleCard> m_pastSimpleCardsVector;
-	SimpleCard selectedCard;
 	//vector for power
 	//vector for mage
 
@@ -18,7 +29,8 @@ private:
 
 public:
 	Player();
-	Player(std::string_view name,std::vector <SimpleCard> simpleCards,std::vector <SimpleCard> simplepastCards);
+	Player(std::string_view name, std::vector <SimpleCard> simpleCards, std::vector <SimpleCard> simplePastCards);
+	Player(std::string_view name, std::vector <SimpleCard> simpleCards, std::vector <SimpleCard> simplepastCards, bool checkMage);
 	~Player();
 
 	void setName(std::string_view name);
@@ -29,25 +41,24 @@ public:
 
 	void setVector(std::vector<SimpleCard>& simpleCardsVector);
 	void setPastVector(std::vector<SimpleCard>& pastsimpleCardsVector);
-	const std::vector<SimpleCard> getVector();
+	const std::vector<SimpleCard>& getVector();
 	std::vector<SimpleCard>& getPastVector(); /// we need to use push back on it
 
 	void ResetVector();
 
-	void makeCardInvalid(SimpleCard& card);
+	void makeCardInvalid(SimpleCard card);
 	void makeCardValid(SimpleCard& card);
 	std::string GetVectorColor();
 	void deleteCardFromPastVector(SimpleCard& cardToDelete);
-
+	int asignMage();
 	SimpleCard chooseCard();
 	int numberofValidCards();
 	//void playCard(int16_t card_value,Board& game_board,Color card_color);
-	void playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& m_pastSimpleCardsVecto, std::optional<std::pair<bool, bool>>& canPlayIllusion);
+	void playCard(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& m_pastSimpleCardsVecto, std::optional<std::pair<bool, bool>>& canPlayIllusion);
+	void playMage(Mages mage, Board& game_board);
+	std::string_view getMage();
 	//void playCardandExtend(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& m_pastSimpleCardsVecto, bool& canPlayIllusion);
 	void initiateBoard(Board& board, Position& pos);
 	//void playIllusion(SimpleCard& card, Board& board, Position pos);
-	bool hasSelectedCard(); 
-	SimpleCard getSelectedCard();
-	void setSelectedCard(const SimpleCard& card);
 };
 

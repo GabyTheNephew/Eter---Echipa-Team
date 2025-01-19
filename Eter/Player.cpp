@@ -10,6 +10,11 @@ Player::Player(std::string_view name, std::vector <SimpleCard> simpleCards, std:
 {
 }
 
+Player::Player(std::string_view name, std::vector<SimpleCard> simpleCards, std::vector<SimpleCard> simplePastCards, bool checkMage) :
+	m_name{ name }, m_mage{ asignMage() }, m_simpleCardsVector{ simpleCards }, m_pastSimpleCardsVector(simplePastCards)
+{
+}
+
 Player::~Player()
 {
 }
@@ -53,7 +58,7 @@ void Player::setPastVector(std::vector<SimpleCard>& pastsimpleCardsVector)
 }
 
 
-const std::vector<SimpleCard> Player::getVector()
+const std::vector<SimpleCard>& Player::getVector()
 {
 	return m_simpleCardsVector;
 }
@@ -75,7 +80,7 @@ void Player::ResetVector()
 	}
 }
 
-void Player::makeCardInvalid(SimpleCard& card)
+void Player::makeCardInvalid(SimpleCard card)
 {
 	for (auto& curCard : m_simpleCardsVector)
 	{
@@ -83,7 +88,6 @@ void Player::makeCardInvalid(SimpleCard& card)
 		{
 			if (card.getColor() == Color::Red || card.getColor() == Color::IlusionRed)
 			{
-				
 				curCard.setColor(Color::usedRed);
 
 				break;
@@ -112,7 +116,7 @@ void Player::makeCardValid(SimpleCard& card)
 					curCard.setColor(Color::Red);
 					m_pastSimpleCardsVector.erase(
 						std::remove_if(m_pastSimpleCardsVector.begin(),
-							m_pastSimpleCardsVector.end(), 
+							m_pastSimpleCardsVector.end(),
 							[&pastCard](const auto& element)
 							{
 								return element.getValue() == pastCard.getValue();
@@ -174,12 +178,12 @@ void Player::deleteCardFromPastVector(SimpleCard& cardToDelete)
 		{
 			m_pastSimpleCardsVector.erase(
 				std::remove_if(m_pastSimpleCardsVector.begin(),
-				m_pastSimpleCardsVector.end(), 
+					m_pastSimpleCardsVector.end(),
 
-				[&card](const auto& element) 
-				{
-					return element.getValue() == card.getValue() && element.getColor()==card.getColor();
-				}), 
+					[&card](const auto& element)
+					{
+						return element.getValue() == card.getValue() && element.getColor() == card.getColor();
+					}),
 
 				m_pastSimpleCardsVector.end());
 			break;
@@ -187,13 +191,21 @@ void Player::deleteCardFromPastVector(SimpleCard& cardToDelete)
 	}
 }
 
+int Player::asignMage()
+{
+	std::random_device random;
+	std::mt19937 generator(random());
+	std::uniform_int_distribution<int> dist(0, 7);
+	return dist(generator);
+}
+
 
 SimpleCard Player::chooseCard()
 {
 	int16_t chosen_card;
-	//std::cout << getName() << " select a card\n";
+	std::cout << getName() << " select a card\n";
 	printSimpleCards();
-	//std::cout << "\nPick a card\n";
+	std::cout << "\nPick a card\n";
 	std::cin >> chosen_card;
 
 	for (int16_t i = 0; i < m_simpleCardsVector.size(); i++)
@@ -217,7 +229,7 @@ int Player::numberofValidCards()
 	return count;
 }
 
-void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard>& pastcards, std::optional<std::pair<bool, bool>>& canPlayIllusion)
+void Player::playCard(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& pastcards, std::optional<std::pair<bool, bool>>& canPlayIllusion)
 {
 	Position pos;
 
@@ -344,6 +356,103 @@ void Player::playCard(SimpleCard& card, Board& game_board,std::vector<SimpleCard
 		}
 	}
 }
+
+void Player::playMage(Mages mage, Board& game_board) {
+	switch (mage) {
+	case Mages::AirMageVelora: {
+		AirMageVelora AirMageVelora;
+		// AirMageVelora.playMageVelora(game_board);
+		break;
+	}
+	case Mages::AirMageZephyraCrow: {
+		AirMageZephyraCrow AirMageZephyraCrow;
+		// AirMageZephyraCrow.playMageZephyraCrow();
+		break;
+	}
+	case Mages::EarthMageBumbleroot: {
+		EarthMageBumbleroot EarthMageBumbleroot;
+		// EarthMageBumbleroot.playMageBumbleroot();
+		break;
+	}
+	case Mages::EarthMageElderbranch: {
+		EarthMageElderbranch EarthMageElderbranch;
+		// EarthMageElderbranch.playMageElderbranch();
+		break;
+	}
+	case Mages::FireMageIgnara: {
+		FireMageIgnara FireMageIgnara;
+		// FireMageIgnara.playMageIgnara();
+		break;
+	}
+	case Mages::FireMagePyrofang: {
+		FireMagePyrofang FireMagePyrofang;
+		// FireMagePyrofang.playMagePyrofang();
+		break;
+	}
+	case Mages::WaterMageAqualon: {
+		WaterMageAqualon WaterMageAqualon;
+		// WaterMageAqualon.playMageAqualon();
+		break;
+	}
+	case Mages::WaterMageChillThoughts: {
+		WaterMageChillThoughts WaterMageChillThoughts;
+		// WaterMageChillThoughts.playMageChillThoughts();
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+
+std::string_view Player::getMage()
+{
+	
+	switch (this->m_mage)
+	{
+	case Mages::AirMageVelora:
+	{
+		return "AirMageVelora";
+		break;
+	}
+	case Mages::AirMageZephyraCrow:
+	{
+		return "AirMageZephyraCrow";
+		break;
+	}
+	case Mages::EarthMageBumbleroot: 
+	{
+		return "EarthMageBumbleroot";
+		break;
+	}
+	case Mages::EarthMageElderbranch: {
+		return "EarthMageElderbranch";
+		break;
+	}
+	case Mages::FireMageIgnara: {
+		return "FireMageIgnara";
+		break;
+	}
+	case Mages::FireMagePyrofang: {
+
+		return "FireMagePyrofang";
+		break; 
+	}
+	case Mages::WaterMageAqualon: {
+		return "WaterMageAqualon";
+		break;
+	}
+	case Mages::WaterMageChillThoughts: 
+	{
+		return "WaterMageChillThoughts";
+		break;
+	}
+		default:
+			break;
+	}
+}
+
+
 
 //void Player::playCardandExtend(SimpleCard& card, Board& game_board,
 //	std::vector<SimpleCard>& pastcards, bool& canPlayIllusion)
@@ -495,15 +604,3 @@ void Player::initiateBoard(Board& board, Position& pos)
 //
 //	}
 //}
-
-bool Player::hasSelectedCard()  {
-	return selectedCard.getValue() != 0; // Returnează true dacă o carte este selectată
-}
-
-SimpleCard Player::getSelectedCard()  {
-	return selectedCard;
-}
-
-void Player::setSelectedCard(const SimpleCard& card) {
-	selectedCard = card;
-}

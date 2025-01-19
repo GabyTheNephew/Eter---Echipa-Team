@@ -54,6 +54,10 @@ const Board& Game::getBoard() const {
 	return m_gameBoard; // Returnează referința constantă
 }
 
+
+
+
+
 void Game::startTraining() {
 	m_gameBoard = Board(1);
 	this->m_round_Counter = 1;
@@ -78,7 +82,7 @@ void Game::startTraining() {
 
 
 	trainingWindow->setAttribute(Qt::WA_DeleteOnClose);
-	trainingWindow->setBoard(m_gameBoard);
+	trainingWindow->setBoard(m_gameBoard ,3);
 	trainingWindow->setPlayer1Cards(player1.getVector());
 	trainingWindow->setPlayer2Cards(player2.getVector());
 
@@ -187,12 +191,132 @@ void Game::startTraining() {
 
 void Game::startMageDuel()
 {
+	m_gameBoard = Board(1);
 	this->m_round_Counter = 1;
-	int16_t maxRounds = 4;
-	//vector
-	// eter
-	// get a mage
-	//best of 5
+	int16_t maxRounds = 3;
+	std::vector<SimpleCard> PastCards;
+	std::optional<std::pair<bool, bool>> canPlayIllusion;
+	int16_t player1RoundsWon = 0;
+	int16_t player2RoundsWon = 0;
+
+	if (m_illusionsEnabled) {
+		canPlayIllusion = std::make_pair(true, true);
+	}
+	else {
+		canPlayIllusion = std::nullopt;
+	}
+
+	player1 = Player("Name1", { SimpleCard(1, Color::Red),SimpleCard(1, Color::Red), SimpleCard(2, Color::Red),SimpleCard(2, Color::Red),SimpleCard(2, Color::Red),SimpleCard(3, Color::Red), SimpleCard(3, Color::Red),SimpleCard(3, Color::Red),SimpleCard(4, Color::Red),SimpleCard(5, Color::Red) }, PastCards,true);
+	player2 = Player("Name1", { SimpleCard(1, Color::Blue),SimpleCard(1, Color::Blue), SimpleCard(2, Color::Blue),SimpleCard(2, Color::Blue),SimpleCard(2, Color::Blue),SimpleCard(3, Color::Blue),SimpleCard(3, Color::Blue), SimpleCard(3, Color::Blue),SimpleCard(4, Color::Blue),SimpleCard(5, Color::Blue) }, PastCards,true);
+
+	qDebug() << "GBHFDBHGRSHJGBSDFVBHJSDFGVHBV"<< player1.getMage();
+	auto* trainingWindow = new SecondaryWindow("Mage Duel", QDir::currentPath() + QDir::separator() + "eter.png", &Game::get_Instance(),true);
+
+
+	trainingWindow->setAttribute(Qt::WA_DeleteOnClose);
+	trainingWindow->setBoard(m_gameBoard, 4);
+	trainingWindow->setPlayer1Cards(player1.getVector());
+	trainingWindow->setPlayer2Cards(player2.getVector());
+
+	connect(trainingWindow, &SecondaryWindow::boardClicked, this, &Game::handleBoardClick);
+
+	trainingWindow->show();
+
+
+
+	while (m_round_Counter <= maxRounds) {
+		PastCards.clear();
+		currentPlayer = Color::Red; // Player 1 începe
+		playerMoveCompleted = false;
+		// Începem runda
+		trainingWindow->setCurrentPlayer(currentPlayer);
+
+		bool roundInProgress = true;
+		while (roundInProgress) {
+			QCoreApplication::processEvents(); // Procesează evenimentele interfeței
+
+			if (playerMoveCompleted) {
+				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
+					trainingWindow->setCurrentPlayer(Color::Blue);
+					currentPlayer = Color::Blue;
+					qDebug() << "Player 1's turn.";
+				}
+				else if (currentPlayer == Color::Blue && player2.numberofValidCards() > 0) {
+					trainingWindow->setCurrentPlayer(Color::Red);
+					currentPlayer = Color::Red;
+					qDebug() << "Player 2's turn.";
+				}
+			}
+
+			if (playerMoveCompleted) {
+				playerMoveCompleted = false; // Resetăm starea pentru următoarea mutare
+			}
+			else {
+				continue; // Așteptăm finalizarea mutării
+			}
+
+			// Verificăm câștigătorul
+			if (m_gameBoard.checkWin() == Board::State::Win) {
+				if (currentPlayer == Color::Red) {
+					qDebug() << "Player 2 wins!";
+					player1RoundsWon++;
+					player1.ResetVector();
+					player2.ResetVector();
+					trainingWindow->setPlayer1Cards(player1.getVector());
+					trainingWindow->setPlayer2Cards(player2.getVector());
+					m_gameBoard.resizeBoard(1);
+					trainingWindow->resetView();
+					incrementRoundCounter();
+				}
+				else {
+					qDebug() << "Player 1 wins!";
+					player2RoundsWon++;
+					player1.ResetVector();
+					player2.ResetVector();
+					trainingWindow->setPlayer1Cards(player1.getVector());
+					trainingWindow->setPlayer2Cards(player2.getVector());
+					m_gameBoard.resizeBoard(1);
+					trainingWindow->resetView();
+					incrementRoundCounter();
+				}
+				trainingWindow->updateBoardView();
+				roundInProgress = false;
+			}
+
+			// Condiții de egalitate
+			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
+				auto state = m_gameBoard.checkWin(true);
+				if (state == Board::State::RedWin) {
+					qDebug() << "Player 1 wins the round.";
+					player1RoundsWon++;
+				}
+				else if (state == Board::State::BlueWin) {
+					qDebug() << "Player 2 wins the round.";
+					player2RoundsWon++;
+				}
+				else if (state == Board::State::Draw) {
+					qDebug() << "Round is a draw.";
+					player1RoundsWon++;
+					player2RoundsWon++;
+				}
+				roundInProgress = false;
+			}
+		}
+
+		// Resetăm pentru următoarea rundă
+
+
+		if (player1RoundsWon == 2) {
+			trainingWindow->showWinner("Player 2");
+			break;
+		}
+
+		if (player2RoundsWon == 2) {
+			trainingWindow->showWinner("Player 1");
+			break;
+		}
+
+	}
 }
 
 void Game::startPowerDuel()
