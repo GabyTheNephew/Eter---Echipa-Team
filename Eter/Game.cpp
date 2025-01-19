@@ -78,7 +78,7 @@ void Game::startTraining() {
 	player2 = Player("Name1", { SimpleCard(1, Color::Blue),SimpleCard(1, Color::Blue), SimpleCard(2, Color::Blue),SimpleCard(2, Color::Blue),SimpleCard(3, Color::Blue), SimpleCard(3, Color::Blue),SimpleCard(4, Color::Blue) }, PastCards);
 
 
-	auto* trainingWindow = new SecondaryWindow("Training", QDir::currentPath() + QDir::separator() + "eter.png", &Game::get_Instance());
+	auto* trainingWindow = new SecondaryWindow("Training", QDir::currentPath() + QDir::separator() + "eter.png", &Game::get_Instance(),"","",false);
 
 
 	trainingWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -209,8 +209,14 @@ void Game::startMageDuel()
 	player1 = Player("Name1", { SimpleCard(1, Color::Red),SimpleCard(1, Color::Red), SimpleCard(2, Color::Red),SimpleCard(2, Color::Red),SimpleCard(2, Color::Red),SimpleCard(3, Color::Red), SimpleCard(3, Color::Red),SimpleCard(3, Color::Red),SimpleCard(4, Color::Red),SimpleCard(5, Color::Red) }, PastCards,true);
 	player2 = Player("Name1", { SimpleCard(1, Color::Blue),SimpleCard(1, Color::Blue), SimpleCard(2, Color::Blue),SimpleCard(2, Color::Blue),SimpleCard(2, Color::Blue),SimpleCard(3, Color::Blue),SimpleCard(3, Color::Blue), SimpleCard(3, Color::Blue),SimpleCard(4, Color::Blue),SimpleCard(5, Color::Blue) }, PastCards,true);
 
-	qDebug() << "GBHFDBHGRSHJGBSDFVBHJSDFGVHBV"<< player1.getMage();
-	auto* trainingWindow = new SecondaryWindow("Mage Duel", QDir::currentPath() + QDir::separator() + "eter.png", &Game::get_Instance(),true);
+	auto mage1 = player1.getMageAssignment();
+	auto mage2 = player2.getMageAssignment();
+	while ((mage1 == mage2 )|| (mage1 % 2 == 0 && mage2 == mage1 + 1) || (mage1 % 2 == 1 && mage2 == mage1 - 1))
+	{
+		player2.reasignMage();
+		mage2 = player2.getMageAssignment();
+	}
+	auto* trainingWindow = new SecondaryWindow("Mage Duel", QDir::currentPath() + QDir::separator() + "eter.png",  &Game::get_Instance(), QString::fromStdString(player1.getMage()), QString::fromStdString(player2.getMage()), true);
 
 
 	trainingWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -223,7 +229,8 @@ void Game::startMageDuel()
 	trainingWindow->show();
 
 
-
+	qDebug() << "Player1Mage" << player1.getMage();
+	qDebug() << "Player2Mage" << player2.getMage();
 	while (m_round_Counter <= maxRounds) {
 		PastCards.clear();
 		currentPlayer = Color::Red; // Player 1 începe

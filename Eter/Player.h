@@ -35,10 +35,10 @@ public:
 
 	void setName(std::string_view name);
 	std::string_view getName();
-
+	int getMageAssignment();
 	void printSimpleCards();
 	void printPastSimpleCards();
-
+	void reasignMage();
 	void setVector(std::vector<SimpleCard>& simpleCardsVector);
 	void setPastVector(std::vector<SimpleCard>& pastsimpleCardsVector);
 	const std::vector<SimpleCard>& getVector();
@@ -51,12 +51,13 @@ public:
 	std::string GetVectorColor();
 	void deleteCardFromPastVector(SimpleCard& cardToDelete);
 	int asignMage();
+
 	SimpleCard chooseCard();
 	int numberofValidCards();
 	//void playCard(int16_t card_value,Board& game_board,Color card_color);
 	void playCard(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& m_pastSimpleCardsVecto, std::optional<std::pair<bool, bool>>& canPlayIllusion);
 	void playMage(Mages mage, Board& game_board);
-	std::string_view getMage();
+	std::string getMage();
 	//void playCardandExtend(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& m_pastSimpleCardsVecto, bool& canPlayIllusion);
 	void initiateBoard(Board& board, Position& pos);
 	//void playIllusion(SimpleCard& card, Board& board, Position pos);
