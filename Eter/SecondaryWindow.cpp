@@ -89,9 +89,9 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
     }
 }
 
-void SecondaryWindow::setBoard(Board& board) {
+void SecondaryWindow::setBoard(Board& board, int setMaxSize) {
     if (!m_boardView) { // Creăm `m_boardView` doar dacă nu există deja
-        m_boardView = new BoardView(board, this);
+        m_boardView = new BoardView(board, this, setMaxSize);
         m_boardView->setFixedSize(350, 350);
 
         // Adăugăm tabla în layout-ul principal
