@@ -263,7 +263,7 @@ void Game::startMageDuel()
 			}
 
 			// Verificăm câștigătorul
-			if (m_gameBoard.checkWin() == Board::State::Win) {
+			if (m_gameBoard.checkWin(false, 4) == Board::State::Win) {
 				if (currentPlayer == Color::Red) {
 					qDebug() << "Player 2 wins!";
 					player1RoundsWon++;

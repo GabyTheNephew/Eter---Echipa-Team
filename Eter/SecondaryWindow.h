@@ -15,7 +15,7 @@
 #include "Game.h"
 #include <algorithm>
 #include <QMessageBox>
-
+#include <QInputDialog>
 
 class Game;
 class SecondaryWindow : public QWidget {
@@ -60,6 +60,7 @@ private:
 private slots:
     void onCardSelected(const SimpleCard& card); // Gestionare selecție carte
     void onBoardClicked(int row, int col);
+    void onMageClicked(const QString& mageName, const Color& color); 
 
 
 signals:
