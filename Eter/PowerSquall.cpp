@@ -28,7 +28,7 @@ void PowerSquall::playSquallPower(Board& board, Player& player1, Player& player2
 	else {
 		if (ColorToString(board[{x, y}].back().getColor()) == "Blue") {
 			auto card = SimpleCard(board[{x, y}].back().getValue(), Color::Blue);
-			player1.makeCardValid(card);
+			player2.makeCardValid(card);
 			board.popCard({ x, y });
 		}
 	}

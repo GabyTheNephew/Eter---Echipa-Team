@@ -18,6 +18,6 @@ public:
 	std::string getDescription() const;
 
 	void playEarthquakePower(Board& board);
-	bool checkEarthquakePower();
+	bool checkEarthquakePower(Board& board);
 
 };

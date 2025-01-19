@@ -24,15 +24,28 @@ void PowerEarthquake::playEarthquakePower(Board& board)
 	for (int16_t i = 0; i < board.getSize(); i++)
 		for (int16_t j = 0; j < board.getSize(); j++)
 		{
-			if (board[{i, j}].back().getValue() == 1) {
-
-				board.popCard({ i,j });
+			if (!board[{i, j}].empty())
+			{
+				if (board[{i, j}].back().getValue() == 1) {
+					board.popCard({ i,j });
+				}
 			}
 		}
 }
 
-bool PowerEarthquake::checkEarthquakePower()
+
+bool PowerEarthquake::checkEarthquakePower(Board& board)
 {
-	return true;
+	for (int16_t i = 0; i < board.getSize(); i++)
+		for (int16_t j = 0; j < board.getSize(); j++)
+		{
+			if (!board[{i, j}].empty())
+			{
+				if (board[{i, j}].back().getValue() == 1) {
+					return true;
+				}
+			}
+		}
+	return false;
 
 }
