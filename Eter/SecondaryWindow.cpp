@@ -1,14 +1,12 @@
 ﻿#include "SecondaryWindow.h"
 
 
-SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance, QWidget* parent)
+SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,  bool checkMgae ,QWidget* parent)
     : QWidget(parent), imagePath(imagePath), game(gameInstance) {
     setWindowTitle(title);
 
     // Creăm layout-ul principal
     mainLayout = new QVBoxLayout(this);
-
-    //connect(m_boardView, &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
 
     // Layout pentru cărțile albastre (sus)
     player2CardsLayout = new QHBoxLayout();
@@ -34,8 +32,14 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
     this->setPalette(palette);
     this->setAutoFillBackground(true);
 
+    // Afișăm magii doar pentru tipul de joc `MageDuel`
+    if (checkMgae) {
+        setMages("AirMageVelora", "WaterMageAqualon");
+    }
+
     this->showFullScreen();
 }
+
 
 
 
@@ -394,4 +398,49 @@ void SecondaryWindow::onCardSelected(const SimpleCard& card) {
         << ", Value =" << card.getValue();
 }
 
+void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Name) {
+    // Layout pentru Player 1 (stânga jos)
+    QLabel* mage1Label = new QLabel(this);
+    QString mage1ImagePath = mage1Name + ".jpg";
+    QPixmap mage1Pixmap(mage1ImagePath);
+    if (!mage1Pixmap.isNull()) {
+        mage1Label->setPixmap(mage1Pixmap.scaled(150, 150, Qt::KeepAspectRatio));
+    }
+    else {
+        mage1Label->setText("Mage 1 Image not found");
+    }
+    mage1Label->setAlignment(Qt::AlignCenter);
 
+    // Creăm layout-ul pentru magul 1
+    QVBoxLayout* player1MageLayout = new QVBoxLayout();
+    player1MageLayout->addSpacerItem(new QSpacerItem(0, 420, QSizePolicy::Minimum, QSizePolicy::Fixed)); // Adăugăm spațiu sub mag
+    player1MageLayout->addWidget(mage1Label, 0, Qt::AlignLeft);
+    player1CardsLayout->addLayout(player1MageLayout);
+
+    // Layout pentru Player 2 (dreapta jos)
+    QLabel* mage2Label = new QLabel(this);
+    QString mage2ImagePath = mage2Name + ".jpg";
+    QPixmap mage2Pixmap(mage2ImagePath);
+    if (!mage2Pixmap.isNull()) {
+        mage2Label->setPixmap(mage2Pixmap.scaled(150, 150, Qt::KeepAspectRatio));
+    }
+    else {
+        mage2Label->setText("Mage 2 Image not found");
+    }
+    mage2Label->setAlignment(Qt::AlignCenter);
+
+    // Creăm layout-ul pentru magul 2
+    QVBoxLayout* player2MageLayout = new QVBoxLayout();
+
+    // Setăm margini personalizate pentru a controla poziționarea
+    player2MageLayout->setContentsMargins(0, 170, 0, 0); // Margini: stânga, sus, dreapta, jos
+
+    // Adăugăm magul în layout
+    player2MageLayout->addWidget(mage2Label, 0, Qt::AlignRight);
+
+    // Adăugăm un spacer flexibil (opțional, dacă mai e nevoie)
+    player2MageLayout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    // Adăugăm layout-ul magului în layout-ul cărților roșii
+    player1CardsLayout->addLayout(player2MageLayout);
+}
