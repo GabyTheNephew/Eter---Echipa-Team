@@ -17,60 +17,65 @@ BoardView::BoardView(Board& boardInstance, QWidget* parent, int maxSize)
 }
 
 void BoardView::updateView() {
-    // Ștergem widget-urile existente din grilă
+    // Ștergem toate widget-urile existente din layout
     QLayoutItem* item;
     while ((item = gridLayout->takeAt(0)) != nullptr) {
-        delete item->widget(); // Ștergem widget-ul asociat
-        delete item;           // Ștergem item-ul din layout
+        delete item->widget();
+        delete item;
     }
 
-    int rows = (isMaxSize == true ? maxSize : board.getRowSize());
-    int cols = (isMaxSize == true ? maxSize : board.getColumnSize());
+    // Reconstruim grila complet
+    for (int row = 0; row < board.getRowSize(); ++row) {
+        for (int col = 0; col < board.getColumnSize(); ++col) {
+            QPushButton* cellButton = new QPushButton(this);
+            cellButton->setFixedSize(100, 100); // Dimensiunea celulelor
+            cellButton->setStyleSheet(
+                "QPushButton {"
+                "    background-color: rgba(255, 255, 255, 50);"
+                "    border: 2px solid black;"
+                "}"
+                "QPushButton:hover {"
+                "    background-color: rgba(255, 255, 255, 100);"
+                "}"
+            );
 
-    /*int rows = isMaxSize == true ? board.getIndexOfLastRowOfBoard() : board.getRowSize();
-    int cols = isMaxSize == true ? board.getIndexOfLastColumnOfBoard() : board.getColumnSize();*/
+            // Verificăm dacă celula conține o carte
+            if (!board[{row, col}].empty()) {
+                const SimpleCard& card = board[{row, col}].back(); // Ultima carte din celulă
 
-    /*int row = isMaxSize == true ? board.getIndexOfFirstRowOfBoard() : 0;
-    int col = isMaxSize == true ? board.getIndexOfFirstColumnOfBoard() : 0;*/
+                // Construim calea imaginii
+                QString imagePath = (card.getColor() == Color::Red ? "red" : "blue");
+                imagePath += QString::number(card.getValue()) + ".jpg";
 
-    // Construim grila de celule
-    for (int row = 0; row < rows; ++row) {
-        for (int col = 0; col < cols; ++col) {
-            if (board.canBePlaced(row, col))
-            {
-                QPushButton* cellButton = new QPushButton(this);
-
-                // Setăm dimensiunea și stilul pentru celulă
-                cellButton->setFixedSize(100, 100); // Exemplu de dimensiune
-                cellButton->setStyleSheet(
-                    "QPushButton {"
-                    "    background-color: rgba(255, 255, 255, 50);"
-                    "    border: 2px solid black;"
-                    "}"
-                    "QPushButton:hover {"
-                    "    background-color: rgba(255, 255, 255, 100);"
-                    "}"
-                );
-
-                // Afișăm valoarea ultimei cărți din celulă, dacă există
-                if (!board[{row, col}].empty()) {
-                    cellButton->setText(QString::number(board[{row, col}].back().getValue()));
+                QPixmap pixmap(imagePath);
+                if (!pixmap.isNull()) {
+                    QPixmap scaledPixmap = pixmap.scaled(cellButton->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                    cellButton->setIcon(QIcon(scaledPixmap));
+                    cellButton->setIconSize(cellButton->size());
                 }
-
-                // Adăugăm butonul în grilă
-                gridLayout->addWidget(cellButton, row, col);
-
-                // *Conectăm clicul pe celulă la semnalul cellClicked*
-                connect(cellButton, &QPushButton::clicked, [this, row, col]() {
-                    emit cellClicked(row, col); // Emită semnalul cu coordonatele celulei clicate
-                    });
+                else {
+                    // Dacă imaginea nu este găsită, afișăm valoarea ca fallback
+                    qDebug() << "Image not found for card: Value =" << card.getValue()
+                        << ", Color =" << (card.getColor() == Color::Red ? "Red" : "Blue");
+                    cellButton->setText(QString::number(card.getValue()));
+                }
             }
+
+            // Conectăm semnalul butonului la clicuri
+            connect(cellButton, &QPushButton::clicked, [this, row, col]() {
+                emit cellClicked(row, col); // Emită coordonatele clicului
+                });
+
+            // Adăugăm butonul în grilă
+            gridLayout->addWidget(cellButton, row, col);
         }
     }
 
-    // Forțăm actualizarea layout-ului pentru a reflecta noile widget-uri
+    // Forțăm reîmprospătarea layout-ului
     gridLayout->activate();
+    qDebug() << "Grid updated with size: " << board.getRowSize() << "x" << board.getColumnSize();
 }
+
 
 
 
@@ -78,7 +83,7 @@ bool BoardView::canPlaceCard(const SimpleCard& card, int row, int col) const {
     Board::Position pos = {row, col};
     
     // Verifică dacă poziția este validă și dacă cartea respectă regulile de plasare
-    return /*board.canBePlaced(row, col) && */ board.canBePushed(card, pos);
+    return board.canBePlaced(row, col) &&  board.canBePushed(card, pos);
 }
 
 
