@@ -13,6 +13,7 @@
 #include "BoardView.h"
 #include "Board.h"
 #include "Game.h"
+#include <algorithm>
 
 class Game;
 class SecondaryWindow : public QWidget {
@@ -46,7 +47,6 @@ private:
     SimpleCard selectedCard;
     Color currentPlayer;
     Game* game;
-    
 
 private slots:
     void onCardSelected(const SimpleCard& card); // Gestionare selecție carte
