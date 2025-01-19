@@ -11,12 +11,18 @@ class BoardView : public QWidget {
     Q_OBJECT
 
 public:
-    explicit BoardView(Board& board, QWidget* parent = nullptr);
+    explicit BoardView(Board& board, QWidget* parent = nullptr, int maxSize = 3);
 
     void updateView();
 
     bool canPlaceCard(const SimpleCard& card, int row, int col) const;
     void placeCard(const SimpleCard& card, int row, int col);
+
+    Board& getBoard();
+
+    int getMaxSize();
+    void setIsMaxSize(bool isMaxSized);
+
 
 signals:
     void cellClicked(int row, int col);
@@ -24,4 +30,6 @@ signals:
 private:
     QGridLayout* gridLayout;
     Board& board;
+    int maxSize;
+    bool isMaxSize;
 };

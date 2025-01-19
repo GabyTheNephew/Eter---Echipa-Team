@@ -61,10 +61,10 @@ void Board::expandColumn(ColumnExpandDirection direction)
 std::vector<int16_t> Board::searchEmptyColumns()
 {
 	std::vector<int16_t> emptyCols;
-	for (int16_t i = 0; i < m_board.size(); i++)
+	for (int16_t i = 0; i < getColumnSize(); i++)
 	{
 		bool isEmpty = true;
-		for (int16_t j = 0; j < m_board[i].size(); j++)
+		for (int16_t j = 0; j < getRowSize(); j++)
 		{
 			if (m_board[j][i].size() != 0)
 				isEmpty = false;
@@ -109,6 +109,7 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 	}*/
 
 	// Check neighbors
+	bool check = false;
 	std::vector<std::pair<int16_t, int16_t>> neighbors = {
 		{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1},
 		{x + 1, y + 1}, {x - 1, y + 1}, {x - 1, y - 1}, {x + 1, y - 1}
@@ -117,10 +118,12 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 	for (const auto& [nx, ny] : neighbors) {
 		if (nx >= 0 && nx < rows && ny >= 0 && ny < columns) {
 			if (!m_board[nx][ny].empty()) {
-				return true; 
+				check = true;
+				break;
 			}
 		}
 	}
+	
 
 	if (m_size == 1)
 	{
@@ -354,7 +357,7 @@ void Board::removeRow(int16_t row)
 	{
 		for (int16_t i = 0; i < newSize; i++)
 		{
-			for (int16_t j = 0; j < newSize+1; j++)
+			for (int16_t j = 0; j < newSize; j++)
 			{
 				newMatrix[i][j] = std::move(m_board[i + 1][j]);
 			}
@@ -366,7 +369,7 @@ void Board::removeRow(int16_t row)
 		{
 			for (int16_t i = 0; i < newSize; i++)
 			{
-				for (int16_t j = 0; j < newSize+1; j++)
+				for (int16_t j = 0; j < newSize; j++)
 				{
 					newMatrix[i][j] = std::move(m_board[i][j]);
 				}
@@ -384,10 +387,10 @@ void Board::removeRow(int16_t row)
 void Board::removeColumn(int16_t column)
 {
 	int16_t newSize = m_board[0].size() - 1;
-	matrix newMatrix(newSize + 1, std::vector<std::deque<SimpleCard>>(newSize));
+	matrix newMatrix(m_board.size(), std::vector<std::deque<SimpleCard>>(newSize));
 	if (column == 0)
 	{
-		for (int16_t i = 0; i < newSize+1; i++)
+		for (int16_t i = 0; i < newSize; i++)
 		{
 			for (int16_t j = 0; j < newSize; j++)
 			{
@@ -397,9 +400,9 @@ void Board::removeColumn(int16_t column)
 	}
 	else
 	{
-		if (column == m_board.size() - 1)
+		if (column == m_board[0].size() - 1)
 		{
-			for (int16_t i = 0; i < newSize+1; i++)
+			for (int16_t i = 0; i < newSize; i++)
 			{
 				for (int16_t j = 0; j < newSize; j++)
 				{
@@ -460,7 +463,7 @@ void Board::print()const
 	int16_t cols = rows > 0 ? m_board[0].size() : 0;
 
 	
-	
+	QDebug debug = qDebug().nospace();
 
 	for (int16_t i = rows < 3 && cols < 3 ? -1 : 0; i <= rows; i++)
 	{
@@ -473,11 +476,11 @@ void Board::print()const
 					// În afara matricei: verificăm dacă se poate plasa o carte
 					if (canBePlaced(i, j))
 					{
-						std::cout << " * "; // Poziție eligibilă
+						debug << " * "; // Poziție eligibilă
 					}
 					else
 					{
-						std::cout << " "; // Poziție goală
+						debug << " "; // Poziție goală
 					}
 					continue;
 				}
@@ -485,7 +488,7 @@ void Board::print()const
 				{
 					if(m_board[i][j].empty())
 					{
-						std::cout << " * ";
+						debug << " * ";
 						continue;
 					}
 				}
@@ -497,26 +500,26 @@ void Board::print()const
 				{
 					if (m_board[i][j].back().getColor() == Color::IlusionRed)
 					{
-						std::cout << "iR" << " ";
+						qDebug().noquote() << "iR" << " ";
 					}
 					else if (m_board[i][j].back().getColor() == Color::IlusionBlue)
 					{
-						std::cout << "iB" << " ";
+						qDebug().noquote() << "iB" << " ";
 					}
 					else
-						std::cout << m_board[i][j].back() << " ";
+						debug << m_board[i][j].back().getValue() << " ";
 				}
 				else
 				{
-					std::cout << " * ";
+					debug << " * ";
 				}
 			}
 
 		}
 
-		std::cout << '\n';
+		debug << '\n';
 	}
-	std::cout << std::endl;
+	qDebug() << '\n';
 }
 
 void Board::clear()
@@ -613,6 +616,148 @@ void Board::popCardAt(const Position& position, const SimpleCard& targetCard)
 			break;
 		}
 	}
+}
+
+int Board::getNumberOfRowsWithCards() const
+{
+	int nr = 0;
+	for (int i = 0;i < getRowSize();i++)
+	{
+		for (int j = 0;j < getColumnSize();j++)
+		{
+			if (!m_board[i][j].empty())
+			{
+				nr++;
+				break;
+			}
+		}
+	}
+	return nr;
+}
+
+int Board::getNumberOfColumnsWithCards() const
+{
+	int nr = 0;
+	for (int i = 0;i < getColumnSize();i++)
+	{
+		for (int j = 0;j < getRowSize();j++)
+		{
+			if (!m_board[j][i].empty())
+			{
+				nr++;
+				break;
+			}
+		}
+	}
+	return nr;
+}
+
+bool Board::isFirstColumnEmpty()
+{
+	for (int i = 0;i < m_board.size();i++)
+	{
+		if (!m_board[0][i].empty())
+			return false;
+	}
+	return true;
+}
+
+bool Board::isLastColumnEmpty()
+{
+	for (int i = 0;i < m_board.size();i++)
+	{
+		if (!m_board[0][getColumnSize() - 1].empty())
+			return false;
+	}
+	return true;
+}
+
+bool Board::isFirstRowEmpty()
+{
+	for (int i = 0;i < m_board.size();i++)
+	{
+		if (!m_board[0][i].empty())
+			return false;
+	}
+	return true;
+}
+
+bool Board::isLastRowEmpty()
+{
+	for (int i = 0;i < m_board.size();i++)
+	{
+		if (!m_board[getRowSize() - 1][i].empty())
+			return false;
+	}
+	return true;
+}
+
+int Board::getIndexOfFirstRowOfBoard()
+{
+	int indexMin = 5;
+	for (int i = 0;i < m_board.size();i++)
+	{
+		for (int j = 0;j < m_board[i].size();j++)
+		{
+			if (!m_board[i][j].empty())
+			{
+				if (i < indexMin)
+					indexMin = i;
+			}
+		}
+	}
+	return indexMin;
+}
+
+int Board::getIndexOfLastRowOfBoard()
+{
+	int indexMax = 0;
+	for (int i = 0;i < m_board.size();i++)
+	{
+		for (int j = 0;j < m_board[i].size();j++)
+		{
+			if (!m_board[i][j].empty())
+			{
+				if (i > indexMax)
+					indexMax = i;
+			}
+		}
+	}
+	return indexMax;
+}
+
+int Board::getIndexOfFirstColumnOfBoard()
+{
+	int indexMin = 5;
+	for (int i = 0;i < m_board.size();i++)
+	{
+		for (int j = 0;j < m_board[i].size();j++)
+		{
+			if (!m_board[i][j].empty())
+			{
+				if (j < indexMin)
+					indexMin = j;
+			}
+		}
+	}
+	return indexMin;
+}
+
+int Board::getIndexOfLastColumnOfBoard()
+{
+	int indexMax = 0;
+	for (int i = 0;i < m_board.size();i++)
+	{
+		for (int j = 0;j < m_board[i].size();j++)
+		{
+			if (!m_board[i][j].empty())
+			{
+				if (j > indexMax)
+					indexMax = j;
+			}
+		}
+	}
+	return indexMax;
 }
 
 

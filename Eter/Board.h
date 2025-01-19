@@ -7,6 +7,7 @@
 #include <optional>
 #include <tuple>
 #include "CardColor.h"
+#include <QDebug>
 
 using matrix = std::vector<std::vector<std::deque<SimpleCard>>>;
 
@@ -88,6 +89,19 @@ public:
 	bool canBePushed(const SimpleCard& card, const Position& position)const;
 	void popCard(const Position& position);
 	void popCardAt(const Position& position, const SimpleCard& targetCard);
+
+	int getNumberOfRowsWithCards()const;
+	int getNumberOfColumnsWithCards()const;
+
+	bool isFirstColumnEmpty();
+	bool isLastColumnEmpty();
+	bool isFirstRowEmpty();
+	bool isLastRowEmpty();
+
+	int getIndexOfFirstRowOfBoard();
+	int getIndexOfLastRowOfBoard();
+	int getIndexOfFirstColumnOfBoard();
+	int getIndexOfLastColumnOfBoard();
 
 	friend std::ostream& operator<<(std::ostream& os, const Board& board);
 	friend std::istream& operator>>(std::istream& in, Board& board); // this is just for test

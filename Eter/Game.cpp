@@ -46,8 +46,16 @@ std::string_view Game::gameTypeToString(GameType gameType) const
 						return "MageDuelAndPower";
 }
 
+Board& Game::getBoard() {
+	return m_gameBoard; // Returnează referința către m_gameBoard
+}
+
+const Board& Game::getBoard() const {
+	return m_gameBoard; // Returnează referința constantă
+}
+
 void Game::startTraining() {
-	m_gameBoard = Board(3);
+	m_gameBoard = Board(1);
 	this->m_round_Counter = 1;
 	int16_t maxRounds = 3;
 	std::vector<SimpleCard> PastCards;
@@ -351,13 +359,6 @@ void Game::handleBoardClick(int row, int col) {
 	}
 
 	playerMoveCompleted = true; // Mutarea curentă este completă
-}
-Board& Game::getBoard() {
-	return m_gameBoard; // Returnează referința către m_gameBoard
-}
-
-const Board& Game::getBoard() const {
-	return m_gameBoard; // Returnează referința constantă
 }
 
 

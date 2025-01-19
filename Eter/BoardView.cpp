@@ -1,7 +1,7 @@
 ﻿#include "BoardView.h"
 
-BoardView::BoardView(Board& boardInstance, QWidget* parent)
-    : QWidget(parent), board(boardInstance) {
+BoardView::BoardView(Board& boardInstance, QWidget* parent, int maxSize)
+    : QWidget(parent), board(boardInstance), maxSize(maxSize) {
     // Creăm un layout principal pentru centrare
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     gridLayout = new QGridLayout(this);
@@ -12,6 +12,8 @@ BoardView::BoardView(Board& boardInstance, QWidget* parent)
     mainLayout->addStretch();
 
     setLayout(mainLayout);
+
+    isMaxSize = false;
 }
 
 void BoardView::updateView() {
@@ -22,35 +24,47 @@ void BoardView::updateView() {
         delete item;           // Ștergem item-ul din layout
     }
 
+    int rows = (isMaxSize == true ? maxSize : board.getRowSize());
+    int cols = (isMaxSize == true ? maxSize : board.getColumnSize());
+
+    /*int rows = isMaxSize == true ? board.getIndexOfLastRowOfBoard() : board.getRowSize();
+    int cols = isMaxSize == true ? board.getIndexOfLastColumnOfBoard() : board.getColumnSize();*/
+
+    /*int row = isMaxSize == true ? board.getIndexOfFirstRowOfBoard() : 0;
+    int col = isMaxSize == true ? board.getIndexOfFirstColumnOfBoard() : 0;*/
+
     // Construim grila de celule
-    for (int row = 0; row < board.getRowSize(); ++row) {
-        for (int col = 0; col < board.getColumnSize(); ++col) {
-            QPushButton* cellButton = new QPushButton(this);
+    for (int row = 0; row < rows; ++row) {
+        for (int col = 0; col < cols; ++col) {
+            if (board.canBePlaced(row, col))
+            {
+                QPushButton* cellButton = new QPushButton(this);
 
-            // Setăm dimensiunea și stilul pentru celulă
-            cellButton->setFixedSize(100, 100); // Exemplu de dimensiune
-            cellButton->setStyleSheet(
-                "QPushButton {"
-                "    background-color: rgba(255, 255, 255, 50);"
-                "    border: 2px solid black;"
-                "}"
-                "QPushButton:hover {"
-                "    background-color: rgba(255, 255, 255, 100);"
-                "}"
-            );
+                // Setăm dimensiunea și stilul pentru celulă
+                cellButton->setFixedSize(100, 100); // Exemplu de dimensiune
+                cellButton->setStyleSheet(
+                    "QPushButton {"
+                    "    background-color: rgba(255, 255, 255, 50);"
+                    "    border: 2px solid black;"
+                    "}"
+                    "QPushButton:hover {"
+                    "    background-color: rgba(255, 255, 255, 100);"
+                    "}"
+                );
 
-            // Afișăm valoarea ultimei cărți din celulă, dacă există
-            if (!board[{row, col}].empty()) {
-                cellButton->setText(QString::number(board[{row, col}].back().getValue()));
+                // Afișăm valoarea ultimei cărți din celulă, dacă există
+                if (!board[{row, col}].empty()) {
+                    cellButton->setText(QString::number(board[{row, col}].back().getValue()));
+                }
+
+                // Adăugăm butonul în grilă
+                gridLayout->addWidget(cellButton, row, col);
+
+                // *Conectăm clicul pe celulă la semnalul cellClicked*
+                connect(cellButton, &QPushButton::clicked, [this, row, col]() {
+                    emit cellClicked(row, col); // Emită semnalul cu coordonatele celulei clicate
+                    });
             }
-
-            // Adăugăm butonul în grilă
-            gridLayout->addWidget(cellButton, row, col);
-
-            // **Conectăm clicul pe celulă la semnalul `cellClicked`**
-            connect(cellButton, &QPushButton::clicked, [this, row, col]() {
-                emit cellClicked(row, col); // Emită semnalul cu coordonatele celulei clicate
-                });
         }
     }
 
@@ -79,9 +93,9 @@ void BoardView::placeCard(const SimpleCard& card, int row, int col) {
             return;
         }
 
-        // Plasăm cartea folosind `pushCard` din `Board`
+        // Plasăm cartea folosind pushCard din Board
         board.pushCard(card, pos);
-        
+
         // Actualizăm vizualizarea celulei în grilă
         QLayoutItem* item = gridLayout->itemAtPosition(row, col);
         if (item) {
@@ -109,5 +123,20 @@ void BoardView::placeCard(const SimpleCard& card, int row, int col) {
 
         qDebug() << "Card placed successfully at position (" << row << "," << col << ")";
     }
+}
+
+Board& BoardView::getBoard()
+{
+    return board;
+}
+
+int BoardView::getMaxSize()
+{
+    return maxSize;
+}
+
+void BoardView::setIsMaxSize(bool isMaxSized)
+{
+    this->isMaxSize = isMaxSized;
 }
 
