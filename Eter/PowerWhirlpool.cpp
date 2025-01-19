@@ -54,19 +54,19 @@ bool PowerWhirlpool::checkWhirlpoolPower(Board& board, int16_t xFirst, int16_t y
 
 	if (xFirst != xSecond)
 	{
-		//message because is not the same row
+		
 		return false;
 	}
 
 	if (abs(ySecond - yFirst) != 2)
 	{
-		//message pt ca nu e un singur spatiu intre pozitiile selectate
+		
 		return false;
 	}
 
 	if (board[{xFirst, ySecond - 1}].back().getValue() == NULL)
 	{
-		//message pt ca nu e spatiul gol dintre ele
+		
 		return false;
 	}
 

@@ -60,7 +60,7 @@ void PowerAsh::playAshPower(Board& board,Player& player)
 		return;
 	}
 
-	// Find playable cards
+
 	std::vector<SimpleCard> eligibleCards;
 	for (const auto& card : player.getVector()) {
 		if (ColorToString(card.getColor()) == usedColor) {

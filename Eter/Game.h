@@ -27,7 +27,7 @@ private:
     Board m_gameBoard;
     static Game m_current_Instance;
     Player player1, player2;
-    //Explosion m_explosion;
+
     std::optional<Explosion> m_explosion;
     bool m_illusionsEnabled;
     Color currentPlayer;
@@ -35,7 +35,6 @@ private:
 
     Game() : m_round_Counter{ 0 }, m_gameBoard{} {}
 
-    // Methods for the different game types
     void startTraining();
     void startMageDuel();
     void startPowerDuel();
@@ -78,8 +77,8 @@ public:
     void setPlayerMoveCompleted(bool completed) { playerMoveCompleted = completed; }
     Player& getCurrentPlayer();
 
-    Board& getBoard(); // Metodă pentru a obține referința către tablă
-    const Board& getBoard() const; // Supraincarcare pentru acces constant
+    Board& getBoard();
+    const Board& getBoard() const;
 
 
 public slots:

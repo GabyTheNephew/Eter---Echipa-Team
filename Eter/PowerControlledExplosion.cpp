@@ -46,5 +46,5 @@ void PowerControlledExplosion::playControlledExplosioPower(Board& board, Player 
 bool PowerControlledExplosion::checkControlledExplosioPower(Board& board, Player& player, int16_t x, int16_t y)
 {
 	return true;
-	//check if gamemode have explosion
+
 }

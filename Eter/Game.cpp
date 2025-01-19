@@ -47,11 +47,11 @@ std::string_view Game::gameTypeToString(GameType gameType) const
 }
 
 Board& Game::getBoard() {
-	return m_gameBoard; // Returnează referința către m_gameBoard
+	return m_gameBoard; 
 }
 
 const Board& Game::getBoard() const {
-	return m_gameBoard; // Returnează referința constantă
+	return m_gameBoard;
 }
 
 
@@ -94,14 +94,14 @@ void Game::startTraining() {
 
 	while (m_round_Counter <= maxRounds) {
 		PastCards.clear();
-		currentPlayer = Color::Red; // Player 1 începe
+		currentPlayer = Color::Red; 
 		playerMoveCompleted = false;
-		// Începem runda
+
 		trainingWindow->setCurrentPlayer(currentPlayer);
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
-			QCoreApplication::processEvents(); // Procesează evenimentele interfeței
+			QCoreApplication::processEvents(); 
 
 			if (playerMoveCompleted) {
 				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
@@ -117,13 +117,13 @@ void Game::startTraining() {
 			}
 
 			if (playerMoveCompleted) {
-				playerMoveCompleted = false; // Resetăm starea pentru următoarea mutare
+				playerMoveCompleted = false; 
 			}
 			else {
-				continue; // Așteptăm finalizarea mutării
+				continue;
 			}
 
-			// Verificăm câștigătorul
+	
 			if (m_gameBoard.checkWin() == Board::State::Win) {
 				if (currentPlayer == Color::Red) {
 					qDebug() << "Player 2 wins!";
@@ -151,7 +151,7 @@ void Game::startTraining() {
 				roundInProgress = false;
 			}
 
-			// Condiții de egalitate
+
 			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
 				auto state = m_gameBoard.checkWin(true);
 				if (state == Board::State::RedWin) {
@@ -171,7 +171,7 @@ void Game::startTraining() {
 			}
 		}
 
-		// Resetăm pentru următoarea rundă
+
 		
 
 		if (player1RoundsWon == 2) {
@@ -193,7 +193,7 @@ void Game::startMageDuel()
 {
 	m_gameBoard = Board(1);
 	this->m_round_Counter = 1;
-	int16_t maxRounds = 3;
+	int16_t maxRounds = 5;
 	std::vector<SimpleCard> PastCards;
 	std::optional<std::pair<bool, bool>> canPlayIllusion;
 	int16_t player1RoundsWon = 0;
@@ -233,14 +233,14 @@ void Game::startMageDuel()
 	qDebug() << "Player2Mage" << player2.getMage();
 	while (m_round_Counter <= maxRounds) {
 		PastCards.clear();
-		currentPlayer = Color::Red; // Player 1 începe
+		currentPlayer = Color::Red; 
 		playerMoveCompleted = false;
-		// Începem runda
+
 		trainingWindow->setCurrentPlayer(currentPlayer);
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
-			QCoreApplication::processEvents(); // Procesează evenimentele interfeței
+			QCoreApplication::processEvents(); 
 
 			if (playerMoveCompleted) {
 				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
@@ -256,13 +256,13 @@ void Game::startMageDuel()
 			}
 
 			if (playerMoveCompleted) {
-				playerMoveCompleted = false; // Resetăm starea pentru următoarea mutare
+				playerMoveCompleted = false; 
 			}
 			else {
-				continue; // Așteptăm finalizarea mutării
+				continue; 
 			}
 
-			// Verificăm câștigătorul
+			
 			if (m_gameBoard.checkWin(false, 4) == Board::State::Win) {
 				if (currentPlayer == Color::Red) {
 					qDebug() << "Player 2 wins!";
@@ -290,7 +290,7 @@ void Game::startMageDuel()
 				roundInProgress = false;
 			}
 
-			// Condiții de egalitate
+	
 			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
 				auto state = m_gameBoard.checkWin(true);
 				if (state == Board::State::RedWin) {
@@ -310,15 +310,15 @@ void Game::startMageDuel()
 			}
 		}
 
-		// Resetăm pentru următoarea rundă
 
 
-		if (player1RoundsWon == 2) {
+
+		if (player1RoundsWon == 3) {
 			trainingWindow->showWinner("Player 2");
 			break;
 		}
 
-		if (player2RoundsWon == 2) {
+		if (player2RoundsWon == 3) {
 			trainingWindow->showWinner("Player 1");
 			break;
 		}
@@ -329,7 +329,7 @@ void Game::startMageDuel()
 void Game::startPowerDuel() {
 	m_gameBoard = Board(1);
 	this->m_round_Counter = 1;
-	int16_t maxRounds = 3;
+	int16_t maxRounds = 5;
 	std::vector<SimpleCard> PastCards;
 	std::optional<std::pair<bool, bool>> canPlayIllusion;
 	int16_t player1RoundsWon = 0;
@@ -348,7 +348,7 @@ void Game::startPowerDuel() {
 	player1.assignPower();
 	player2.assignPower();
 
-	// Asigurăm că puterile sunt diferite
+
 	while (player1.getPower() == player2.getPower()) {
 		player2.reassignPower();
 	}
@@ -369,14 +369,14 @@ void Game::startPowerDuel() {
 	qDebug() << "Player2Mage" << player2.getMage();
 	while (m_round_Counter <= maxRounds) {
 		PastCards.clear();
-		currentPlayer = Color::Red; // Player 1 începe
+		currentPlayer = Color::Red; 
 		playerMoveCompleted = false;
-		// Începem runda
+	
 		trainingWindow->setCurrentPlayer(currentPlayer);
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
-			QCoreApplication::processEvents(); // Procesează evenimentele interfeței
+			QCoreApplication::processEvents();
 
 			if (playerMoveCompleted) {
 				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
@@ -392,13 +392,13 @@ void Game::startPowerDuel() {
 			}
 
 			if (playerMoveCompleted) {
-				playerMoveCompleted = false; // Resetăm starea pentru următoarea mutare
+				playerMoveCompleted = false; 
 			}
 			else {
-				continue; // Așteptăm finalizarea mutării
+				continue; 
 			}
 
-			// Verificăm câștigătorul
+	
 			if (m_gameBoard.checkWin(false, 4) == Board::State::Win) {
 				if (currentPlayer == Color::Red) {
 					qDebug() << "Player 2 wins!";
@@ -426,7 +426,6 @@ void Game::startPowerDuel() {
 				roundInProgress = false;
 			}
 
-			// Condiții de egalitate
 			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
 				auto state = m_gameBoard.checkWin(true);
 				if (state == Board::State::RedWin) {
@@ -446,15 +445,15 @@ void Game::startPowerDuel() {
 			}
 		}
 
-		// Resetăm pentru următoarea rundă
 
 
-		if (player1RoundsWon == 2) {
+
+		if (player1RoundsWon == 3) {
 			trainingWindow->showWinner("Player 2");
 			break;
 		}
 
-		if (player2RoundsWon == 2) {
+		if (player2RoundsWon == 3) {
 			trainingWindow->showWinner("Player 1");
 			break;
 		}
@@ -466,8 +465,7 @@ void Game::startTournament()
 {
 	this->m_round_Counter = 1;
 	int16_t maxRounds = 3;
-	//vector
-	//best of 5
+
 }
 void Game::startMageDuelAndPower()
 {
@@ -499,7 +497,7 @@ void Game::startMageDuelAndPower()
 	player1.assignPower();
 	player2.assignPower();
 
-	// Asigurăm că puterile sunt diferite
+
 	while (player1.getPower() == player2.getPower()) {
 		player2.reassignPower();
 	}
@@ -520,14 +518,14 @@ void Game::startMageDuelAndPower()
 	qDebug() << "Player2Mage" << player2.getMage();
 	while (m_round_Counter <= maxRounds) {
 		PastCards.clear();
-		currentPlayer = Color::Red; // Player 1 începe
+		currentPlayer = Color::Red; 
 		playerMoveCompleted = false;
-		// Începem runda
+
 		trainingWindow->setCurrentPlayer(currentPlayer);
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
-			QCoreApplication::processEvents(); // Procesează evenimentele interfeței
+			QCoreApplication::processEvents(); 
 
 			if (playerMoveCompleted) {
 				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
@@ -543,13 +541,13 @@ void Game::startMageDuelAndPower()
 			}
 
 			if (playerMoveCompleted) {
-				playerMoveCompleted = false; // Resetăm starea pentru următoarea mutare
+				playerMoveCompleted = false; 
 			}
 			else {
-				continue; // Așteptăm finalizarea mutării
+				continue; 
 			}
 
-			// Verificăm câștigătorul
+	
 			if (m_gameBoard.checkWin(false, 4) == Board::State::Win) {
 				if (currentPlayer == Color::Red) {
 					qDebug() << "Player 2 wins!";
@@ -577,7 +575,7 @@ void Game::startMageDuelAndPower()
 				roundInProgress = false;
 			}
 
-			// Condiții de egalitate
+		
 			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
 				auto state = m_gameBoard.checkWin(true);
 				if (state == Board::State::RedWin) {
@@ -597,7 +595,7 @@ void Game::startMageDuelAndPower()
 			}
 		}
 
-		// Resetăm pentru următoarea rundă
+	
 
 
 		if (player1RoundsWon == 2) {
@@ -649,7 +647,7 @@ void Game::showExplosionMenu()
 		else if (input == "start")
 		{
 			std::cout << "Starting the game...\n";
-			break; // Exit the loop to start the game
+			break; 
 		}
 		else
 		{
@@ -660,8 +658,7 @@ void Game::showExplosionMenu()
 
 void Game::startGame(GameType selectedGameType)
 {
-	//showExplosionMenu();
-	// TODO: IntermediateMenu
+	
 
 	switch (selectedGameType)
 	{
@@ -689,7 +686,7 @@ void Game::startGame(GameType selectedGameType)
 
 void Game::setExplosionsEnabled(bool enabled)
 {
-	//m_explosionsEnabled = enabled;
+
 	m_explosion.emplace(Explosion());
 }
 
@@ -716,7 +713,7 @@ Player& Game::getCurrentPlayer() {
 
 void Game::incrementRoundCounter()
 {
-	this->m_round_Counter++; //we use it to increment the ammount of rounds further into the game
+	this->m_round_Counter++; 
 }
 
 bool Game::checkPlayExplosion(Board& m_board)
@@ -758,16 +755,16 @@ void Game::handleBoardClick(int row, int col) {
 		SimpleCard selectedCard = player1.chooseCard();
 		m_gameBoard.pushCard(selectedCard, { row, col });
 		qDebug() << "Player 1 placed card at (" << row << ", " << col << ")";
-		currentPlayer = Color::Blue; // Trecem la Player 2
+		currentPlayer = Color::Blue; 
 	}
 	else if (currentPlayer == Color::Blue) {
 		SimpleCard selectedCard = player2.chooseCard();
 		m_gameBoard.pushCard(selectedCard, { row, col });
 		qDebug() << "Player 2 placed card at (" << row << ", " << col << ")";
-		currentPlayer = Color::Red; // Trecem la Player 1
+		currentPlayer = Color::Red;
 	}
 
-	playerMoveCompleted = true; // Mutarea curentă este completă
+	playerMoveCompleted = true; 
 }
 
 

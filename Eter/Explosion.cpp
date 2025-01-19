@@ -1,18 +1,6 @@
 ﻿#include "Explosion.h"
 
-//Explosion* Explosion::m_current_Instance = nullptr;
-//
-//
-//
-//Explosion* Explosion::get_Instance()
-//{
-//	if (m_current_Instance == nullptr)
-//	{
-//		m_current_Instance = new Explosion();
-//	}
-//
-//	return m_current_Instance;
-//}
+
 
 #include <random>
 #include <set>
