@@ -93,10 +93,10 @@ public:
 	int getNumberOfRowsWithCards()const;
 	int getNumberOfColumnsWithCards()const;
 
-	bool isFirstColumnEmpty();
-	bool isLastColumnEmpty();
-	bool isFirstRowEmpty();
-	bool isLastRowEmpty();
+	bool isFirstColumnEmpty()const;
+	bool isLastColumnEmpty()const;
+	bool isFirstRowEmpty()const;
+	bool isLastRowEmpty()const;
 
 	int getIndexOfFirstRowOfBoard();
 	int getIndexOfLastRowOfBoard();

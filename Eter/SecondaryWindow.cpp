@@ -275,7 +275,7 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
             m_boardView->getBoard().getNumberOfColumnsWithCards() >= m_boardView->getMaxSize())
         {
             m_boardView->setIsMaxSize(true);
-
+            m_boardView->getBoard().print();
 
             if (m_boardView->getBoard().isFirstRowEmpty())
             {
