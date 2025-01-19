@@ -82,13 +82,16 @@ void PowerGust::playGustPower(Board& board)
 	}
 
 	int16_t newX, newY;
+	bool ok = true;
 	std::cout << "Enter the coordinates of the position you want to move to:\n";
-	while (true)
+	while (ok)
 	{
 		std::cin >> newX >> newY;
 		if (std::find(validMoves.begin(), validMoves.end(), std::make_pair(newX,newY)) != validMoves.end())
 		{
 			board.pushCard(cardToMove, { newX, newY });
+			board.popCard({ x,y });
+			ok = false;
 		}
 		else
 		{
