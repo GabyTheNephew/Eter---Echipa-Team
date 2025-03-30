@@ -1,9 +1,7 @@
-Eter - tic tac toe but better
+Eter is a virtual rendition of the classic board game that meticulously adheres to its traditional rules while offering a seamless digital experience. Built with modern C++ for the core game logic, the project leverages state-of-the-art algorithms to ensure smooth gameplay and efficient processing. The codebase is organized into well-defined classes, which enhances readability and maintainability, allowing for easy updates and potential expansions in the future.
 
-Members:
-Slav Gabriel-Bogdan 10LF333
-Visoiu Radu - 10LF333
-Stanga George - 10LF333
-Porfireanu Laurentiu Constantin - 10LF333
+The game board is designed to expand dynamically, precisely following the unique specifications of the original board game. This dynamic scaling not only brings authenticity to the virtual game but also challenges players with a progressively evolving playfield that remains true to the established rules.
 
-Demo: https://youtu.be/PWwNlajAzjc
+The user interface, implemented using Qt, is both responsive and visually engaging. Every user action triggers immediate updates, ensuring that the display remains current and intuitive. The UI has been carefully crafted to provide a pleasant visual experience, making it easier for players to follow the game’s progress and enjoy the overall interaction.
+
+Overall, the project successfully marries modern programming techniques with traditional game mechanics, resulting in a virtual version of Eter that is as challenging as it is enjoyable. Whether you are a fan of the original board game or new to the concept, this digital adaptation promises a user-friendly and engaging experience.
