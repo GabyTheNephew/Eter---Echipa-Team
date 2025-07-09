@@ -24,6 +24,10 @@ public:
     void setIsMaxSize(bool isMaxSized);
     bool getIsMaxSize()const;
 
+	QString getBoardStatusInfo() const;
+    bool shouldDisplayPosition(int row, int col) const;
+    QString getButtonStyle(int row, int col) const;
+
 signals:
     void cellClicked(int row, int col);
 

@@ -125,6 +125,11 @@ std::vector<int16_t> Board::searchEmptyRows()
 
 
 bool Board::canBePlaced(int16_t x, int16_t y) const {
+
+	if (m_board.empty() || m_board[0].empty()) {
+		return false;
+	}
+
 	int16_t rows = m_board.size();
 	int16_t columns = m_board[0].size();
 

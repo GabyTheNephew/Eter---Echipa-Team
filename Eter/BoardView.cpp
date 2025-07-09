@@ -7,8 +7,10 @@ BoardView::BoardView(Board& boardInstance, QWidget* parent, int maxSize)
     gridLayout = new QGridLayout(this);
 
 
-    gridLayout->setSpacing(10);
-    gridLayout->setContentsMargins(5, 5, 5, 5);
+    gridLayout->setSpacing(5);
+    gridLayout->setContentsMargins(10, 10, 10, 10);
+
+    this->setFixedSize(400, 400);
 
     mainLayout->addStretch();
     mainLayout->addLayout(gridLayout);
@@ -17,6 +19,13 @@ BoardView::BoardView(Board& boardInstance, QWidget* parent, int maxSize)
     setLayout(mainLayout);
 
     isMaxSize = false;
+
+    setStyleSheet(
+        "BoardView {"
+        "    background-color: rgba(0, 0, 0, 0.1);"
+        "    border-radius: 10px;"
+        "}"
+    );
 }
 
 void BoardView::updateView() {
@@ -26,7 +35,7 @@ void BoardView::updateView() {
         delete item;
     }
 
-   
+
     bool boardHasCards = false;
     for (int i = 0; i < board.getRowSize(); ++i) {
         for (int j = 0; j < board.getColumnSize(); ++j) {
@@ -38,20 +47,12 @@ void BoardView::updateView() {
         if (boardHasCards) break;
     }
 
-    
+
     if (!boardHasCards) {
         QPushButton* cellButton = new QPushButton(this);
         cellButton->setFixedSize(100, 100);
-        cellButton->setStyleSheet(
-            "QPushButton {"
-            "    background-color: rgba(200, 255, 200, 100);"
-            "    border: 2px dashed #00AA00;"
-            "}"
-            "QPushButton:hover {"
-            "    background-color: rgba(150, 255, 150, 150);"
-            "    border: 2px dashed #00DD00;"
-            "}"
-        );
+        cellButton->setStyleSheet(getButtonStyle(0, 0));
+
         connect(cellButton, &QPushButton::clicked, this, [this]() {
             emit cellClicked(0, 0);
             });
@@ -61,39 +62,53 @@ void BoardView::updateView() {
         return;
     }
 
-    
-    int minRow = std::max(0, board.getRowSize() == 1 ? -1 : 0);
-    int maxRow = std::min(maxSize - 1, board.getRowSize() == 1 ? 1 : board.getRowSize() - 1);
-    int minCol = std::max(0, board.getColumnSize() == 1 ? -1 : 0);
-    int maxCol = std::min(maxSize - 1, board.getColumnSize() == 1 ? 1 : board.getColumnSize() - 1);
 
- 
-    if (!isMaxSize) {
+    int minRow, maxRow, minCol, maxCol;
+
+    if (isMaxSize) {
+        minRow = 0;
+        maxRow = maxSize - 1;
+        minCol = 0;
+        maxCol = maxSize - 1;
+        qDebug() << "Board is at max size - displaying all squares";
+    }
+    else {
+
+        minRow = std::max(0, board.getRowSize() == 1 ? -1 : 0);
+        maxRow = std::min(maxSize - 1, board.getRowSize() == 1 ? 1 : board.getRowSize() - 1);
+        minCol = std::max(0, board.getColumnSize() == 1 ? -1 : 0);
+        maxCol = std::min(maxSize - 1, board.getColumnSize() == 1 ? 1 : board.getColumnSize() - 1);
+
+        
         minRow = std::max(-1, minRow - 1);
         maxRow = std::min(maxSize, maxRow + 1);
         minCol = std::max(-1, minCol - 1);
         maxCol = std::min(maxSize, maxCol + 1);
     }
 
-    
     int offsetRow = minRow < 0 ? 1 : 0;
     int offsetCol = minCol < 0 ? 1 : 0;
 
     for (int boardRow = minRow; boardRow <= maxRow; ++boardRow) {
         for (int boardCol = minCol; boardCol <= maxCol; ++boardCol) {
+
+            if (!shouldDisplayPosition(boardRow, boardCol)) {
+                continue;
+            }
             QPushButton* cellButton = new QPushButton(this);
-            cellButton->setFixedSize(100, 100);
+            cellButton->setFixedSize(80, 80);
 
             int gridRow = boardRow + offsetRow;
             int gridCol = boardCol + offsetCol;
 
-        
+
             bool isWithinBoard = (boardRow >= 0 && boardRow < board.getRowSize() &&
                 boardCol >= 0 && boardCol < board.getColumnSize());
             bool hasCard = isWithinBoard && !board[{boardRow, boardCol}].empty();
 
-            if (hasCard) {
-             
+            if (hasCard)
+            {
+
                 const SimpleCard& card = board[{boardRow, boardCol}].back();
                 QString imagePath = (card.getColor() == Color::Red ? "red" : "blue");
                 imagePath += QString::number(card.getValue()) + ".jpg";
@@ -107,45 +122,30 @@ void BoardView::updateView() {
                 else {
                     cellButton->setText(QString::number(card.getValue()));
                 }
+            }
+            cellButton->setStyleSheet(getButtonStyle(boardRow, boardCol));
 
-                cellButton->setStyleSheet(
-                    "QPushButton {"
-                    "    background-color: rgba(255, 255, 255, 80);"
-                    "    border: 2px solid black;"
-                    "}"
-                );
+
+            if (!board.canBePlaced(boardRow, boardCol) && !hasCard)
+            {
+                cellButton->setEnabled(false);
             }
-            else if (board.canBePlaced(boardRow, boardCol)) {
-              
-                cellButton->setStyleSheet(
-                    "QPushButton {"
-                    "    background-color: rgba(200, 255, 200, 100);"
-                    "    border: 2px dashed #00AA00;"
-                    "}"
-                    "QPushButton:hover {"
-                    "    background-color: rgba(150, 255, 150, 150);"
-                    "    border: 2px dashed #00DD00;"
-                    "}"
-                );
-            }
-            else {
-                delete cellButton;
-                continue;
-            }
+
             connect(cellButton, &QPushButton::clicked, [this, boardRow, boardCol]() {
                 emit cellClicked(boardRow, boardCol);
                 });
 
             gridLayout->addWidget(cellButton, gridRow, gridCol);
+
+
         }
     }
 
-    gridLayout->activate();
-    qDebug() << "Grid updated - board size:" << board.getRowSize() << "x" << board.getColumnSize()
-        << "display range: rows" << minRow << "to" << maxRow << ", cols" << minCol << "to" << maxCol;
+        gridLayout->activate();
+        qDebug() << getBoardStatusInfo();
+        board.print();
+  }
 
-    board.print();
-}
 
 
 bool BoardView::canPlaceCard(const SimpleCard& card, int row, int col) const {
@@ -219,3 +219,69 @@ bool BoardView::getIsMaxSize() const
     return isMaxSize;;
 }
 
+QString BoardView::getBoardStatusInfo() const
+{
+    QString info;
+	QString maxsize = getIsMaxSize() ? "Yes" : "No";
+    info += "Board Size: " + QString::number(board.getRowSize()) + "x" + QString::number(board.getColumnSize()) + "\n";
+    info += "Max Size: " + QString::number(maxSize) + "x" + QString::number(maxSize) + "\n";
+    info += "Is Max Size: " +maxsize + "\n";
+
+    int occupiedPositions = 0;
+    int totalPositions = board.getRowSize() * board.getColumnSize();
+
+    for (int i = 0; i < board.getRowSize(); ++i) {
+        for (int j = 0; j < board.getColumnSize(); ++j) {
+            if (!board[{i, j}].empty()) {
+                occupiedPositions++;
+            }
+        }
+    }
+
+    info += "Occupied Positions: " + QString::number(occupiedPositions) + "/" + QString::number(totalPositions) + "\n";
+    return info;
+
+}
+
+
+bool BoardView::shouldDisplayPosition(int row, int col) const {
+    if (isMaxSize) {
+        return (row >= 0 && row < maxSize && col >= 0 && col < maxSize);
+    }
+
+    return board.canBePlaced(row, col) ||
+        (row >= 0 && row < board.getRowSize() && col >= 0 && col < board.getColumnSize() && !board[{row, col}].empty());
+}
+
+QString BoardView::getButtonStyle(int row, int col)const
+{
+    bool isWithinBoard = (row >= 0 && row < board.getRowSize() && col >= 0 && col < board.getColumnSize());
+    bool hasCard = isWithinBoard && !board[{row, col}].empty();
+
+    if (hasCard) {
+        return "QPushButton {"
+            "    background-color: rgba(255, 255, 255, 80);"
+            "    border: 2px solid black;"
+            "    border-radius: 5px;"
+            "}";
+    }
+    else if (board.canBePlaced(row, col)) {
+        return "QPushButton {"
+            "    background-color: rgba(200, 255, 200, 100);"
+            "    border: 2px dashed #00AA00;"
+            "    border-radius: 5px;"
+            "}"
+            "QPushButton:hover {"
+            "    background-color: rgba(150, 255, 150, 150);"
+            "    border: 2px dashed #00DD00;"
+            "}";
+    }
+    else {
+        return "QPushButton {"
+            "    background-color: rgba(200, 200, 200, 50);"
+            "    border: 1px solid #888888;"
+            "    border-radius: 5px;"
+            "}";
+    }
+
+}
