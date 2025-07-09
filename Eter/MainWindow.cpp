@@ -255,7 +255,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
             }
 
             if (text == "Exit") {
-                QApplication::quit();
+                Game::forceStop();
                 return;
             }
 

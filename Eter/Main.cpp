@@ -8,5 +8,8 @@ int main(int argc, char* argv[]) {
     QString imagePath = QDir::currentPath() + QDir::separator() + "eter.png";
     MainWindow mainWindow(imagePath);
 
+
+    QObject::connect(&app, &QApplication::lastWindowClosed, &app, &QApplication::quit);
+
     return app.exec();
 }

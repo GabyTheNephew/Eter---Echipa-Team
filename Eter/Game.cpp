@@ -2,13 +2,16 @@
 
 
 Game Game::m_current_Instance;
-
+bool Game::s_forceStop = false;
 
 Game& Game::get_Instance()
 {
 	return m_current_Instance;
 }
-
+void Game::forceStop() {
+	s_forceStop = true;
+	QApplication::quit();
+}
 Game::GameType Game::stringToGameType(std::string_view word)
 {
 	if (word == "Training")
@@ -93,6 +96,7 @@ void Game::startTraining() {
 
 
 	while (m_round_Counter <= maxRounds) {
+		if (s_forceStop) return;
 		PastCards.clear();
 		currentPlayer = Color::Red; 
 		playerMoveCompleted = false;
@@ -101,6 +105,7 @@ void Game::startTraining() {
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
+			if (s_forceStop) return;
 			QCoreApplication::processEvents(); 
 
 			if (playerMoveCompleted) {
@@ -232,6 +237,7 @@ void Game::startMageDuel()
 	qDebug() << "Player1Mage" << player1.getMage();
 	qDebug() << "Player2Mage" << player2.getMage();
 	while (m_round_Counter <= maxRounds) {
+		if (s_forceStop) return;
 		PastCards.clear();
 		currentPlayer = Color::Red; 
 		playerMoveCompleted = false;
@@ -240,6 +246,7 @@ void Game::startMageDuel()
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
+			if (s_forceStop) return;
 			QCoreApplication::processEvents(); 
 
 			if (playerMoveCompleted) {
@@ -292,7 +299,7 @@ void Game::startMageDuel()
 
 	
 			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
-				auto state = m_gameBoard.checkWin(true);
+				auto state = m_gameBoard.checkWin(true,4);
 				if (state == Board::State::RedWin) {
 					qDebug() << "Player 1 wins the round.";
 					player1RoundsWon++;
@@ -368,6 +375,7 @@ void Game::startPowerDuel() {
 	qDebug() << "Player1Mage" << player1.getMage();
 	qDebug() << "Player2Mage" << player2.getMage();
 	while (m_round_Counter <= maxRounds) {
+		if (s_forceStop) return;
 		PastCards.clear();
 		currentPlayer = Color::Red; 
 		playerMoveCompleted = false;
@@ -376,6 +384,7 @@ void Game::startPowerDuel() {
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
+			if (s_forceStop) return;
 			QCoreApplication::processEvents();
 
 			if (playerMoveCompleted) {
@@ -427,7 +436,7 @@ void Game::startPowerDuel() {
 			}
 
 			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
-				auto state = m_gameBoard.checkWin(true);
+				auto state = m_gameBoard.checkWin(true, 4);
 				if (state == Board::State::RedWin) {
 					qDebug() << "Player 1 wins the round.";
 					player1RoundsWon++;
@@ -517,6 +526,7 @@ void Game::startMageDuelAndPower()
 	qDebug() << "Player1Mage" << player1.getMage();
 	qDebug() << "Player2Mage" << player2.getMage();
 	while (m_round_Counter <= maxRounds) {
+		if (s_forceStop) return;
 		PastCards.clear();
 		currentPlayer = Color::Red; 
 		playerMoveCompleted = false;
@@ -525,6 +535,7 @@ void Game::startMageDuelAndPower()
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
+			if (s_forceStop) return;
 			QCoreApplication::processEvents(); 
 
 			if (playerMoveCompleted) {
@@ -577,7 +588,7 @@ void Game::startMageDuelAndPower()
 
 		
 			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
-				auto state = m_gameBoard.checkWin(true);
+				auto state = m_gameBoard.checkWin(true, 4);
 				if (state == Board::State::RedWin) {
 					qDebug() << "Player 1 wins the round.";
 					player1RoundsWon++;

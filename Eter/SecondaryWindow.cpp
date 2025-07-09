@@ -50,8 +50,8 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
 
 
 void SecondaryWindow::closeEvent(QCloseEvent* event) {
-    emit closed();
-    QWidget::closeEvent(event);
+    Game::forceStop();
+    event->accept();
 }
 
 void SecondaryWindow::resizeEvent(QResizeEvent* event) {
@@ -79,7 +79,7 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
                 });
 
             connect(menu, &MenuWindow::exitApp, []() {
-                QApplication::quit();
+                Game::forceStop();
                 });
 
             menu->hide(); 
@@ -102,7 +102,7 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 void SecondaryWindow::setBoard(Board& board, int setMaxSize) {
     if (!m_boardView) { 
         m_boardView = new BoardView(board, this, setMaxSize);
-        m_boardView->setFixedSize(350, 350);
+        m_boardView->setFixedSize(400, 400);
 
         
         mainLayout->insertWidget(1, m_boardView, 0, Qt::AlignHCenter | Qt::AlignVCenter);
@@ -263,11 +263,19 @@ bool SecondaryWindow::handleCardPlacement(int row, int col) {
             return true;
         }
         else {
-            qDebug() << "Cannot place card at existing position (" << row << ", " << col << ")";
+            QMessageBox::warning(this, "Invalid Move",
+                "Cannot place card at this position!\n"
+                "Card value must be higher than the top card in the stack.");
             return false;
         }
     }
     else {
+        if(!board.canBePlaced(row, col)) {
+            QMessageBox::warning(this, "Invalid Position",
+                "Cannot place card at this position!\n"
+                "Position must be adjacent to existing cards.");
+            return false;
+        }
        
         if (!expandBoardForPosition(row, col)) {
             qDebug() << "Cannot expand board for position (" << row << ", " << col << ")";
@@ -286,11 +294,12 @@ bool SecondaryWindow::handleCardPlacement(int row, int col) {
      
         if (board.canBePushed(selectedCard, pos)) {
             board.pushCard(selectedCard, pos);
-            qDebug() << "Card placed successfully at new position (" << newRow << ", " << newCol << ")";
             return true;
         }
         else {
-            qDebug() << "Cannot place card at new position (" << newRow << ", " << newCol << ")";
+            QMessageBox::warning(this, "Invalid Move",
+                "Cannot place card at this position!\n"
+                "Card value must be higher than the top card in the stack.");
             return false;
         }
     }
@@ -300,36 +309,65 @@ bool SecondaryWindow::expandBoardForPosition(int row, int col)
 {
     Board& board = m_boardView->getBoard();
 
-    
+
     if (m_boardView->getIsMaxSize()) {
+        QString message = "Cannot expand board - maximum size reached!\n";
+        message += "Current board size: " + QString::number(board.getRowSize()) + "x" + QString::number(board.getColumnSize());
+        message += "\nMaximum allowed size: " + QString::number(m_boardView->getMaxSize()) + "x" + QString::number(m_boardView->getMaxSize());
+        QMessageBox::warning(this, "Board Expansion Failed", message);
         return false;
     }
 
     bool expanded = false;
+    QString expansionMessage;
 
-   
-    if (row < 0 && board.getRowSize() < m_boardView->getMaxSize()) {
+    if (row < 0 && board.getRowSize() < m_boardView->getMaxSize())
+    {
         board.expandRow(Board::RowExpandDirection::Up);
         expanded = true;
-        qDebug() << "Expanded board upwards.";
+        expansionMessage += "Expanded board upwards. ";
     }
-
-    if (row >= board.getRowSize() && board.getRowSize() < m_boardView->getMaxSize()) {
+    else if (row >= board.getRowSize() && board.getRowSize() < m_boardView->getMaxSize())
+    {
         board.expandRow(Board::RowExpandDirection::Down);
         expanded = true;
         qDebug() << "Expanded board downwards.";
     }
-
-    if (col < 0 && board.getColumnSize() < m_boardView->getMaxSize()) {
-        board.expandColumn(Board::ColumnExpandDirection::Left);
-        expanded = true;
-        qDebug() << "Expanded board to the left.";
+    else if (row < 0 || row >= board.getRowSize())
+    {
+        QMessageBox::warning(this, "Invalid Position",
+            "Cannot place card at this position!\n"
+            "Row expansion limit reached: " + QString::number(m_boardView->getMaxSize()));
+        return false;
     }
 
-    if (col >= board.getColumnSize() && board.getColumnSize() < m_boardView->getMaxSize()) {
+    if(col < 0 && board.getColumnSize() < m_boardView->getMaxSize()) 
+    {
+        board.expandColumn(Board::ColumnExpandDirection::Left);
+        expanded = true;
+        expansionMessage += "Expanded board to the left. ";
+    }
+    else if (col >= board.getColumnSize() && board.getColumnSize() < m_boardView->getMaxSize()) 
+    {
         board.expandColumn(Board::ColumnExpandDirection::Right);
         expanded = true;
-        qDebug() << "Expanded board to the right.";
+        expansionMessage += "Expanded board to the right. ";
+    }
+    else if (col < 0 || col >= board.getColumnSize()) 
+    {
+        QMessageBox::warning(this, "Invalid Position",
+            "Cannot place card at this position!\n"
+            "Column expansion limit reached: " + QString::number(m_boardView->getMaxSize()));
+        return false;
+    }
+
+    if (expanded) {
+        if (board.getRowSize() >= m_boardView->getMaxSize() && board.getColumnSize() >= m_boardView->getMaxSize()) {
+            m_boardView->setIsMaxSize(true);
+            QMessageBox::information(this, "Board Size",
+                "Board has reached maximum size: " + QString::number(m_boardView->getMaxSize()) + "x" + QString::number(m_boardView->getMaxSize()) + "\n"
+                "No further expansion possible.");
+        }
     }
 
     return expanded;

@@ -32,6 +32,8 @@ private:
     bool m_illusionsEnabled;
     Color currentPlayer;
 
+    static bool s_forceStop;
+
 
     Game() : m_round_Counter{ 0 }, m_gameBoard{} {}
 
@@ -49,7 +51,7 @@ public:
     Game& operator=(const Game&) = delete;
 
     static Game& get_Instance();
-
+    static void forceStop();
     enum class GameType : int16_t
     {
         Training,
