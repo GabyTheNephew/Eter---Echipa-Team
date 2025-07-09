@@ -55,7 +55,10 @@ protected:
     void closeEvent(QCloseEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
-
+private:
+    bool handleCardPlacement(int row, int col);
+    bool expandBoardForPosition(int row, int col);
+    void optimizeBoard();
 private:
     QString imagePath;
     MenuWindow* menu = nullptr;

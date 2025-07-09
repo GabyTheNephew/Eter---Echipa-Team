@@ -223,31 +223,13 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
         return;
     }
 
-    qDebug() << "Attempting to place card at (" << row << ", " << col << "):"
-        << "Color =" << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
-        << ", Value =" << selectedCard.getValue();
+    qDebug() << "Attempting to place card at (" << row << ", " << col << "):";
 
+   
 
-
-    Board::Position pos = { row, col };
-
-
-
-    if (selectedCard.getColor() == currentPlayer) {
-
-        if (!m_boardView->canPlaceCard(selectedCard, row, col)) {
-            qDebug() << "Position is not valid for placement.";
-            return;
-        }
-
-
-        m_boardView->placeCard(selectedCard, row, col);
-
-
+    if (handleCardPlacement(row, col)) {
         game->getCurrentPlayer().makeCardInvalid(selectedCard);
         game->getCurrentPlayer().getPastVector().push_back(selectedCard);
-
-
 
         if (currentPlayer == Color::Red) {
             setPlayer1Cards(game->getCurrentPlayer().getVector());
@@ -256,129 +238,198 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
             setPlayer2Cards(game->getCurrentPlayer().getVector());
         }
 
-        selectedCard = SimpleCard(); 
-        qDebug() << "Card placed successfully.";
+        selectedCard = SimpleCard();
 
-        game->setPlayerMoveCompleted(true); 
+        optimizeBoard();
 
-        int rowSizeBeforeChange = m_boardView->getBoard().getRowSize() - 1;
-        int colSizeBeforeChange = m_boardView->getBoard().getColumnSize() - 1;
+        m_boardView->updateView();
 
-        if(m_boardView->getMaxSize() > m_boardView->getBoard().getRowSize() - 1)
-        {
-            if (m_boardView->getIsMaxSize() == false)
-            {
-                if (row == 0)
-                {
-                    m_boardView->getBoard().expandRow(Board::RowExpandDirection::Up);
-                }
-                if (row == rowSizeBeforeChange)
-                {
-                    m_boardView->getBoard().expandRow(Board::RowExpandDirection::Down);
-                }
-            }
+        qDebug() << "Card placed successfully at (" << row << ", " << col << ").";
+        game->setPlayerMoveCompleted(true);
+    }
+}
+
+bool SecondaryWindow::handleCardPlacement(int row, int col) {
+    Board& board = m_boardView->getBoard();
+
+    
+    if (row >= 0 && row < board.getRowSize() && col >= 0 && col < board.getColumnSize()) {
+        Board::Position pos = { row, col };
+
+    
+        if (board.canBePushed(selectedCard, pos)) {
+            board.pushCard(selectedCard, pos);
+            qDebug() << "Card placed successfully at existing position (" << row << ", " << col << ")";
+            return true;
         }
-        if (m_boardView->getMaxSize() > m_boardView->getBoard().getColumnSize() - 1)
-        {
-            if(m_boardView->getIsMaxSize() == false)
-            {
-                if (col == 0)
-                {
-                    m_boardView->getBoard().expandColumn(Board::ColumnExpandDirection::Left);
-                }
-                if (col == colSizeBeforeChange)
-                {
-                    m_boardView->getBoard().expandColumn(Board::ColumnExpandDirection::Right);
-                }
-            }
-        }
-
-     
-
-        if (m_boardView->getBoard().getNumberOfRowsWithCards() == m_boardView->getMaxSize())
-        {
-            if (m_boardView->getBoard().isFirstRowEmpty())
-            {
-                if (!m_boardView->getBoard().isLastRowEmpty())
-                {
-                    m_boardView->getBoard().removeRow(0);
-                    m_boardView->getBoard().print();
-                }
-            }
-            if (m_boardView->getBoard().isLastRowEmpty())
-            {
-                if (!m_boardView->getBoard().isFirstRowEmpty())
-                {
-                    m_boardView->getBoard().removeRow(m_boardView->getBoard().getRowSize() - 1);
-                    m_boardView->getBoard().print();
-                }
-            }
-        }
-
-        if (m_boardView->getBoard().getNumberOfColumnsWithCards() == m_boardView->getMaxSize())
-        {
-            if (m_boardView->getBoard().isFirstColumnEmpty())
-            {
-                if (!m_boardView->getBoard().isLastColumnEmpty())
-                {
-                    m_boardView->getBoard().removeColumn(0);
-                    m_boardView->getBoard().print();
-                }
-            }
-            if (m_boardView->getBoard().isLastColumnEmpty())
-            {
-                if (!m_boardView->getBoard().isFirstColumnEmpty())
-                {
-                    m_boardView->getBoard().removeColumn(m_boardView->getBoard().getColumnSize() - 1);
-                    m_boardView->getBoard().print();
-                }
-            }
-        }
-
-        if (m_boardView->getBoard().getNumberOfRowsWithCards() >= m_boardView->getMaxSize() && 
-            m_boardView->getBoard().getNumberOfColumnsWithCards() >= m_boardView->getMaxSize() && m_boardView->getIsMaxSize() == false)
-        {
-            m_boardView->setIsMaxSize(true);
-            m_boardView->getBoard().print();
-
-            if (m_boardView->getBoard().isFirstRowEmpty())
-            {
-                if(!m_boardView->getBoard().isLastRowEmpty())
-                {
-                    m_boardView->getBoard().removeRow(0);
-                    m_boardView->getBoard().print();
-                }
-            }
-            if (m_boardView->getBoard().isLastRowEmpty())
-            {
-                if(!m_boardView->getBoard().isFirstRowEmpty())
-                {
-                    m_boardView->getBoard().removeRow(m_boardView->getBoard().getRowSize() - 1);
-                    m_boardView->getBoard().print();
-                }
-            }
-            if (m_boardView->getBoard().isFirstColumnEmpty())
-            {
-                if(!m_boardView->getBoard().isLastColumnEmpty())
-                {
-                    m_boardView->getBoard().removeColumn(0);
-                    m_boardView->getBoard().print();
-                }
-            }
-            if (m_boardView->getBoard().isLastColumnEmpty())
-            {
-                if(!m_boardView->getBoard().isFirstColumnEmpty())
-                {
-                    m_boardView->getBoard().removeColumn(m_boardView->getBoard().getColumnSize() - 1);
-                    m_boardView->getBoard().print();
-                }
-            }
-
+        else {
+            qDebug() << "Cannot place card at existing position (" << row << ", " << col << ")";
+            return false;
         }
     }
-    m_boardView->getBoard().print();
-    m_boardView->updateView();
+    else {
+       
+        if (!expandBoardForPosition(row, col)) {
+            qDebug() << "Cannot expand board for position (" << row << ", " << col << ")";
+            return false;
+        }
+
+  
+        int newRow = row;
+        int newCol = col;
+
+        if (row < 0) newRow = 0;
+        if (col < 0) newCol = 0;
+
+        Board::Position pos = { newRow, newCol };
+
+     
+        if (board.canBePushed(selectedCard, pos)) {
+            board.pushCard(selectedCard, pos);
+            qDebug() << "Card placed successfully at new position (" << newRow << ", " << newCol << ")";
+            return true;
+        }
+        else {
+            qDebug() << "Cannot place card at new position (" << newRow << ", " << newCol << ")";
+            return false;
+        }
+    }
 }
+
+bool SecondaryWindow::expandBoardForPosition(int row, int col)
+{
+    Board& board = m_boardView->getBoard();
+
+    
+    if (m_boardView->getIsMaxSize()) {
+        return false;
+    }
+
+    bool expanded = false;
+
+   
+    if (row < 0 && board.getRowSize() < m_boardView->getMaxSize()) {
+        board.expandRow(Board::RowExpandDirection::Up);
+        expanded = true;
+        qDebug() << "Expanded board upwards.";
+    }
+
+    if (row >= board.getRowSize() && board.getRowSize() < m_boardView->getMaxSize()) {
+        board.expandRow(Board::RowExpandDirection::Down);
+        expanded = true;
+        qDebug() << "Expanded board downwards.";
+    }
+
+    if (col < 0 && board.getColumnSize() < m_boardView->getMaxSize()) {
+        board.expandColumn(Board::ColumnExpandDirection::Left);
+        expanded = true;
+        qDebug() << "Expanded board to the left.";
+    }
+
+    if (col >= board.getColumnSize() && board.getColumnSize() < m_boardView->getMaxSize()) {
+        board.expandColumn(Board::ColumnExpandDirection::Right);
+        expanded = true;
+        qDebug() << "Expanded board to the right.";
+    }
+
+    return expanded;
+}
+
+
+void SecondaryWindow::optimizeBoard()
+{
+    Board& board = m_boardView->getBoard();
+
+    
+    bool boardPhysicallyFull = (board.getRowSize() >= m_boardView->getMaxSize() &&
+        board.getColumnSize() >= m_boardView->getMaxSize());
+
+    if (boardPhysicallyFull && !m_boardView->getIsMaxSize()) {
+        m_boardView->setIsMaxSize(true);
+        qDebug() << "Board reached maximum physical size - enabling optimization";
+    }
+
+   
+    if (m_boardView->getIsMaxSize()) {
+        bool hasOptimized = false;
+
+     
+        if (board.isFirstRowEmpty() && !board.isLastRowEmpty()) {
+           
+            bool firstRowUseless = true;
+            for (int j = 0; j < board.getColumnSize(); ++j) {
+                if (board.canBePlaced(0, j)) {
+                    firstRowUseless = false;
+                    break;
+                }
+            }
+
+            if (firstRowUseless) {
+                board.removeRow(0);
+                qDebug() << "Removed first empty row";
+                hasOptimized = true;
+            }
+        }
+
+       
+        if (board.isLastRowEmpty() && !board.isFirstRowEmpty()) {
+            int lastRow = board.getRowSize() - 1;
+            bool lastRowUseless = true;
+            for (int j = 0; j < board.getColumnSize(); ++j) {
+                if (board.canBePlaced(lastRow, j)) {
+                    lastRowUseless = false;
+                    break;
+                }
+            }
+
+            if (lastRowUseless) {
+                board.removeRow(board.getRowSize() - 1);
+                qDebug() << "Removed last empty row";
+                hasOptimized = true;
+            }
+        }
+
+      
+        if (board.isFirstColumnEmpty() && !board.isLastColumnEmpty()) {
+            bool firstColumnUseless = true;
+            for (int i = 0; i < board.getRowSize(); ++i) {
+                if (board.canBePlaced(i, 0)) {
+                    firstColumnUseless = false;
+                    break;
+                }
+            }
+
+            if (firstColumnUseless) {
+                board.removeColumn(0);
+                qDebug() << "Removed first empty column";
+                hasOptimized = true;
+            }
+        }
+
+        if (board.isLastColumnEmpty() && !board.isFirstColumnEmpty()) {
+            int lastCol = board.getColumnSize() - 1;
+            bool lastColumnUseless = true;
+            for (int i = 0; i < board.getRowSize(); ++i) {
+                if (board.canBePlaced(i, lastCol)) {
+                    lastColumnUseless = false;
+                    break;
+                }
+            }
+
+            if (lastColumnUseless) {
+                board.removeColumn(board.getColumnSize() - 1);
+                qDebug() << "Removed last empty column";
+                hasOptimized = true;
+            }
+        }
+
+        if (hasOptimized) {
+            qDebug() << "Board optimized - new size:" << board.getRowSize() << "x" << board.getColumnSize();
+        }
+    }
+}
+
+
 
 void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 {
@@ -643,6 +694,15 @@ void SecondaryWindow::resetView()
 
 
 void SecondaryWindow::onCardSelected(const SimpleCard& card) {
+    if (currentPlayer == Color::Red && card.getColor() != Color::Red) {
+        qDebug() << "Player 1 can only select red cards!";
+        return;
+    }
+    if (currentPlayer == Color::Blue && card.getColor() != Color::Blue) {
+        qDebug() << "Player 2 can only select blue cards!";
+        return;
+    }
+
     selectedCard = card;
     qDebug() << "Card selected: Color ="
         << (card.getColor() == Color::Red ? "Red" : "Blue")

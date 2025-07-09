@@ -39,7 +39,7 @@ void PowerWhirlpool::playWhirlpoolPower(Board& board,int16_t xFirst, int16_t yFi
 			board.pushCard(card1, { xFirst, ySecond - 1 });
 		}
 		else {
-			//aici trebuie sa aleaga el
+			
 		}
 	}
 
