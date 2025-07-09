@@ -2,14 +2,20 @@
 
 void Board::expandRow(RowExpandDirection direction)
 {
+	if (m_board.empty()) {
+		qDebug() << "Cannot expand row - board is empty";
+		return;
+	}
+
 	int16_t newSize = m_board.size() + 1;
-	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(m_board[0].size()));
+	int16_t colSize = m_board[0].size();
+	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(colSize));
 
 	if (direction == RowExpandDirection::Up)
 	{
 		for (int16_t i = newSize - 1; i > 0; --i)
 		{
-			for (int16_t j = 0; j < m_board[0].size(); j++)
+			for (int16_t j = 0; j < colSize; j++)
 			{
 				newMatrix[i][j] = std::move(m_board[i - 1][j]);
 			}
@@ -19,7 +25,7 @@ void Board::expandRow(RowExpandDirection direction)
 	{
 		for (int16_t i = 0; i < m_board.size(); ++i)
 		{
-			for (int16_t j = 0; j < m_board[i].size(); j++)
+			for (int16_t j = 0; j < colSize; j++)
 			{
 				newMatrix[i][j] = std::move(m_board[i][j]);
 			}
@@ -31,12 +37,18 @@ void Board::expandRow(RowExpandDirection direction)
 
 void Board::expandColumn(ColumnExpandDirection direction)
 {
+	if (m_board.empty() || m_board[0].empty()) {
+		qDebug() << "Cannot expand column - board is empty";
+		return;
+	}
+
 	int16_t newSize = m_board[0].size() + 1;
-	matrix newMatrix(m_board.size(), std::vector<std::deque<SimpleCard>>(newSize));
+	int16_t rowSize = m_board.size();
+	matrix newMatrix(rowSize, std::vector<std::deque<SimpleCard>>(newSize));
 
 	if (direction == ColumnExpandDirection::Left)
 	{
-		for (int16_t i = 0; i < m_board.size(); ++i)
+		for (int16_t i = 0; i < rowSize; ++i)
 		{
 			for (int16_t j = newSize - 1; j > 0; --j)
 			{
@@ -46,7 +58,7 @@ void Board::expandColumn(ColumnExpandDirection direction)
 	}
 	else
 	{
-		for (int16_t i = 0; i < m_board.size(); ++i)
+		for (int16_t i = 0; i < rowSize; ++i)
 		{
 			for (int16_t j = 0; j < m_board[0].size(); ++j)
 			{
@@ -58,9 +70,15 @@ void Board::expandColumn(ColumnExpandDirection direction)
 	m_board = std::move(newMatrix);
 }
 
+
 std::vector<int16_t> Board::searchEmptyColumns()
 {
 	std::vector<int16_t> emptyCols;
+
+	if (m_board.empty() || m_board[0].empty()) {
+		return emptyCols;
+	}
+
 	for (int16_t i = 0; i < getColumnSize(); i++)
 	{
 		bool isEmpty = true;
@@ -82,6 +100,11 @@ std::vector<int16_t> Board::searchEmptyColumns()
 std::vector<int16_t> Board::searchEmptyRows()
 {
 	std::vector<int16_t> emptyRows;
+
+	if (m_board.empty()) {
+		return emptyRows;
+	}
+
 	for (int16_t i = 0; i < m_board.size(); i++)
 	{
 		bool isEmpty = true;
@@ -100,12 +123,53 @@ std::vector<int16_t> Board::searchEmptyRows()
 	return emptyRows;
 }
 
+
 bool Board::canBePlaced(int16_t x, int16_t y) const {
 	int16_t rows = m_board.size();
 	int16_t columns = m_board[0].size();
 
+	bool cardOnBoard = false;
+	for (int16_t i = 0; i < rows; ++i) {
+		for (int16_t j = 0; j < columns; ++j) {
+			if (!m_board[i][j].empty()) {
+				cardOnBoard = true;
+				break;
+			}
+		}
+		if (cardOnBoard) break;
+	}
+
+	if (!cardOnBoard) {
+		return (x >= 0 && x < rows && y >= 0 && y < columns);
+	}
+
+	if (x >= 0 && x < rows && y >= 0 && y < columns) {
+		if (!m_board[x][y].empty()) {
+			return false;
+		}
+
+
+		std::vector<std::pair<int16_t, int16_t>> neighbors = {
+			{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1},
+			{x + 1, y + 1}, {x - 1, y + 1}, {x - 1, y - 1}, {x + 1, y - 1}
+		};
+
+		for (const auto& [nx, ny] : neighbors) {
+			if (nx >= 0 && nx < rows && ny >= 0 && ny < columns) {
+				if (!m_board[nx][ny].empty()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+
+	if (x < -1 || x >= rows + 1 || y < -1 || y >= columns + 1) {
+		return false; 
+	}
+
 	
-	bool check = false;
 	std::vector<std::pair<int16_t, int16_t>> neighbors = {
 		{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1},
 		{x + 1, y + 1}, {x - 1, y + 1}, {x - 1, y - 1}, {x + 1, y - 1}
@@ -114,19 +178,14 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 	for (const auto& [nx, ny] : neighbors) {
 		if (nx >= 0 && nx < rows && ny >= 0 && ny < columns) {
 			if (!m_board[nx][ny].empty()) {
-				check = true;
-				break;
+				return true;
 			}
 		}
 	}
-	
 
-	if (m_size == 1)
-	{
-		return true;
-	}
 	return false;
 }
+
 
 
 
@@ -161,14 +220,14 @@ Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
 					value = 0;
 				}
 
-	
+
 				results[i] += value;
-				
+
 				results[3 + j] += value;
-			
+
 				if (i == j)
 					results[6] += value;
-				
+
 				if (i == kColumns - 1 - j)
 					results[7] += value;
 
@@ -218,7 +277,7 @@ int16_t Board::sumPoints(const Color& color)
 	{
 		for (int16_t j = 0; j < m_board[i].size(); j++)
 		{
-			if (m_board[i][j].back().getColor() == color)
+			if (!m_board[i][j].empty() && m_board[i][j].back().getColor() == color)
 			{
 				if (color == Color::IlusionBlue || color == Color::IlusionRed)
 				{
@@ -243,13 +302,16 @@ int16_t Board::getSize() const
 	return m_board.size();
 }
 
-int16_t Board::getRowSize() const 
+int16_t Board::getRowSize() const
 {
 	return m_board.size();
 }
 
 int16_t Board::getColumnSize() const
 {
+	if (m_board.empty()) {
+		return 0;
+	}
 	return m_board[0].size();
 }
 
@@ -277,8 +339,19 @@ void Board::emptyColumn(int16_t column)
 
 void Board::removeRow(int16_t row)
 {
+	if (m_board.empty() || row < 0 || row >= m_board.size()) {
+		qDebug() << "Cannot remove row - invalid index or empty board";
+		return;
+	}
+
 	int16_t newSize = m_board.size() - 1;
+	if (newSize <= 0) {
+		qDebug() << "Cannot remove row - would result in empty board";
+		return;
+	}
+
 	matrix newMatrix(newSize, std::vector<std::deque<SimpleCard>>(m_board[0].size()));
+
 	if (row == 0)
 	{
 		for (int16_t i = 0; i < newSize; i++)
@@ -289,34 +362,42 @@ void Board::removeRow(int16_t row)
 			}
 		}
 	}
-	else
+	else if (row == m_board.size() - 1)
 	{
-		if (row == m_board.size() - 1)
+		for (int16_t i = 0; i < newSize; i++)
 		{
-			for (int16_t i = 0; i < newSize; i++)
+			for (int16_t j = 0; j < newMatrix[0].size(); j++)
 			{
-				for (int16_t j = 0; j < newMatrix[0].size(); j++)
-				{
-					newMatrix[i][j] = std::move(m_board[i][j]);
-				}
+				newMatrix[i][j] = std::move(m_board[i][j]);
 			}
 		}
-		else
-		{
-			std::cout << "Nu se poate sterge randul din mijloc!\n";
-		}
+	}
+	else
+	{
+		qDebug() << "Cannot remove row from middle of board";
+		return;
 	}
 
 	m_board = std::move(newMatrix);
 }
-
 void Board::removeColumn(int16_t column)
 {
+	if (m_board.empty() || m_board[0].empty() || column < 0 || column >= m_board[0].size()) {
+		qDebug() << "Cannot remove column - invalid index or empty board";
+		return;
+	}
+
 	int16_t newSize = m_board[0].size() - 1;
+	if (newSize <= 0) {
+		qDebug() << "Cannot remove column - would result in empty board";
+		return;
+	}
+
 	matrix newMatrix(m_board.size(), std::vector<std::deque<SimpleCard>>(newSize));
+
 	if (column == 0)
 	{
-		for (int16_t i = 0; i < newSize; i++)
+		for (int16_t i = 0; i < m_board.size(); i++)
 		{
 			for (int16_t j = 0; j < newSize; j++)
 			{
@@ -324,29 +405,26 @@ void Board::removeColumn(int16_t column)
 			}
 		}
 	}
-	else
+	else if (column == m_board[0].size() - 1)
 	{
-		if (column == m_board[0].size() - 1)
+		for (int16_t i = 0; i < m_board.size(); i++)
 		{
-			for (int16_t i = 0; i < newSize; i++)
+			for (int16_t j = 0; j < newSize; j++)
 			{
-				for (int16_t j = 0; j < newSize; j++)
-				{
-					newMatrix[i][j] = std::move(m_board[i][j]);
-				}
+				newMatrix[i][j] = std::move(m_board[i][j]);
 			}
 		}
-		else
-		{
-			std::cout << "Nu se poate sterge coloana din mijloc!\n";
-		}
+	}
+	else
+	{
+		qDebug() << "Cannot remove column from middle of board";
+		return;
 	}
 
 	m_board = std::move(newMatrix);
 }
-
-Board::Board():
-	 m_board{},
+Board::Board() :
+	m_board{},
 	m_size{ 0 }
 {
 
@@ -379,74 +457,55 @@ Board& Board::operator=(Board&& board) noexcept
 void Board::resizeBoard(int16_t size)
 {
 	m_size = size;
-	this->m_board.clear(); 
+	this->m_board.clear();
 	this->m_board.resize(size, std::vector<std::deque<SimpleCard>>(size));
 }
 
-void Board::print()const
-{
-	int16_t rows = m_board.size();
-	int16_t cols = rows > 0 ? m_board[0].size() : 0;
-
-	
-	QDebug debug = qDebug().nospace();
-
-	for (int16_t i = rows < 3 && cols < 3 ? -1 : 0; i <= rows; i++)
-	{
-		for (int16_t j = rows < 3 && cols < 3 ? -1 : 0; j <= cols; j++)
-		{
-			if(rows < 3 && cols < 3)
-			{
-				if (i < 0 || i >= rows || j < 0 || j >= cols)
-				{
-					
-					if (canBePlaced(i, j))
-					{
-						debug << " * "; 
-					}
-					else
-					{
-						debug << " "; 
-					}
-					continue;
-				}
-				else if (i >= 0 && i < rows && j>=0 && j < cols)
-				{
-					if(m_board[i][j].empty())
-					{
-						debug << " * ";
-						continue;
-					}
-				}
-			}
-
-			if(j < cols && i < rows && i >= 0 && j >= 0)
-			{
-				if (!m_board[i][j].empty())
-				{
-					if (m_board[i][j].back().getColor() == Color::IlusionRed)
-					{
-						qDebug().noquote() << "iR" << " ";
-					}
-					else if (m_board[i][j].back().getColor() == Color::IlusionBlue)
-					{
-						qDebug().noquote() << "iB" << " ";
-					}
-					else
-						debug << m_board[i][j].back().getValue() << " ";
-				}
-				else
-				{
-					debug << " * ";
-				}
-			}
-
-		}
-
-		debug << '\n';
+void Board::print() const {
+	if (m_board.empty()) {
+		qDebug() << "Board is empty";
+		return;
 	}
-	qDebug() << '\n';
+
+	int16_t rows = m_board.size();
+	int16_t cols = m_board[0].size();
+
+	QDebug debug = qDebug().nospace();
+	debug << "\nBoard State:\n";
+
+	for (int16_t i = 0; i < rows; i++) {
+		for (int16_t j = 0; j < cols; j++) {
+			if (!m_board[i][j].empty()) {
+				const SimpleCard& card = m_board[i][j].back();
+				if (card.getColor() == Color::Red) {
+					debug << "R" << card.getValue();
+				}
+				else if (card.getColor() == Color::Blue) {
+					debug << "B" << card.getValue();
+				}
+				else if (card.getColor() == Color::IlusionRed) {
+					debug << "iR";
+				}
+				else if (card.getColor() == Color::IlusionBlue) {
+					debug << "iB";
+				}
+			}
+			else {
+				if (canBePlaced(i, j)) {
+					debug << " *";
+				}
+				else {
+					debug << "  ";
+				}
+			}
+			debug << " ";
+		}
+		debug << "\n";
+	}
+	debug << "--------\n";
 }
+
+
 
 void Board::clear()
 {
@@ -461,8 +520,11 @@ void Board::clear()
 
 bool Board::checkRow(int16_t row)
 {
-	
-	for (int16_t i = 0; i < m_board.size(); i++)
+	if (m_board.empty() || m_board[0].empty() || row < 0 || row >= m_board.size()) {
+		return false;
+	}
+
+	for (int16_t i = 0; i < m_board[0].size(); i++)
 	{
 		if (m_board[row][i].empty())
 		{
@@ -474,7 +536,10 @@ bool Board::checkRow(int16_t row)
 
 bool Board::checkColumn(int16_t column)
 {
-	
+	if (m_board.empty() || m_board[0].empty() || column < 0 || column >= m_board[0].size()) {
+		return false;
+	}
+
 	for (int16_t i = 0; i < m_board.size(); i++)
 	{
 		if (m_board[i][column].empty())
@@ -484,7 +549,6 @@ bool Board::checkColumn(int16_t column)
 	}
 	return true;
 }
-
 void Board::pushCard(const SimpleCard& card, const Position& position)
 {
 	auto& [line, column] = position;
@@ -534,9 +598,9 @@ void Board::popCardAt(const Position& position, const SimpleCard& targetCard)
 
 	std::deque<SimpleCard>& dequeWeRemoveFrom = m_board[line][column];
 
-	for(auto it = dequeWeRemoveFrom.begin(); it != dequeWeRemoveFrom.end(); ++it)
+	for (auto it = dequeWeRemoveFrom.begin(); it != dequeWeRemoveFrom.end(); ++it)
 	{
-		if (it->getValue()==targetCard.getValue() && it->getColor()==targetCard.getColor())
+		if (it->getValue() == targetCard.getValue() && it->getColor() == targetCard.getColor())
 		{
 			dequeWeRemoveFrom.erase(it);
 			break;
@@ -547,9 +611,9 @@ void Board::popCardAt(const Position& position, const SimpleCard& targetCard)
 int Board::getNumberOfRowsWithCards() const
 {
 	int nr = 0;
-	for (int i = 0;i < getRowSize();i++)
+	for (int i = 0; i < getRowSize(); i++)
 	{
-		for (int j = 0;j < getColumnSize();j++)
+		for (int j = 0; j < getColumnSize(); j++)
 		{
 			if (!m_board[i][j].empty())
 			{
@@ -564,9 +628,9 @@ int Board::getNumberOfRowsWithCards() const
 int Board::getNumberOfColumnsWithCards() const
 {
 	int nr = 0;
-	for (int i = 0;i < getColumnSize();i++)
+	for (int i = 0; i < getColumnSize(); i++)
 	{
-		for (int j = 0;j < getRowSize();j++)
+		for (int j = 0; j < getRowSize(); j++)
 		{
 			if (!m_board[j][i].empty())
 			{
@@ -580,7 +644,40 @@ int Board::getNumberOfColumnsWithCards() const
 
 bool Board::isFirstColumnEmpty() const
 {
-	for (int i = 0;i < m_board.size();i++)
+	if (m_board.empty() || m_board[0].empty()) {
+		return true;
+	}
+
+	for (int i = 0; i < m_board.size(); i++)
+	{
+		if (!m_board[i][0].empty())
+			return false;
+	}
+	return true;
+}
+
+bool Board::isLastColumnEmpty() const
+{
+	if (m_board.empty() || m_board[0].empty()) {
+		return true;
+	}
+
+	int lastColIndex = m_board[0].size() - 1;
+	for (int i = 0; i < m_board.size(); i++)
+	{
+		if (!m_board[i][lastColIndex].empty())
+			return false;
+	}
+	return true;
+}
+
+bool Board::isFirstRowEmpty() const
+{
+	if (m_board.empty() || m_board[0].empty()) {
+		return true;
+	}
+
+	for (int i = 0; i < m_board[0].size(); i++)
 	{
 		if (!m_board[0][i].empty())
 			return false;
@@ -588,42 +685,26 @@ bool Board::isFirstColumnEmpty() const
 	return true;
 }
 
-bool Board::isLastColumnEmpty()const
+bool Board::isLastRowEmpty() const
 {
-	for (int i = 0;i < m_board.size();i++)
+	if (m_board.empty() || m_board[0].empty()) {
+		return true;
+	}
+
+	int lastRowIndex = m_board.size() - 1;
+	for (int i = 0; i < m_board[0].size(); i++)
 	{
-		if (!m_board[i][getColumnSize() - 1].empty())
+		if (!m_board[lastRowIndex][i].empty())
 			return false;
 	}
 	return true;
 }
-
-bool Board::isFirstRowEmpty()const
-{
-	for (int i = 0;i < m_board[0].size();i++)
-	{
-		if (!m_board[0][i].empty())
-			return false;
-	}
-	return true;
-}
-
-bool Board::isLastRowEmpty()const
-{
-	for (int i = 0;i < m_board[0].size();i++)
-	{
-		if (!m_board[getRowSize() - 1][i].empty())
-			return false;
-	}
-	return true;
-}
-
 int Board::getIndexOfFirstRowOfBoard()
 {
 	int indexMin = 5;
-	for (int i = 0;i < m_board.size();i++)
+	for (int i = 0; i < m_board.size(); i++)
 	{
-		for (int j = 0;j < m_board[i].size();j++)
+		for (int j = 0; j < m_board[i].size(); j++)
 		{
 			if (!m_board[i][j].empty())
 			{
@@ -638,9 +719,9 @@ int Board::getIndexOfFirstRowOfBoard()
 int Board::getIndexOfLastRowOfBoard()
 {
 	int indexMax = 0;
-	for (int i = 0;i < m_board.size();i++)
+	for (int i = 0; i < m_board.size(); i++)
 	{
-		for (int j = 0;j < m_board[i].size();j++)
+		for (int j = 0; j < m_board[i].size(); j++)
 		{
 			if (!m_board[i][j].empty())
 			{
@@ -655,9 +736,9 @@ int Board::getIndexOfLastRowOfBoard()
 int Board::getIndexOfFirstColumnOfBoard()
 {
 	int indexMin = 5;
-	for (int i = 0;i < m_board.size();i++)
+	for (int i = 0; i < m_board.size(); i++)
 	{
-		for (int j = 0;j < m_board[i].size();j++)
+		for (int j = 0; j < m_board[i].size(); j++)
 		{
 			if (!m_board[i][j].empty())
 			{
@@ -672,9 +753,9 @@ int Board::getIndexOfFirstColumnOfBoard()
 int Board::getIndexOfLastColumnOfBoard()
 {
 	int indexMax = 0;
-	for (int i = 0;i < m_board.size();i++)
+	for (int i = 0; i < m_board.size(); i++)
 	{
-		for (int j = 0;j < m_board[i].size();j++)
+		for (int j = 0; j < m_board[i].size(); j++)
 		{
 			if (!m_board[i][j].empty())
 			{
@@ -688,9 +769,10 @@ int Board::getIndexOfLastColumnOfBoard()
 
 
 Board::Board(const Board& board)
-	:m_board{board.m_board},
-	m_size{board.m_size}
-{}
+	:m_board{ board.m_board },
+	m_size{ board.m_size }
+{
+}
 
 
 
@@ -700,7 +782,7 @@ Board& Board::operator=(const Board& board)
 	{
 		return *this;
 	}
-	
+
 	for (int16_t i = 0; i < m_board.size(); i++)
 	{
 		for (int16_t j = 0; j < m_board[i].size(); j++)
@@ -734,7 +816,7 @@ std::ostream& operator<<(std::ostream& os, const Board& board)
 		}
 		os << '\n';
 	}
-	
+
 	return os;
 }
 
@@ -755,11 +837,16 @@ std::deque<SimpleCard>& Board::operator[](const Board::Position& position)
 {
 	auto& [line, column] = position;
 
+	if (m_board.empty()) {
+		throw std::out_of_range("Board is empty");
+	}
+
 	int16_t kRows = m_board.size();
 	int16_t kColumns = m_board[0].size();
 
-	if (line < 0 || line > kRows || column < 0 || column > kColumns)
+	if (line < 0 || line >= kRows || column < 0 || column >= kColumns) {
 		throw std::out_of_range("Position out of bounds");
+	}
 
 	return m_board[line][column];
 }
@@ -768,11 +855,16 @@ const std::deque<SimpleCard>& Board::operator[](const Position& position) const
 {
 	auto& [line, column] = position;
 
+	if (m_board.empty()) {
+		throw std::out_of_range("Board is empty");
+	}
+
 	int16_t kRows = m_board.size();
 	int16_t kColumns = m_board[0].size();
 
-	if (line < 0 || line > kRows || column < 0 || column > kColumns)
+	if (line < 0 || line >= kRows || column < 0 || column >= kColumns) {
 		throw std::out_of_range("Position out of bounds");
+	}
 
 	return m_board[line][column];
 }
