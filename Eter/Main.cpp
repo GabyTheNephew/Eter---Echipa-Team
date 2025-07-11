@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
     MainWindow mainWindow(imagePath);
 
 
-    QObject::connect(&app, &QApplication::lastWindowClosed, &app, &QApplication::quit);
+    
 
     return app.exec();
 }

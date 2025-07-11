@@ -51,7 +51,7 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
 
 void SecondaryWindow::closeEvent(QCloseEvent* event) {
     Game::forceStop();
-    event->accept();
+   event->accept();
 }
 
 void SecondaryWindow::resizeEvent(QResizeEvent* event) {
@@ -66,7 +66,6 @@ void SecondaryWindow::resizeEvent(QResizeEvent* event) {
 }
 
 void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
-    qDebug() << "Key pressed, menu visible:" << (menu && menu->isVisible());
 
     if (event->key() == Qt::Key_Escape) {
         if (!menu) {
@@ -74,8 +73,9 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 
             connect(menu, &MenuWindow::goToHome, this, [this]() {
                 menu->hide();
-                this->close();
+                this->hide();
                 emit closed();
+                Game::get_Instance().emit gameEnded();
                 });
 
             connect(menu, &MenuWindow::exitApp, []() {
@@ -116,13 +116,25 @@ void SecondaryWindow::setBoard(Board& board, int setMaxSize) {
 }
 
 void SecondaryWindow::showWinner(const QString& winnerName) {
-    QMessageBox msgBox(this);
-    msgBox.setWindowTitle("Game Over");
-    msgBox.setText("The winner is: " + winnerName);
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.exec();
-
-    emit closed();
+	QMessageBox* msgBox = new QMessageBox();
+	msgBox->setWindowTitle("Game Over");
+	msgBox->setText("The Winner is: " + winnerName);
+	msgBox->setStandardButtons(QMessageBox::Ok|QMessageBox::Close);
+	msgBox->setWindowModality(Qt::ApplicationModal);
+	msgBox->setAttribute(Qt::WA_DeleteOnClose);
+	
+	connect(msgBox, &QMessageBox::finished, this, [this](int result) {	
+		if (result == QMessageBox::Ok) {
+			qDebug() << "OK button - calling resetView()"; 
+            this->resetView();
+		}
+        else {
+			qDebug() << "Close button - emitting closed()";
+			emit closed();
+        }
+	});
+	
+	msgBox->show();
 }
 
 
@@ -713,6 +725,10 @@ void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& colo
     }
 
     m_boardView->updateView();
+
+    Game& gameInstance = Game::get_Instance();
+    setPlayer1Cards(gameInstance.getPlayer1().getVector());
+    setPlayer2Cards(gameInstance.getPlayer2().getVector());
 }
 
 

@@ -93,77 +93,57 @@ void Player::ResetVector()
 
 void Player::makeCardInvalid(SimpleCard card)
 {
-	for (auto& curCard : m_simpleCardsVector)
-	{
-		if (curCard.getValue() == card.getValue() && curCard.getColor() == card.getColor())
+	auto wantedCard=std::find_if(m_simpleCardsVector.begin(), m_simpleCardsVector.end(),
+		[&card](const auto& currentCard)
 		{
-			if (card.getColor() == Color::Red || card.getColor() == Color::IlusionRed)
-			{
-				curCard.setColor(Color::usedRed);
+			return currentCard.getValue() == card.getValue() && currentCard.getColor() == card.getColor();
+		});
 
-				break;
-			}
-			else
-				if (card.getColor() == Color::Blue || card.getColor() == Color::IlusionBlue)
-				{
-					curCard.setColor(Color::usedBlue);
-					break;
-				}
+	if (wantedCard != m_simpleCardsVector.end()) {
+		if (card.getColor() == Color::Red || card.getColor() == Color::IlusionRed) {
+			wantedCard->setColor(Color::usedRed);
+		}
+		else if (card.getColor() == Color::Blue || card.getColor() == Color::IlusionBlue) {
+			wantedCard->setColor(Color::usedBlue);
 		}
 	}
 
 }
 
-void Player::makeCardValid(SimpleCard& card)
-{
-	for (auto& curCard : m_simpleCardsVector)
-	{
-		if (curCard.getValue() == card.getValue() && curCard.getColor() == Color::usedRed)
-		{
-			for (auto& pastCard : m_pastSimpleCardsVector)
-			{
-				if (pastCard.getValue() == card.getValue() && pastCard.getColor() == Color::usedRed)
-				{
+
+void Player::makeCardValid(SimpleCard& card) {
+	for (auto& curCard : m_simpleCardsVector) {
+		if (curCard.getValue() == card.getValue() && curCard.getColor() == Color::usedRed) {
+			for (auto& pastCard : m_pastSimpleCardsVector) {
+				if (pastCard.getValue() == card.getValue() && pastCard.getColor() == Color::usedRed) {
 					curCard.setColor(Color::Red);
-					
 					break;
 				}
 			}
 			curCard.setColor(Color::Red);
 		}
-		else
-			if (curCard.getValue() == card.getValue() && curCard.getColor() == Color::usedBlue)
-			{
-				for (auto& pastCard : m_pastSimpleCardsVector)
-				{
-					if (pastCard.getValue() == card.getValue() && pastCard.getColor() == Color::usedBlue)
-					{
-						curCard.setColor(Color::Blue);
-						
-						break;
-					}
+		else if (curCard.getValue() == card.getValue() && curCard.getColor() == Color::usedBlue) {
+			for (auto& pastCard : m_pastSimpleCardsVector) {
+				if (pastCard.getValue() == card.getValue() && pastCard.getColor() == Color::usedBlue) {
+					curCard.setColor(Color::Blue);
+					break;
 				}
-
 			}
-
+		}
 	}
-
 }
 
 std::string Player::GetVectorColor()
 {
-	for (auto& elemnt : m_simpleCardsVector)
-	{
-		if (elemnt.getColor() == Color::Red)
+	auto validCard = std::find_if(m_simpleCardsVector.begin(), m_simpleCardsVector.end(),
+		[](const auto& card)
 		{
-			return "Red";
-		}
-		else
-			if (elemnt.getColor() == Color::Blue)
-			{
-				return "Blue";
-			}
+			return card.getColor() == Color::Red || card.getColor() == Color::Blue;
+		});
+	if (validCard != m_simpleCardsVector.end()) {
+		return (validCard->getColor() == Color::Red) ? "Red" : "Blue";
 	}
+
 	throw "All cards of the player are used";
 
 }
@@ -218,13 +198,12 @@ SimpleCard Player::chooseCard()
 
 int Player::numberofValidCards()
 {
-	int16_t count = 0;
-	for (auto& card : m_simpleCardsVector)
-	{
-		if (card.getColor() == Color::Red || card.getColor() == Color::Blue)
-			count++;
-	}
-	return count;
+	return std::count_if(m_simpleCardsVector.begin(), m_simpleCardsVector.end(),
+		[](const auto& card)
+		{
+			return card.getColor() == Color::Red || card.getColor() == Color::Blue;
+		}
+	);
 }
 
 void Player::playCard(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& pastcards, std::optional<std::pair<bool, bool>>& canPlayIllusion)

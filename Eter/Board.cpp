@@ -196,8 +196,8 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 
 Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
 {
-	const int16_t kResults = 8;
-	std::array<int16_t, kResults> results{};
+
+	std::vector<int16_t> results(2 * boardMaxSize + 2, 0);
 	int16_t chessmanCount = 0;
 
 	int16_t kRows = m_board.size();
@@ -228,13 +228,13 @@ Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
 
 				results[i] += value;
 
-				results[3 + j] += value;
+				results[boardMaxSize + j] += value;
 
 				if (i == j)
-					results[6] += value;
+					results[2* boardMaxSize] += value;
 
 				if (i == kColumns - 1 - j)
-					results[7] += value;
+					results[2* boardMaxSize+1] += value;
 
 				++chessmanCount;
 			}

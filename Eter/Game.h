@@ -47,9 +47,11 @@ private:
     bool playerMoveCompleted;
 
 public:
+    Player& getPlayer1() { return player1; }
+    Player& getPlayer2() { return player2; }
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
-
+    static MenuWindow* getGlobalMenu();
     static Game& get_Instance();
     static void forceStop();
     enum class GameType : int16_t
@@ -87,4 +89,5 @@ public slots:
     void handleBoardClick(int row, int col);
 signals:
     void playerActionComplete();
+    void gameEnded();
 };

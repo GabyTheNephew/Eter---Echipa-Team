@@ -4,6 +4,10 @@
 Game Game::m_current_Instance;
 bool Game::s_forceStop = false;
 
+
+
+
+
 Game& Game::get_Instance()
 {
 	return m_current_Instance;
@@ -70,6 +74,7 @@ void Game::startTraining() {
 	int16_t player1RoundsWon = 0;
 	int16_t player2RoundsWon = 0;
 
+
 	if (m_illusionsEnabled) {
 		canPlayIllusion = std::make_pair(true, true);
 	}
@@ -93,7 +98,7 @@ void Game::startTraining() {
 
 	trainingWindow->show();
 
-
+	
 
 	while (m_round_Counter <= maxRounds) {
 		if (s_forceStop) return;
@@ -181,11 +186,13 @@ void Game::startTraining() {
 
 		if (player1RoundsWon == 2) {
 			trainingWindow->showWinner("Player 2");
+			emit gameEnded();
 			break;
 		}
 
 		if (player2RoundsWon == 2) {
 			trainingWindow->showWinner("Player 1");
+			emit gameEnded();
 			break;
 		}
 

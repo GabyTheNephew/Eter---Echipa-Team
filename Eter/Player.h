@@ -1,6 +1,7 @@
 #pragma once
 #include <string_view>
 #include<vector>
+#include<algorithm>
 #include <random>
 #include "SimpleCard.h"
 #include "Mages.h"

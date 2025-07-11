@@ -86,14 +86,18 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                     gameInstance.setIllusionsEnabled(illusions);
                     gameInstance.setExplosionsEnabled(explosions);
 
+                    QObject::connect(&gameInstance, &Game::gameEnded, this, [this]() {
+                        this->show();
+                        }, Qt::SingleShotConnection);
               
                     gameInstance.startGame(Game::GameType::Training);
                     });
 
              
                 connect(intermediateMenu, &IntermediateMenu::goBackSelected, this, [this, backgroundWindow]() {
-                    backgroundWindow->close();
+                    
                     this->show();
+                    backgroundWindow->close();
                     });
 
 
@@ -143,8 +147,8 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
 
     
                 connect(intermediateMenu, &IntermediateMenu::goBackSelected, this, [this, backgroundWindow]() {
-                    backgroundWindow->close();
                     this->show();
+                    backgroundWindow->close();
                     });
 
  
@@ -193,8 +197,8 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
 
           
                 connect(intermediateMenu, &IntermediateMenu::goBackSelected, this, [this, backgroundWindow]() {
+                    this->show();
                     backgroundWindow->close();
-                    this->show(); 
                     });
 
             
@@ -245,8 +249,8 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
 
     
                 connect(intermediateMenu, &IntermediateMenu::goBackSelected, this, [this, backgroundWindow]() {
+                     this->show();
                     backgroundWindow->close();
-                    this->show(); 
                     });
 
                 backgroundWindow->showFullScreen();
