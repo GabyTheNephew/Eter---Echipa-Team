@@ -624,6 +624,10 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
     }
 
     m_boardView->updateView();
+
+    Game& gameInstance = Game::get_Instance();
+    setPlayer1Cards(gameInstance.getPlayer1().getVector());
+    setPlayer2Cards(gameInstance.getPlayer2().getVector());
 }
 
 void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& color)
@@ -695,7 +699,7 @@ void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& colo
         if (!ok) break;
 
         PowerSquall squallPower;
-        squallPower.playSquallPower(m_boardView->getBoard(), game->getCurrentPlayer(), game->getCurrentPlayer(), x, y);
+        squallPower.playSquallPower(m_boardView->getBoard(), game->getPlayer1(), game->getPlayer2(), x, y);
         QMessageBox::information(this, "Power Activated", "Squall has returned the opponent's card to their hand!");
         break;
     }

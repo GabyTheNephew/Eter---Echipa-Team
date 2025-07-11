@@ -22,13 +22,29 @@ void PowerSquall::playSquallPower(Board& board, Player& player1, Player& player2
 	
 	if (ColorToString(board[{x, y}].back().getColor()) == "Red") {
 		auto card = SimpleCard(board[{x, y}].back().getValue(), Color::Red);
-		player1.makeCardValid(card);
-		board.popCard({x, y});
+
+
+		if (player1.GetVectorColor() == "Red") 
+		{
+			player1.makeCardValid(card);
+		}
+		else 
+		{
+			player2.makeCardValid(card);
+		}
+		board.popCard({ x, y });
 	}
 	else {
 		if (ColorToString(board[{x, y}].back().getColor()) == "Blue") {
 			auto card = SimpleCard(board[{x, y}].back().getValue(), Color::Blue);
-			player2.makeCardValid(card);
+			if (player1.GetVectorColor() == "Blue")
+			{
+				player1.makeCardValid(card);
+			}
+			else 
+			{
+				player2.makeCardValid(card);
+			}
 			board.popCard({ x, y });
 		}
 	}

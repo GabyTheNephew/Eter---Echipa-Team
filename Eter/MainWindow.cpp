@@ -140,7 +140,9 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                     Game& gameInstance = Game::get_Instance();
                     gameInstance.setIllusionsEnabled(illusions);
                     gameInstance.setExplosionsEnabled(explosions);
-
+                    QObject::connect(&gameInstance, &Game::gameEnded, this, [this]() {
+                        this->show();
+                        }, Qt::SingleShotConnection);
 
                     gameInstance.startGame(Game::GameType::MageDuel);
                     });
@@ -191,6 +193,9 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                     Game& gameInstance = Game::get_Instance();
                     gameInstance.setIllusionsEnabled(illusions);
                     gameInstance.setExplosionsEnabled(explosions);
+                    QObject::connect(&gameInstance, &Game::gameEnded, this, [this]() {
+                        this->show();
+                        }, Qt::SingleShotConnection);
 
                     gameInstance.startGame(Game::GameType::Power);
                     });
@@ -242,6 +247,9 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                     Game& gameInstance = Game::get_Instance();
                     gameInstance.setIllusionsEnabled(illusions);
                     gameInstance.setExplosionsEnabled(explosions);
+                    QObject::connect(&gameInstance, &Game::gameEnded, this, [this]() {
+                        this->show();
+                        }, Qt::SingleShotConnection);
 
    
                     gameInstance.startGame(Game::GameType::MageDuelAndPower);
