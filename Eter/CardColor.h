@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-
+#include "EnumConversions.h"
 enum class Color {
 	Red,
 	usedRed,

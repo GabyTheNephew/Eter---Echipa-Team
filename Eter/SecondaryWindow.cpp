@@ -69,16 +69,16 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 
     if (event->key() == Qt::Key_Escape) {
         if (!menu) {
-            menu = new MenuWindow(this);
+			menu = std::make_unique<MenuWindow>(this);
 
-            connect(menu, &MenuWindow::goToHome, this, [this]() {
+            connect(menu.get(), &MenuWindow::goToHome, this, [this]() {
                 menu->hide();
                 this->hide();
                 emit closed();
                 Game::get_Instance().emit gameEnded();
                 });
 
-            connect(menu, &MenuWindow::exitApp, []() {
+            connect(menu.get(), &MenuWindow::exitApp, []() {
                 Game::forceStop();
                 });
 

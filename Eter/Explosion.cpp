@@ -81,12 +81,7 @@ const std::vector<std::tuple<int16_t, int16_t, ActionType>>& Explosion::getPosit
 
 std::string ActionTypeToString(const ActionType& actionType)
 {
-	if (actionType == ActionType::explode)
-		return "explode";
-	if (actionType == ActionType::giveBack)
-		return "giveBack";
-	if (actionType == ActionType::hole)
-		return "hole";
+	return enumToString(actionType);
 }
 
 std::ostream& operator<<(std::ostream& os, const Explosion& explosion)

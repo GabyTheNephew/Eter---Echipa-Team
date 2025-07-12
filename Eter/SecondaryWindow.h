@@ -1,5 +1,5 @@
 ﻿#pragma once
-
+#include <memory>
 #include <QWidget>
 #include <QLabel>
 #include <QResizeEvent>
@@ -61,7 +61,7 @@ private:
     void optimizeBoard();
 private:
     QString imagePath;
-    MenuWindow* menu = nullptr;
+    std::unique_ptr<MenuWindow> menu;
     BoardView* m_boardView;
     QVBoxLayout* mainLayout;
     QHBoxLayout* player1CardsLayout;

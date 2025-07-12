@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <vector>
 #include <tuple>
-
+#include "EnumConversions.h"
 enum class ActionType {
 	explode,
 	giveBack,
