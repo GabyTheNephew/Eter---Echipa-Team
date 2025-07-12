@@ -8,6 +8,66 @@ bool Game::s_forceStop = false;
 
 
 
+GameType Game::getCurrentGameType() const {
+	return m_currentGameType;
+}
+
+int Game::getRoundCounter() const {
+	return m_round_Counter;
+}
+
+
+
+Color Game::getCurrentPlayerColor() const {
+	return currentPlayer;
+}
+
+int Game::getPlayer1Score() const {
+	return player1RoundsWon;
+}
+
+int Game::getPlayer2Score() const {
+	return player2RoundsWon;
+}
+int Game::getBoardMaxSize() const {
+	return m_boardMaxSize;
+}
+
+bool Game::isTimerEnabled() const {
+	return m_timerEnabled;
+}
+
+bool Game::isPlayer1MageUsed() const {
+	return m_player1MageUsed;
+}
+
+bool Game::isPlayer2MageUsed() const {
+	return m_player2MageUsed;
+}
+
+bool Game::isPlayer1PowerUsed() const {
+	return m_player1PowerUsed;
+}
+
+bool Game::isPlayer2PowerUsed() const {
+	return m_player2PowerUsed;
+}
+
+QString Game::getUserEmail() const
+{
+	return m_userEmail;
+}
+
+QString Game::getUserPassword() const
+{
+	return m_userPassword;
+}
+
+void Game::setUserCredentials(const QString& email, const QString& password) {
+	m_userEmail = email;
+	m_userPassword = password;
+}
+
 Game& Game::get_Instance()
 {
 	return m_current_Instance;
@@ -16,41 +76,16 @@ void Game::forceStop() {
 	s_forceStop = true;
 	QApplication::quit();
 }
-Game::GameType Game::stringToGameType(std::string_view word)
+GameType Game::stringToGameType(std::string_view word)
 {
-	if (word == "Training")
-		return GameType::Training;
-	else
-		if (word == "MageDuel")
-			return GameType::MageDuel;
-		else
-			if (word == "Power")
-				return GameType::Power;
-			else
-				if (word == "Tournament")
-					return GameType::Tournament;
-				else
-					if (word == "MageDuelAndPower")
-						return GameType::MageDuelAndPower;
+	return stringToEnum<GameType>(std::string(word));
 }
 
 std::string_view Game::gameTypeToString(GameType gameType) const
 {
 
-	if (gameType == GameType::Training)
-		return "Training";
-	else
-		if (gameType == GameType::MageDuel)
-			return "MageDuel";
-		else
-			if (gameType == GameType::Power)
-				return "Power";
-			else
-				if (gameType == GameType::Tournament)
-					return "Tournament";
-				else
-					if (gameType == GameType::MageDuelAndPower)
-						return "MageDuelAndPower";
+	static std::string result = enumToString(gameType);
+	return result;
 }
 
 Board& Game::getBoard() {
@@ -66,13 +101,15 @@ const Board& Game::getBoard() const {
 
 
 void Game::startTraining() {
+	m_currentGameType = GameType::Training;
+	m_boardMaxSize = 3;
 	m_gameBoard = Board(1);
 	this->m_round_Counter = 1;
 	int16_t maxRounds = 3;
 	std::vector<SimpleCard> PastCards;
 	std::optional<std::pair<bool, bool>> canPlayIllusion;
-	int16_t player1RoundsWon = 0;
-	int16_t player2RoundsWon = 0;
+	player1RoundsWon = 0;
+	player2RoundsWon = 0;
 
 
 	if (m_illusionsEnabled) {
@@ -203,13 +240,15 @@ void Game::startTraining() {
 
 void Game::startMageDuel()
 {
+	m_currentGameType = GameType::MageDuel;
+	m_boardMaxSize = 4;
 	m_gameBoard = Board(1);
 	this->m_round_Counter = 1;
 	int16_t maxRounds = 5;
 	std::vector<SimpleCard> PastCards;
 	std::optional<std::pair<bool, bool>> canPlayIllusion;
-	int16_t player1RoundsWon = 0;
-	int16_t player2RoundsWon = 0;
+	player1RoundsWon = 0;
+	player2RoundsWon = 0;
 
 	if (m_illusionsEnabled) {
 		canPlayIllusion = std::make_pair(true, true);
@@ -341,13 +380,15 @@ void Game::startMageDuel()
 }
 
 void Game::startPowerDuel() {
+	m_currentGameType = GameType::Power;
+	m_boardMaxSize = 4;
 	m_gameBoard = Board(1);
 	this->m_round_Counter = 1;
 	int16_t maxRounds = 5;
 	std::vector<SimpleCard> PastCards;
 	std::optional<std::pair<bool, bool>> canPlayIllusion;
-	int16_t player1RoundsWon = 0;
-	int16_t player2RoundsWon = 0;
+	player1RoundsWon = 0;
+	player2RoundsWon = 0;
 
 	if (m_illusionsEnabled) {
 		canPlayIllusion = std::make_pair(true, true);
@@ -485,13 +526,15 @@ void Game::startTournament()
 }
 void Game::startMageDuelAndPower()
 {
+	m_currentGameType = GameType::MageDuelAndPower;
+	m_boardMaxSize = 4;
 	m_gameBoard = Board(1);
 	this->m_round_Counter = 1;
 	int16_t maxRounds = 3;
 	std::vector<SimpleCard> PastCards;
 	std::optional<std::pair<bool, bool>> canPlayIllusion;
-	int16_t player1RoundsWon = 0;
-	int16_t player2RoundsWon = 0;
+	player1RoundsWon = 0;
+	player2RoundsWon = 0;
 
 	if (m_illusionsEnabled) {
 		canPlayIllusion = std::make_pair(true, true);

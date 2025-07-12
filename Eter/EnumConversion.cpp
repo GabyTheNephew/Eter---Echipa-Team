@@ -1,8 +1,9 @@
-#include "EnumConversions.h"
+#include "EnumConversion.h"
 #include "CardColor.h"
 #include "Mages.h"
 #include "Power.h"
 #include "Explosion.h"
+#include "GameTypes.h"
 
 
 template<>
@@ -10,7 +11,7 @@ std::string enumToString<Color>(Color color) {
     switch (color) {
     case Color::Red:
         return "Red";
-    case Color::Blue: 
+    case Color::Blue:
         return "Blue";
     case Color::usedRed:
         return "usedRed";
@@ -18,18 +19,18 @@ std::string enumToString<Color>(Color color) {
         return "usedBlue";
     case Color::IlusionBlue:
         return "IlusionBlue";
-    case Color::IlusionRed: 
+    case Color::IlusionRed:
         return "IlusionRed";
-    case Color::increasedRed: 
+    case Color::increasedRed:
         return "increasedRed";
-    case Color::increasedBlue: 
+    case Color::increasedBlue:
         return "increasedBlue";
     case Color::decreasedRed:
         return "decreasedRed";
-    case Color::decreasedBlue: 
+    case Color::decreasedBlue:
         return "decreasedBlue";
-    case Color::Hole: return 
-        "Hole";
+    case Color::Hole: 
+        return "Hole";
     default: throw std::invalid_argument("Unknown Color enum value");
     }
 }
@@ -37,25 +38,25 @@ std::string enumToString<Color>(Color color) {
 
 template<>
 Color stringToEnum<Color>(const std::string& str) {
-    if (str == "Red") 
+    if (str == "Red")
         return Color::Red;
-    if (str == "Blue") 
+    if (str == "Blue")
         return Color::Blue;
-    if (str == "usedRed") 
+    if (str == "usedRed")
         return Color::usedRed;
-    if (str == "usedBlue") 
+    if (str == "usedBlue")
         return Color::usedBlue;
     if (str == "IlusionBlue")
         return Color::IlusionBlue;
-    if (str == "IlusionRed") 
+    if (str == "IlusionRed")
         return Color::IlusionRed;
-    if (str == "increasedRed") 
+    if (str == "increasedRed")
         return Color::increasedRed;
-    if (str == "increasedBlue") 
+    if (str == "increasedBlue")
         return Color::increasedBlue;
     if (str == "decreasedRed")
         return Color::decreasedRed;
-    if (str == "decreasedBlue") 
+    if (str == "decreasedBlue")
         return Color::decreasedBlue;
     if (str == "Hole")
         return Color::Hole;
@@ -68,36 +69,36 @@ Color stringToEnum<Color>(const std::string& str) {
 template<>
 std::string enumToString<Mages>(Mages mage) {
     switch (mage) {
-    case Mages::AirMageVelora: 
+    case Mages::AirMageVelora:
         return "AirMageVelora";
     case Mages::AirMageZephyraCrow:
         return "AirMageZephyraCrow";
-    case Mages::EarthMageBumbleroot: 
+    case Mages::EarthMageBumbleroot:
         return "EarthMageBumbleroot";
-    case Mages::EarthMageElderbranch: 
+    case Mages::EarthMageElderbranch:
         return "EarthMageElderbranch";
     case Mages::FireMageIgnara:
         return "FireMageIgnara";
-    case Mages::FireMagePyrofang: 
+    case Mages::FireMagePyrofang:
         return "FireMagePyrofang";
-    case Mages::WaterMageAqualon: 
+    case Mages::WaterMageAqualon:
         return "WaterMageAqualon";
     case Mages::WaterMageChillThoughts:
         return "WaterMageChillThoughts";
-    default: 
+    default:
         throw std::invalid_argument("Unknown Mages enum value");
     }
 }
 
 template<>
 Mages stringToEnum<Mages>(const std::string& str) {
-    if (str == "AirMageVelora") 
+    if (str == "AirMageVelora")
         return Mages::AirMageVelora;
     if (str == "AirMageZephyraCrow")
         return Mages::AirMageZephyraCrow;
-    if (str == "EarthMageBumbleroot") 
+    if (str == "EarthMageBumbleroot")
         return Mages::EarthMageBumbleroot;
-    if (str == "EarthMageElderbranch") 
+    if (str == "EarthMageElderbranch")
         return Mages::EarthMageElderbranch;
     if (str == "FireMageIgnara")
         return Mages::FireMageIgnara;
@@ -105,7 +106,7 @@ Mages stringToEnum<Mages>(const std::string& str) {
         return Mages::FireMagePyrofang;
     if (str == "WaterMageAqualon")
         return Mages::WaterMageAqualon;
-    if (str == "WaterMageChillThoughts") 
+    if (str == "WaterMageChillThoughts")
         return Mages::WaterMageChillThoughts;
     throw std::invalid_argument("Invalid Mages string: " + str);
 }
@@ -116,30 +117,30 @@ std::string enumToString<Power>(Power power) {
     switch (power) {
     case Power::PowerEarthquake:
         return "PowerEarthquake";
-    case Power::PowerTide: 
+    case Power::PowerTide:
         return "PowerTide";
-    case Power::PowerStorm: 
+    case Power::PowerStorm:
         return "PowerStorm";
-    case Power::PowerSquall: 
+    case Power::PowerSquall:
         return "PowerSquall";
     case Power::PowerGale:
         return "PowerGale";
-    default: 
+    default:
         throw std::invalid_argument("Unknown Power enum value");
     }
 }
 
 template<>
 Power stringToEnum<Power>(const std::string& str) {
-    if (str == "PowerEarthquake") 
+    if (str == "PowerEarthquake")
         return Power::PowerEarthquake;
     if (str == "PowerTide")
         return Power::PowerTide;
     if (str == "PowerStorm")
         return Power::PowerStorm;
-    if (str == "PowerSquall") 
+    if (str == "PowerSquall")
         return Power::PowerSquall;
-    if (str == "PowerGale") 
+    if (str == "PowerGale")
         return Power::PowerGale;
     throw std::invalid_argument("Invalid Power string: " + str);
 }
@@ -148,7 +149,7 @@ Power stringToEnum<Power>(const std::string& str) {
 template<>
 std::string enumToString<ActionType>(ActionType action) {
     switch (action) {
-    case ActionType::explode: 
+    case ActionType::explode:
         return "explode";
     case ActionType::giveBack:
         return "giveBack";
@@ -160,11 +161,44 @@ std::string enumToString<ActionType>(ActionType action) {
 
 template<>
 ActionType stringToEnum<ActionType>(const std::string& str) {
-    if (str == "explode") 
+    if (str == "explode")
         return ActionType::explode;
-    if (str == "giveBack") 
+    if (str == "giveBack")
         return ActionType::giveBack;
     if (str == "hole")
         return ActionType::hole;
     throw std::invalid_argument("Invalid ActionType string: " + str);
+}
+
+template<>
+std::string enumToString<GameType>(GameType gameType) {
+    switch (gameType) {
+    case GameType::Training:
+        return "Training";
+    case GameType::MageDuel:
+        return "MageDuel";
+    case GameType::Power:
+        return "Power";
+    case GameType::MageDuelAndPower:
+        return "MageDuelAndPower";
+    case GameType::Tournament:
+        return "Tournament";
+    default:
+        throw std::invalid_argument("Unknown GameType enum value");
+    }
+}
+
+template<>
+GameType stringToEnum<GameType>(const std::string& str) {
+    if (str == "Training")
+        return GameType::Training;
+    if (str == "MageDuel")
+        return GameType::MageDuel;
+    if (str == "Power")
+        return GameType::Power;
+    if (str == "MageDuelAndPower")
+        return GameType::MageDuelAndPower;
+    if (str == "Tournament")
+        return GameType::Tournament;
+    throw std::invalid_argument("Invalid GameType string: " + str);
 }

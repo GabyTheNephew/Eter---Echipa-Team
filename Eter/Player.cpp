@@ -526,3 +526,8 @@ void Player::reassignPower() {
 Power Player::getPower() const {
 	return m_power;
 }
+
+Mages Player::getMageEnum() const
+{
+	return m_mage;
+}

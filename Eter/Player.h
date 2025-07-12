@@ -64,6 +64,7 @@ public:
 	void assignPower();
 	void reassignPower();
 	Power getPower() const;
+	Mages getMageEnum() const;
 
 };
 

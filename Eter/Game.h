@@ -15,6 +15,9 @@
 #include "BoardView.h"
 #include <cstdlib>
 #include <ctime>
+#include "GameTypes.h"
+#include "EnumConversion.h"
+
 
 
 
@@ -26,11 +29,26 @@ private:
     int16_t m_round_Counter;
     Board m_gameBoard;
     static Game m_current_Instance;
-    Player player1, player2;
+    GameType m_currentGameType;
+    int m_boardMaxSize;
+    
 
     std::optional<Explosion> m_explosion;
     bool m_illusionsEnabled;
+    bool m_timerEnabled = false;
+   
+
+    Player player1, player2;
     Color currentPlayer;
+    int16_t player1RoundsWon;
+	int16_t player2RoundsWon;
+    bool m_player1MageUsed = false;
+    bool m_player2MageUsed = false;
+    bool m_player1PowerUsed = false;
+    bool m_player2PowerUsed = false;
+
+    QString m_userEmail;
+    QString m_userPassword;
 
     static bool s_forceStop;
 
@@ -51,17 +69,10 @@ public:
     Player& getPlayer2() { return player2; }
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
-    static MenuWindow* getGlobalMenu();
+  
     static Game& get_Instance();
     static void forceStop();
-    enum class GameType : int16_t
-    {
-        Training,
-        MageDuel,
-        Power,
-        MageDuelAndPower,
-        Tournament
-    };
+    
 
     GameType stringToGameType(std::string_view word);
     std::string_view gameTypeToString(GameType gameType) const;
@@ -83,6 +94,21 @@ public:
 
     Board& getBoard();
     const Board& getBoard() const;
+
+    GameType getCurrentGameType() const;
+    int getRoundCounter() const;
+    Color getCurrentPlayerColor()const;
+    int getPlayer1Score() const;
+    int getBoardMaxSize() const;
+    int getPlayer2Score() const;
+    bool isTimerEnabled() const;
+    bool isPlayer1MageUsed() const;
+    bool isPlayer2MageUsed() const;
+    bool isPlayer1PowerUsed() const;
+    bool isPlayer2PowerUsed() const;
+    QString getUserEmail() const;
+	QString getUserPassword() const;
+    void setUserCredentials(const QString& email, const QString& password);
 
 
 public slots:

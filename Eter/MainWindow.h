@@ -11,7 +11,7 @@
 #include "IntermediateMenu.h"
 #include "LoadGameMenu.h"
 #include "Game.h"
-
+#include "GameSaver.h"
 class MainWindow : public QWidget {
     Q_OBJECT
 

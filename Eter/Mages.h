@@ -1,6 +1,6 @@
 #pragma once
 #include <QString>
-#include "EnumConversions.h"
+#include "EnumConversion.h"
 enum class Mages
 {
 	AirMageVelora,

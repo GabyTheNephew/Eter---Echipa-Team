@@ -1,4 +1,6 @@
 ﻿#include "MenuWindow.h"
+#include <QInputDialog>
+#include "GameSaver.h" 
 
 MenuWindow::MenuWindow(QWidget* parent) : QWidget(parent) {
     setWindowTitle("Menu");
@@ -49,6 +51,17 @@ MenuWindow::MenuWindow(QWidget* parent) : QWidget(parent) {
 
     connect(exitButton, &QPushButton::clicked, this, &MenuWindow::exitApp);
     connect(homeButton, &QPushButton::clicked, this, &MenuWindow::goToHome);
+    connect(saveButton, &QPushButton::clicked, this, [this]() {
+        Game& game = Game::get_Instance();
+
+        
+        if (GameSaver::saveGame(game.getUserEmail(), game.getUserPassword(), game)) {
+            QMessageBox::information(this, "Success", "Game saved successfully!");
+        }
+        else {
+            QMessageBox::warning(this, "Error", "Failed to save game!");
+        }
+        });
 
     this->hide(); 
 }

@@ -6,12 +6,14 @@
 
 template<typename EnumType>
 std::string enumToString(EnumType value) {
-	static_assert(false,"enumToString not implemented for this type");
+	static_assert(sizeof(EnumType) == 0, "enumToString not implemented for this type");
+	return "";
 }
 
 template<typename EnumType>
 EnumType stringToEnum(const std::string& str) {
-	static_assert(false, "stringToEnum not implemented for this enum type");
+	static_assert(sizeof(EnumType) == 0, "stringToEnum not implemented for this enum type");
+	return "";
 }
 
 template<typename EnumType>
@@ -29,6 +31,7 @@ enum class Color;
 enum class Mages;
 enum class Power;
 enum class ActionType;
+enum class GameType:int16_t;
 
 
 template<> std::string enumToString<Color>(Color color);
@@ -45,3 +48,7 @@ template<> Power stringToEnum<Power>(const std::string& str);
 
 template<> std::string enumToString<ActionType>(ActionType action);
 template<> ActionType stringToEnum<ActionType>(const std::string& str);
+
+
+template<> std::string enumToString<GameType>(GameType gameType);
+template<> GameType stringToEnum<GameType>(const std::string& str);
