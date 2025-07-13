@@ -20,6 +20,16 @@ Player::~Player()
 {
 }
 
+void Player::setMage(Mages mage)
+{
+	m_mage = mage;
+}
+
+void Player::setPower(Power power)
+{
+	m_power = power;
+}
+
 void Player::setName(std::string_view name)
 {
 	m_name = name;

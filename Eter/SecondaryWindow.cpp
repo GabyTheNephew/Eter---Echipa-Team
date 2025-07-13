@@ -240,25 +240,78 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
     qDebug() << "Attempting to place card at (" << row << ", " << col << "):";
 
    
+    if (selectedCardAsIllusion && !m_boardView->getBoard()[{row, col}].empty()) {
+        QMessageBox::warning(this, "Invalid Move", "Illusions can only be placed on empty spaces!");
+        return;
+    }
 
-    if (handleCardPlacement(row, col)) {
+    SimpleCard cardToPlace = selectedCard;
+    if (selectedCardAsIllusion) {
+        if (currentPlayer == Color::Red) {
+            cardToPlace.setColor(Color::IlusionRed);
+           
+        }
+        else {
+            cardToPlace.setColor(Color::IlusionBlue);
+         
+        }
+    }
+
+    bool placementResult = handleCardPlacement(row, col, cardToPlace);
+    bool shouldEndTurn = false;
+
+    if (placementResult) 
+    {
+
+        if (selectedCardAsIllusion) 
+        {
+            if (currentPlayer == Color::Red) 
+            {
+                game->setPlayer1IllusionUsed(true);
+            }
+            else 
+            {
+                game->setPlayer2IllusionUsed(true);
+            }
+        }
+        shouldEndTurn = true;
+    }
+    else
+    {
+        Board& board = m_boardView->getBoard();
+        if (row >= 0 && row < board.getRowSize() && col >= 0 && col < board.getColumnSize()) 
+        {
+            if (!board[{row, col}].empty()) 
+            {
+                SimpleCard topCard = board[{row, col}].back();
+                if ((topCard.getColor() == Color::Red || topCard.getColor() == Color::Blue) &&(cardToPlace.getColor() == Color::Red || cardToPlace.getColor() == Color::Blue) &&(topCard.getColor() != cardToPlace.getColor())) 
+                {
+                    
+                    shouldEndTurn = true;
+                }
+            }
+        }
+    }
+
+    if (shouldEndTurn) {
+        
         game->getCurrentPlayer().makeCardInvalid(selectedCard);
         game->getCurrentPlayer().getPastVector().push_back(selectedCard);
 
-        if (currentPlayer == Color::Red) {
+        if (currentPlayer == Color::Red) 
+        {
             setPlayer1Cards(game->getCurrentPlayer().getVector());
         }
-        else {
+        else 
+        {
             setPlayer2Cards(game->getCurrentPlayer().getVector());
         }
 
         selectedCard = SimpleCard();
-
         optimizeBoard();
-
         m_boardView->updateView();
 
-        qDebug() << "Card placed successfully at (" << row << ", " << col << ").";
+        qDebug() << "Turn completed at (" << row << ", " << col << ").";
         game->setPlayerMoveCompleted(true);
     }
 }
@@ -266,16 +319,49 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
 
 
 
-bool SecondaryWindow::handleCardPlacement(int row, int col) {
+bool SecondaryWindow::handleCardPlacement(int row, int col, const SimpleCard& cardToPlace) {
     Board& board = m_boardView->getBoard();
 
     
+    if (cardToPlace.getColor() == Color::IlusionRed || cardToPlace.getColor() == Color::IlusionBlue) 
+    {
+        if (row >= 0 && row < board.getRowSize() && col >= 0 && col < board.getColumnSize())
+        {
+            if (!board[{row, col}].empty())
+            {
+                QMessageBox::warning(this, "Invalid Move", "Illusions must be placed on empty spaces!");
+                return false;
+            }
+            board.pushCard(cardToPlace, { row, col });
+            return true;
+        }
+        else {
+            
+            if (!expandBoardForPosition(row, col))
+            {
+                return false;
+            }
+            int newRow = row < 0 ? 0 : row;
+            int newCol = col < 0 ? 0 : col;
+            board.pushCard(cardToPlace, { newRow, newCol });
+            return true;
+        }
+    }
+
+
     if (row >= 0 && row < board.getRowSize() && col >= 0 && col < board.getColumnSize()) {
         Board::Position pos = { row, col };
 
-    
-        if (board.canBePushed(selectedCard, pos)) {
-            board.pushCard(selectedCard, pos);
+        if (!board[pos].empty())
+        {
+            SimpleCard topCard = board[pos].back();
+            if (topCard.getColor() == Color::IlusionRed || topCard.getColor() == Color::IlusionBlue) 
+            {           
+                return handleIllusionCovering(row, col, cardToPlace, topCard);
+            }
+        }
+        if (board.canBePushed(cardToPlace, pos)) {
+            board.pushCard(cardToPlace, pos);
             qDebug() << "Card placed successfully at existing position (" << row << ", " << col << ")";
             return true;
         }
@@ -309,8 +395,8 @@ bool SecondaryWindow::handleCardPlacement(int row, int col) {
         Board::Position pos = { newRow, newCol };
 
      
-        if (board.canBePushed(selectedCard, pos)) {
-            board.pushCard(selectedCard, pos);
+        if (board.canBePushed(cardToPlace, pos)) {
+            board.pushCard(cardToPlace, pos);
             return true;
         }
         else {
@@ -319,6 +405,34 @@ bool SecondaryWindow::handleCardPlacement(int row, int col) {
                 "Card value must be higher than the top card in the stack.");
             return false;
         }
+    }
+}
+bool SecondaryWindow::handleIllusionCovering(int row, int col, const SimpleCard& attackCard, SimpleCard& illusionCard)
+{
+    Board& board = m_boardView->getBoard();
+
+    if ((attackCard.getColor() == Color::Red && illusionCard.getColor() == Color::IlusionRed) ||(attackCard.getColor() == Color::Blue && illusionCard.getColor() == Color::IlusionBlue)) 
+    {
+        QMessageBox::warning(this, "Invalid Move", "You cannot cover your own illusion!");
+        return false;
+    }
+
+    Color revealedColor = (illusionCard.getColor() == Color::IlusionRed) ? Color::Red : Color::Blue;
+    illusionCard.setColor(revealedColor);
+
+    board[{row, col}].back().setColor(revealedColor);
+
+    QMessageBox::information(this, "Illusion Revealed!",
+        QString("Illusion revealed! Value: %1").arg(illusionCard.getValue()));
+
+    if (attackCard.getValue() > illusionCard.getValue()) {
+        board.pushCard(attackCard, { row, col });
+        return true;
+    }
+    else {
+        QMessageBox::information(this, "Attack Failed!",
+            "Your card was eliminated! Turn ends.");
+        return false; 
     }
 }
 
@@ -766,11 +880,39 @@ void SecondaryWindow::onCardSelected(const SimpleCard& card) {
         return;
     }
 
+    bool canPlayAsIllusion = false;
+    if (game->areIllusionsEnabled()) {
+        if (currentPlayer == Color::Red && !game->isPlayer1IllusionUsed()) {
+            canPlayAsIllusion = true;
+        }
+        else if (currentPlayer == Color::Blue && !game->isPlayer2IllusionUsed()) {
+            canPlayAsIllusion = true;
+        }
+    }
+
+    bool playAsIllusion = false;
+    if (canPlayAsIllusion && card.getValue() != 5) {
+        QMessageBox::StandardButton reply = QMessageBox::question(
+            this,
+            "Play as Illusion?",
+            "Do you want to play this card as an illusion?",
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No
+        );
+        playAsIllusion = (reply == QMessageBox::Yes);
+    }
+
     selectedCard = card;
+    selectedCardAsIllusion = playAsIllusion;
+
     qDebug() << "Card selected: Color ="
         << (card.getColor() == Color::Red ? "Red" : "Blue")
-        << ", Value =" << card.getValue();
+        << ", Value =" << card.getValue()
+        << ", As Illusion =" << playAsIllusion;
 }
+
+    
+
 
 void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Name) {
     

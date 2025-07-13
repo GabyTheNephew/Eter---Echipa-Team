@@ -34,7 +34,8 @@ public:
 	Player(std::string_view name, std::vector <SimpleCard> simpleCards, std::vector <SimpleCard> simplePastCards);
 	Player(std::string_view name, std::vector <SimpleCard> simpleCards, std::vector <SimpleCard> simplepastCards, bool checkMage);
 	~Player();
-
+	void setMage(Mages mage);
+	void setPower(Power power);
 	void setName(std::string_view name);
 	std::string_view getName();
 	int getMageAssignment();

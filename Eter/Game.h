@@ -33,6 +33,7 @@ private:
     static Game m_current_Instance;
     GameType m_currentGameType;
     int m_boardMaxSize;
+
     
 
     std::optional<Explosion> m_explosion;
@@ -48,6 +49,9 @@ private:
     bool m_player2MageUsed = false;
     bool m_player1PowerUsed = false;
     bool m_player2PowerUsed = false;
+
+    bool m_player1IllusionUsed = false;
+    bool m_player2IllusionUsed = false;
 
     QString m_userEmail;
     QString m_userPassword;
@@ -70,6 +74,7 @@ private:
 
 
 public:
+    void startLoadedGame();
     Player& getPlayer1() { return player1; }
     Player& getPlayer2() { return player2; }
     Game(const Game&) = delete;
@@ -114,6 +119,11 @@ public:
     QString getUserEmail() const;
 	QString getUserPassword() const;
     void setUserCredentials(const QString& email, const QString& password);
+
+    bool isPlayer1IllusionUsed() const;
+    bool isPlayer2IllusionUsed() const;
+    void setPlayer1IllusionUsed(bool used);
+    void setPlayer2IllusionUsed(bool used);
 
 
 public slots:

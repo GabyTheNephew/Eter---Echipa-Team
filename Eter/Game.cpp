@@ -68,6 +68,202 @@ void Game::setUserCredentials(const QString& email, const QString& password) {
 	m_userPassword = password;
 }
 
+bool Game::isPlayer1IllusionUsed() const
+{
+	return m_player1IllusionUsed;
+}
+
+bool Game::isPlayer2IllusionUsed() const
+{
+	return m_player2IllusionUsed;
+}
+
+void Game::setPlayer1IllusionUsed(bool used)
+{
+	m_player1IllusionUsed = used;
+}
+
+void Game::setPlayer2IllusionUsed(bool used)
+{
+	m_player2IllusionUsed = used;
+}
+
+void Game::startLoadedGame()
+{
+	QString windowTitle;
+	QString mage1Name = "";
+	QString mage2Name = "";
+	QString power1Name = "";
+	QString power2Name = "";
+	bool hasMages = false;
+	bool hasPowers = false;
+	if (m_round_Counter == 1)
+	{
+		m_player1IllusionUsed = false;
+		m_player2IllusionUsed = false;
+	}
+
+	switch (m_currentGameType) {
+	case GameType::Training:
+		windowTitle = "Training - Loaded Game";
+		break;
+	case GameType::MageDuel:
+		windowTitle = "Mage Duel - Loaded Game";
+		hasMages = true;
+		mage1Name = QString::fromStdString(player1.getMage());
+		mage2Name = QString::fromStdString(player2.getMage());
+		break;
+	case GameType::Power:
+		windowTitle = "Power Duel - Loaded Game";
+		hasPowers = true;
+		power1Name = QString::fromStdString(fromPowerToQString(player1.getPower()).toStdString());
+		power2Name = QString::fromStdString(fromPowerToQString(player2.getPower()).toStdString());
+		break;
+	case GameType::MageDuelAndPower:
+		windowTitle = "Mage & Power Duel - Loaded Game";
+		hasMages = true;
+		hasPowers = true;
+		mage1Name = QString::fromStdString(player1.getMage());
+		mage2Name = QString::fromStdString(player2.getMage());
+		power1Name = QString::fromStdString(fromPowerToQString(player1.getPower()).toStdString());
+		power2Name = QString::fromStdString(fromPowerToQString(player2.getPower()).toStdString());
+		break;
+	default:
+		windowTitle = "Loaded Game";
+		break;
+	}
+
+	auto* gameWindow = new SecondaryWindow(
+		windowTitle,
+		QDir::currentPath() + QDir::separator() + "eter.png",
+		this,
+		mage1Name,
+		mage2Name,
+		power1Name,
+		power2Name,
+		hasMages,
+		hasPowers
+	);
+
+	gameWindow->setAttribute(Qt::WA_DeleteOnClose);
+	gameWindow->setBoard(m_gameBoard, m_boardMaxSize);
+	gameWindow->setPlayer1Cards(player1.getVector());
+	gameWindow->setPlayer2Cards(player2.getVector());
+	gameWindow->setCurrentPlayer(currentPlayer);
+
+	connect(gameWindow, &SecondaryWindow::boardClicked, this, &Game::handleBoardClick);
+	gameWindow->show();
+
+
+	int16_t maxRounds;
+	int16_t winCondition;
+
+	switch (m_currentGameType) {
+	case GameType::Training:
+		maxRounds = 3;
+		winCondition = 2;
+		break;
+	case GameType::MageDuel:
+	case GameType::Power:
+		maxRounds = 5;
+		winCondition = 3;
+		break;
+	case GameType::MageDuelAndPower:
+		maxRounds = 3;
+		winCondition = 2;
+		break;
+	default:
+		maxRounds = 3;
+		winCondition = 2;
+		break;
+	}
+	while (m_round_Counter <= maxRounds) {
+		if (s_forceStop) return;
+
+		playerMoveCompleted = false;
+		gameWindow->setCurrentPlayer(currentPlayer);
+
+		bool roundInProgress = true;
+		while (roundInProgress) {
+			if (s_forceStop) return;
+			QCoreApplication::processEvents();
+
+			if (playerMoveCompleted) {
+				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
+					gameWindow->setCurrentPlayer(Color::Blue);
+					currentPlayer = Color::Blue;
+					qDebug() << "Player 1's turn.";
+				}
+				else if (currentPlayer == Color::Blue && player2.numberofValidCards() > 0) {
+					gameWindow->setCurrentPlayer(Color::Red);
+					currentPlayer = Color::Red;
+					qDebug() << "Player 2's turn.";
+				}
+				playerMoveCompleted = false;
+			}
+
+	
+			int16_t boardSizeForWin = (m_currentGameType == GameType::Training) ? 3 : 4;
+			if (m_gameBoard.checkWin(false, boardSizeForWin) == Board::State::Win) {
+				if (currentPlayer == Color::Red) {
+					qDebug() << "Player 2 wins!";
+					player1RoundsWon++;
+				}
+				else {
+					qDebug() << "Player 1 wins!";
+					player2RoundsWon++;
+				}
+
+				player1.ResetVector();
+				player2.ResetVector();
+				gameWindow->setPlayer1Cards(player1.getVector());
+				gameWindow->setPlayer2Cards(player2.getVector());
+				m_gameBoard.resizeBoard(1);
+				gameWindow->resetView();
+				incrementRoundCounter();
+				gameWindow->updateBoardView();
+				currentPlayer = Color::Red;
+				roundInProgress = false;
+			}
+
+			if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
+				auto state = m_gameBoard.checkWin(true, boardSizeForWin);
+				if (state == Board::State::RedWin) {
+					qDebug() << "Player 1 wins the round.";
+					player1RoundsWon++;
+				}
+				else if (state == Board::State::BlueWin) {
+					qDebug() << "Player 2 wins the round.";
+					player2RoundsWon++;
+				}
+				else if (state == Board::State::Draw) {
+					qDebug() << "Round is a draw.";
+					player1RoundsWon++;
+					player2RoundsWon++;
+				}
+				currentPlayer = Color::Red;
+				roundInProgress = false;
+			}
+		}
+
+		if (player1RoundsWon >= winCondition) {
+			gameWindow->showWinner("Player 2");
+			gameWindow->hide();        
+			gameWindow->deleteLater();
+			emit gameEnded();
+			break;
+		}
+
+		if (player2RoundsWon >= winCondition) {
+			gameWindow->showWinner("Player 1");
+			gameWindow->hide();        
+			gameWindow->deleteLater();
+			emit gameEnded();
+			break;
+		}
+	}
+}
+
 Game& Game::get_Instance()
 {
 	return m_current_Instance;
@@ -110,6 +306,8 @@ void Game::startTraining() {
 	std::optional<std::pair<bool, bool>> canPlayIllusion;
 	player1RoundsWon = 0;
 	player2RoundsWon = 0;
+	m_player1IllusionUsed = false;
+	m_player2IllusionUsed = false;
 
 
 	if (m_illusionsEnabled) {
@@ -249,6 +447,8 @@ void Game::startMageDuel()
 	std::optional<std::pair<bool, bool>> canPlayIllusion;
 	player1RoundsWon = 0;
 	player2RoundsWon = 0;
+	m_player1IllusionUsed = false;
+	m_player2IllusionUsed = false;
 
 	if (m_illusionsEnabled) {
 		canPlayIllusion = std::make_pair(true, true);
@@ -389,6 +589,8 @@ void Game::startPowerDuel() {
 	std::optional<std::pair<bool, bool>> canPlayIllusion;
 	player1RoundsWon = 0;
 	player2RoundsWon = 0;
+	m_player1IllusionUsed = false;
+	m_player2IllusionUsed = false;
 
 	if (m_illusionsEnabled) {
 		canPlayIllusion = std::make_pair(true, true);
@@ -535,6 +737,8 @@ void Game::startMageDuelAndPower()
 	std::optional<std::pair<bool, bool>> canPlayIllusion;
 	player1RoundsWon = 0;
 	player2RoundsWon = 0;
+	m_player1IllusionUsed = false;
+	m_player2IllusionUsed = false;
 
 	if (m_illusionsEnabled) {
 		canPlayIllusion = std::make_pair(true, true);
@@ -775,6 +979,8 @@ Player& Game::getCurrentPlayer() {
 void Game::incrementRoundCounter()
 {
 	this->m_round_Counter++; 
+	m_player1IllusionUsed = false;
+	m_player2IllusionUsed = false;
 }
 
 bool Game::checkPlayExplosion(Board& m_board)

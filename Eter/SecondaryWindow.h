@@ -56,7 +56,8 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
 private:
-    bool handleCardPlacement(int row, int col);
+    bool handleCardPlacement(int row, int col, const SimpleCard& cardToPlace);
+    bool handleIllusionCovering(int row, int col, const SimpleCard& attackCard, SimpleCard& illusionCard);
     bool expandBoardForPosition(int row, int col);
     void optimizeBoard();
 private:
@@ -69,12 +70,16 @@ private:
     SimpleCard selectedCard;
     Color currentPlayer;
     Game* game;
+    bool selectedCardAsIllusion = false;
+    QLabel* player1TimerLabel;
+    QLabel* player2TimerLabel;
 
 private slots:
     void onCardSelected(const SimpleCard& card); 
     void onBoardClicked(int row, int col);
     void onMageClicked(const QString& mageName, const Color& color);
     void onPowerClicked(const QString& powerName, const Color& color);
+
 
 
 

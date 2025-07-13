@@ -66,6 +66,8 @@ bool GameSaver::saveGame(const QString& email, const QString& password, const Ga
     savedData["player2MageUsed"] = nonConstGame.isPlayer2MageUsed();
     savedData["player1PowerUsed"] = nonConstGame.isPlayer1PowerUsed();
     savedData["player2PowerUsed"] = nonConstGame.isPlayer2PowerUsed();
+    savedData["player1IllusionUsed"] = nonConstGame.isPlayer1IllusionUsed();
+    savedData["player2IllusionUsed"] = nonConstGame.isPlayer2IllusionUsed();
 
 
 	QJsonDocument doc(savedData);
@@ -139,6 +141,8 @@ bool GameSaver::loadGame(const QString& filename, Game& game, QString& email, QS
         gameInstance.m_player2MageUsed = savedData["player2MageUsed"].toBool();
         gameInstance.m_player1PowerUsed = savedData["player1PowerUsed"].toBool();
         gameInstance.m_player2PowerUsed = savedData["player2PowerUsed"].toBool();
+        gameInstance.m_player1IllusionUsed = savedData["player1IllusionUsed"].toBool();
+        gameInstance.m_player2IllusionUsed = savedData["player2IllusionUsed"].toBool();
 
         
         gameInstance.setUserCredentials(email, password);
@@ -239,6 +243,28 @@ QJsonObject GameSaver::playerToJson(const Player& player)
 void GameSaver::jsonToPlayer(const QJsonObject& json, Player& player)
 {
     player.setName(json["name"].toString().toStdString());
+
+    QString mageStr = json["mage"].toString();
+    if (!mageStr.isEmpty() && mageStr != "None") {
+        try {
+            Mages mage = stringToEnum<Mages>(mageStr.toStdString());
+            player.setMage(mage);
+        }
+        catch (...) {
+            qDebug() << "Failed to load mage:" << mageStr;
+        }
+    }
+
+    QString powerStr = json["power"].toString();
+    if (!powerStr.isEmpty() && powerStr != "None") {
+        try {
+            Power power = stringToEnum<Power>(powerStr.toStdString());
+            player.setPower(power);
+        }
+        catch (...) {
+            qDebug() << "Failed to load power:" << powerStr;
+        }
+    }
     auto activeCards = jsonToCardVector(json["activeCards"].toArray());
     auto usedCards = jsonToCardVector(json["usedCards"].toArray());
 

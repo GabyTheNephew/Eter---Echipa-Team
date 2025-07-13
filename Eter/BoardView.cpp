@@ -110,8 +110,21 @@ void BoardView::updateView() {
             {
 
                 const SimpleCard& card = board[{boardRow, boardCol}].back();
-                QString imagePath = (card.getColor() == Color::Red ? "red" : "blue");
-                imagePath += QString::number(card.getValue()) + ".jpg";
+                QString imagePath;
+
+                if (card.getColor() == Color::IlusionBlue)
+                {
+                    imagePath = "ib.png";
+                }
+                else
+                    if (card.getColor() == Color::IlusionRed)
+                    {
+						imagePath = "ir.png";
+                   }
+                else {
+                    imagePath = (card.getColor() == Color::Red ? "red" : "blue");
+                    imagePath += QString::number(card.getValue()) + ".jpg";
+                }
 
                 QPixmap pixmap(imagePath);
                 if (!pixmap.isNull()) {

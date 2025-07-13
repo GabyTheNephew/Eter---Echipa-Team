@@ -78,77 +78,22 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                         loadGameMenu->close();
                         this->hide();
 
-                        
-                        QString windowTitle;
-                        QString mage1Name = "";
-                        QString mage2Name = "";
-                        QString power1Name = "";
-                        QString power2Name = "";
-                        bool hasMages = false;
-                        bool hasPowers = false;
+                        QObject::connect(&gameInstance, &Game::gameEnded, this, [this]() {
+                            for (auto& child : this->children()) {
+                                if (QWidget* widget = qobject_cast<QWidget*>(child)) {
+                                    if (widget != this && qobject_cast<LoadGameMenu*>(widget) == nullptr) {
+                                        widget->show();  
+                                    }
+                                }
+                            }
 
-                        switch (gameInstance.getCurrentGameType()) {
-                        case GameType::Training:
-                            windowTitle = "Training - Loaded Game";
-                            break;
-                        case GameType::MageDuel:
-                            windowTitle = "Mage Duel - Loaded Game";
-                            hasMages = true;
-                            mage1Name = QString::fromStdString(gameInstance.getPlayer1().getMage());
-                            mage2Name = QString::fromStdString(gameInstance.getPlayer2().getMage());
-                            break;
-                        case GameType::Power:
-                            windowTitle = "Power Duel - Loaded Game";
-                            hasPowers = true;
-                            power1Name = QString::fromStdString(fromPowerToQString(gameInstance.getPlayer1().getPower()).toStdString());
-                            power2Name = QString::fromStdString(fromPowerToQString(gameInstance.getPlayer2().getPower()).toStdString());
-                            break;
-                        case GameType::MageDuelAndPower:
-                            windowTitle = "Mage & Power Duel - Loaded Game";
-                            hasMages = true;
-                            hasPowers = true;
-                            mage1Name = QString::fromStdString(gameInstance.getPlayer1().getMage());
-                            mage2Name = QString::fromStdString(gameInstance.getPlayer2().getMage());
-                            power1Name = QString::fromStdString(fromPowerToQString(gameInstance.getPlayer1().getPower()).toStdString());
-                            power2Name = QString::fromStdString(fromPowerToQString(gameInstance.getPlayer2().getPower()).toStdString());
-                            break;
-                        default:
-                            windowTitle = "Loaded Game";
-                            break;
-                        }
-
-                       
-                        auto* gameWindow = new SecondaryWindow(
-                            windowTitle,
-                            imagePath,
-                            &gameInstance,
-                            mage1Name,
-                            mage2Name,
-                            power1Name,
-                            power2Name,
-                            hasMages,
-                            hasPowers
-                        );
-
-                        gameWindow->setAttribute(Qt::WA_DeleteOnClose);
-                        gameWindow->setBoard(gameInstance.getBoard(), gameInstance.getBoardMaxSize());
-                        gameWindow->setPlayer1Cards(gameInstance.getPlayer1().getVector());
-                        gameWindow->setPlayer2Cards(gameInstance.getPlayer2().getVector());
-                        gameWindow->setCurrentPlayer(gameInstance.getCurrentPlayerColor());
-
-                        
-                        connect(gameWindow, &SecondaryWindow::boardClicked, &gameInstance, &Game::handleBoardClick);
-
-                        connect(&gameInstance, &Game::currentPlayerChanged, gameWindow, &SecondaryWindow::setCurrentPlayer);
-
-
-                        connect(&gameInstance, &Game::gameEnded, this, [this, email, password]() {
-                         
                             this->show();
+                            this->raise();
+                            this->activateWindow();
                             }, Qt::SingleShotConnection);
+                        
+                        gameInstance.startLoadedGame();
 
-                        gameWindow->show();
-                       
                         QMessageBox::information(this, "Game Loaded",
                             QString("Successfully loaded game for %1\nRound: %2 | Score: %3-%4")
                             .arg(email)
