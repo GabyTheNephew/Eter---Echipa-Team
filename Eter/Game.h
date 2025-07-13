@@ -25,6 +25,8 @@ class Game:public QObject
 {
     Q_OBJECT
 
+   friend class GameSaver;
+
 private:
     int16_t m_round_Counter;
     Board m_gameBoard;
@@ -63,6 +65,9 @@ private:
     void showExplosionMenu();
 
     bool playerMoveCompleted;
+
+    
+
 
 public:
     Player& getPlayer1() { return player1; }
@@ -116,4 +121,7 @@ public slots:
 signals:
     void playerActionComplete();
     void gameEnded();
+    void currentPlayerChanged(Color newPlayer);
+
+
 };

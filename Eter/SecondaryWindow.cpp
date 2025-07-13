@@ -220,7 +220,9 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
 }
 
 void SecondaryWindow::setCurrentPlayer(Color player) {
-    currentPlayer = player; 
+    currentPlayer = player;
+    qDebug() << "Current player changed to:" << (player == Color::Red ? "Red" : "Blue");
+
 }
 
 
@@ -260,6 +262,9 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
         game->setPlayerMoveCompleted(true);
     }
 }
+
+
+
 
 bool SecondaryWindow::handleCardPlacement(int row, int col) {
     Board& board = m_boardView->getBoard();

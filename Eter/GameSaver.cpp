@@ -9,11 +9,35 @@ QString GameSaver::generateSaveFileName(const QString& email)
 
 bool GameSaver::saveGame(const QString& email, const QString& password, const Game& game, const QString& filename)
 {
+    Game& nonConstGame = const_cast<Game&>(game);
+
+    bool gameFinished = false;
+
+    switch (nonConstGame.getCurrentGameType()) {
+    case GameType::Training:
+        gameFinished = (nonConstGame.getPlayer1Score() >= 2 || nonConstGame.getPlayer2Score() >= 2);
+        break;
+
+    case GameType::MageDuel:
+        gameFinished = (nonConstGame.getPlayer1Score() >= 3 || nonConstGame.getPlayer2Score() >= 3);
+        break;
+    case GameType::Power:
+        gameFinished = (nonConstGame.getPlayer1Score() >= 3 || nonConstGame.getPlayer2Score() >= 3);
+        break;
+
+    case GameType::MageDuelAndPower:
+        gameFinished = (nonConstGame.getPlayer1Score() >= 2 || nonConstGame.getPlayer2Score() >= 2);
+        break;
+    }
+
+    if (gameFinished) {
+        qDebug() << "Game is finished - not saving completed game";
+        return false;
+    }
+
     QString saveFileName = filename.isEmpty() ? generateSaveFileName(email) : filename;
 
     QJsonObject savedData;
-
-    Game& nonConstGame = const_cast<Game&>(game);
 
     savedData["email"] = email;
     savedData["password"] = password;  
@@ -64,7 +88,69 @@ bool GameSaver::saveGame(const QString& email, const QString& password, const Ga
 
 bool GameSaver::loadGame(const QString& filename, Game& game, QString& email, QString& password)
 {
-    return false;
+    QFile file("saves/" + filename);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qDebug() << "Cannot open file for reading:" << file.errorString();
+        return false;
+    }
+
+    QByteArray fileData = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(fileData);
+    if (doc.isNull()) {
+        qDebug() << "Invalid JSON format in file:" << filename;
+        return false;
+    }
+    QJsonObject savedData = doc.object();
+
+    try
+    {
+        email = savedData["email"].toString();
+        password = savedData["password"].toString();
+
+        Game& gameInstance = Game::get_Instance();
+
+        gameInstance.m_currentGameType = stringToEnum<GameType>(savedData["gameType"].toString().toStdString());
+        gameInstance.m_round_Counter = savedData["roundCounter"].toInt();
+        gameInstance.m_boardMaxSize = savedData["boardMaxSize"].toInt();
+
+        gameInstance.player1RoundsWon = savedData["player1Score"].toInt();
+        gameInstance.player2RoundsWon = savedData["player2Score"].toInt();
+
+        gameInstance.currentPlayer = stringToEnum<Color>(savedData["currentPlayer"].toString().toStdString());
+
+
+        gameInstance.m_gameBoard = Board(1);
+        jsonToBoard(savedData["board"].toObject(), gameInstance.m_gameBoard);
+
+        jsonToPlayer(savedData["player1"].toObject(), gameInstance.player1);
+        jsonToPlayer(savedData["player2"].toObject(), gameInstance.player2);
+
+      
+        gameInstance.m_illusionsEnabled = savedData["illusionsEnabled"].toBool();
+        if (savedData["explosionsEnabled"].toBool()) {
+            gameInstance.setExplosionsEnabled(true);
+        }
+        gameInstance.m_timerEnabled = savedData["timerEnabled"].toBool();
+
+
+        gameInstance.m_player1MageUsed = savedData["player1MageUsed"].toBool();
+        gameInstance.m_player2MageUsed = savedData["player2MageUsed"].toBool();
+        gameInstance.m_player1PowerUsed = savedData["player1PowerUsed"].toBool();
+        gameInstance.m_player2PowerUsed = savedData["player2PowerUsed"].toBool();
+
+        
+        gameInstance.setUserCredentials(email, password);
+
+        qDebug() << "Game loaded successfully!";
+        return true;
+
+	}
+    catch (const std::exception& e) {
+        qDebug() << "Error loading game:" << e.what();
+        return false;
+    }
 }
 
 QJsonObject GameSaver::boardToJson(const Board& board)

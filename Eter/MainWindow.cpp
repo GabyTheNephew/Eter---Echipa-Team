@@ -20,7 +20,8 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
         mainLayout->addWidget(button, 0, Qt::AlignCenter);
 
         connect(button, &QPushButton::clicked, [this, text, imagePath]() {
-            if (text == "Load Game") {
+            if (text == "Load Game")
+            {
                 for (auto& child : this->children()) {
                     if (QWidget* widget = qobject_cast<QWidget*>(child)) {
                         if (widget != this) {
@@ -46,7 +47,121 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                     }
                     });
 
-                return;
+                connect(loadGameMenu, &LoadGameMenu::saveFileSelected, [this, loadGameMenu, imagePath](const QString& filename) {
+                    
+                    QString savedPassword = readPasswordFromSave(filename);
+                    if (savedPassword.isEmpty()) {
+                        QMessageBox::warning(this, "Error", "Could not read save file!");
+                        return;
+                    }
+
+                 
+                    bool ok;
+                    QString inputPassword = QInputDialog::getText(this, "Password Required",
+                        "Enter password for this save:", QLineEdit::Password, "", &ok);
+
+                    if (!ok) {
+                        return; 
+                    }
+
+                    
+                    if (inputPassword != savedPassword) {
+                        QMessageBox::warning(this, "Incorrect Password", "The password you entered is incorrect!");
+                        return;
+                    }
+
+                  
+                    QString email, password;
+                    Game& gameInstance = Game::get_Instance();
+
+                    if (GameSaver::loadGame(filename, gameInstance, email, password)) {
+                        loadGameMenu->close();
+                        this->hide();
+
+                        
+                        QString windowTitle;
+                        QString mage1Name = "";
+                        QString mage2Name = "";
+                        QString power1Name = "";
+                        QString power2Name = "";
+                        bool hasMages = false;
+                        bool hasPowers = false;
+
+                        switch (gameInstance.getCurrentGameType()) {
+                        case GameType::Training:
+                            windowTitle = "Training - Loaded Game";
+                            break;
+                        case GameType::MageDuel:
+                            windowTitle = "Mage Duel - Loaded Game";
+                            hasMages = true;
+                            mage1Name = QString::fromStdString(gameInstance.getPlayer1().getMage());
+                            mage2Name = QString::fromStdString(gameInstance.getPlayer2().getMage());
+                            break;
+                        case GameType::Power:
+                            windowTitle = "Power Duel - Loaded Game";
+                            hasPowers = true;
+                            power1Name = QString::fromStdString(fromPowerToQString(gameInstance.getPlayer1().getPower()).toStdString());
+                            power2Name = QString::fromStdString(fromPowerToQString(gameInstance.getPlayer2().getPower()).toStdString());
+                            break;
+                        case GameType::MageDuelAndPower:
+                            windowTitle = "Mage & Power Duel - Loaded Game";
+                            hasMages = true;
+                            hasPowers = true;
+                            mage1Name = QString::fromStdString(gameInstance.getPlayer1().getMage());
+                            mage2Name = QString::fromStdString(gameInstance.getPlayer2().getMage());
+                            power1Name = QString::fromStdString(fromPowerToQString(gameInstance.getPlayer1().getPower()).toStdString());
+                            power2Name = QString::fromStdString(fromPowerToQString(gameInstance.getPlayer2().getPower()).toStdString());
+                            break;
+                        default:
+                            windowTitle = "Loaded Game";
+                            break;
+                        }
+
+                       
+                        auto* gameWindow = new SecondaryWindow(
+                            windowTitle,
+                            imagePath,
+                            &gameInstance,
+                            mage1Name,
+                            mage2Name,
+                            power1Name,
+                            power2Name,
+                            hasMages,
+                            hasPowers
+                        );
+
+                        gameWindow->setAttribute(Qt::WA_DeleteOnClose);
+                        gameWindow->setBoard(gameInstance.getBoard(), gameInstance.getBoardMaxSize());
+                        gameWindow->setPlayer1Cards(gameInstance.getPlayer1().getVector());
+                        gameWindow->setPlayer2Cards(gameInstance.getPlayer2().getVector());
+                        gameWindow->setCurrentPlayer(gameInstance.getCurrentPlayerColor());
+
+                        
+                        connect(gameWindow, &SecondaryWindow::boardClicked, &gameInstance, &Game::handleBoardClick);
+
+                        connect(&gameInstance, &Game::currentPlayerChanged, gameWindow, &SecondaryWindow::setCurrentPlayer);
+
+
+                        connect(&gameInstance, &Game::gameEnded, this, [this, email, password]() {
+                         
+                            this->show();
+                            }, Qt::SingleShotConnection);
+
+                        gameWindow->show();
+                       
+                        QMessageBox::information(this, "Game Loaded",
+                            QString("Successfully loaded game for %1\nRound: %2 | Score: %3-%4")
+                            .arg(email)
+                            .arg(gameInstance.getRoundCounter())
+                            .arg(gameInstance.getPlayer1Score())
+                            .arg(gameInstance.getPlayer2Score()));
+                    }
+                    else {
+                        QMessageBox::warning(this, "Load Failed",
+                            "Failed to load the selected game file.");
+                    }
+                    });
+					return;
             }
 
             if (text == "Training") {
@@ -88,7 +203,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                     gameInstance.setUserCredentials(email, password);
 
                     QObject::connect(&gameInstance, &Game::gameEnded, this, [this, email, password]() {
-                        GameSaver::saveGame(email, password, Game::get_Instance());  
+         
                         this->show();
                         }, Qt::SingleShotConnection);
               
@@ -144,7 +259,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                     gameInstance.setExplosionsEnabled(explosions);
                     gameInstance.setUserCredentials(email, password);
                     QObject::connect(&gameInstance, &Game::gameEnded, this, [this, email, password]() {
-                        GameSaver::saveGame(email, password, Game::get_Instance()); 
+                    
                         this->show();
                         }, Qt::SingleShotConnection);
 
@@ -199,7 +314,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                     gameInstance.setExplosionsEnabled(explosions);
                     gameInstance.setUserCredentials(email, password);
                     QObject::connect(&gameInstance, &Game::gameEnded, this, [this, email, password]() {
-                        GameSaver::saveGame(email, password, Game::get_Instance());  
+                      
                         this->show();
                         }, Qt::SingleShotConnection);
 
@@ -255,7 +370,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                     gameInstance.setExplosionsEnabled(explosions);
                     gameInstance.setUserCredentials(email, password);
                     QObject::connect(&gameInstance, &Game::gameEnded, this, [this, email, password]() {
-                        GameSaver::saveGame(email, password, Game::get_Instance()); 
+                        
                         this->show();
                         }, Qt::SingleShotConnection);
 
@@ -305,4 +420,22 @@ void MainWindow::resizeEvent(QResizeEvent* event) {
         palette.setBrush(QPalette::Window, QBrush(backgroundPixmap.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
         this->setPalette(palette);
     }
+}
+
+QString MainWindow::readPasswordFromSave(const QString& filename) {
+    QFile file("saves/" + filename);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return QString();
+    }
+
+    QByteArray fileData = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(fileData);
+    if (doc.isNull()) {
+        return QString();
+    }
+
+    QJsonObject savedData = doc.object();
+    return savedData["password"].toString();
 }

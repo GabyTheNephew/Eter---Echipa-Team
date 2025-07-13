@@ -22,6 +22,7 @@ private:
     QString imagePath;
     QString selectedGameMode; 
     std::unordered_map<QString, SecondaryWindow*> secondaryWindows;
+    QString readPasswordFromSave(const QString& filename);
 
 protected:
     void resizeEvent(QResizeEvent* event);
