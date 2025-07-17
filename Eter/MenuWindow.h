@@ -20,9 +20,16 @@ protected:
     void keyPressEvent(QKeyEvent* event) override;
 
 private:
+#pragma region Buttons
     QPushButton* saveButton;
     QPushButton* exitButton;
     QPushButton* homeButton;
+#pragma endregion
+
+#pragma region Widgets
     QWidget* backgroundWidget;
     QWidget* buttonContainer;
+#pragma endregion
+
+    
 };

@@ -1,29 +1,64 @@
 ﻿#include "SecondaryWindow.h"
 
 
-SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name, bool checkMage,bool checkPower, QWidget* parent)
+SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,
+    const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name,
+    bool checkMage, bool checkPower, QWidget* parent)
     : QWidget(parent), imagePath(imagePath), game(gameInstance) {
+
     setWindowTitle(title);
 
-    
     mainLayout = new QVBoxLayout(this);
 
-    
     player2CardsLayout = new QHBoxLayout();
     mainLayout->addLayout(player2CardsLayout);
 
-    
     mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
 
-    
+   
     m_boardView = nullptr;
 
-    
+
     mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
 
-    
+
     player1CardsLayout = new QHBoxLayout();
     mainLayout->addLayout(player1CardsLayout);
+
+
+    player2TimerLabel = new QLabel("Time: 1:30", this);
+    player2TimerLabel->setStyleSheet(
+        "color: white; "
+        "font-size: 14px; "
+        "font-weight: bold; "
+        "background-color: rgba(74, 144, 226, 0.8); "
+        "padding: 5px 10px; "
+        "border-radius: 5px; "
+        "border: 2px solid #4A90E2;"
+    );
+    player2TimerLabel->setAlignment(Qt::AlignCenter);
+    player2TimerLabel->setFixedSize(80, 30);
+    player2TimerLabel->move(20, 200);  
+
+    
+    player1TimerLabel = new QLabel("Time: 1:30", this);
+    player1TimerLabel->setStyleSheet(
+        "color: white; "
+        "font-size: 14px; "
+        "font-weight: bold; "
+        "background-color: rgba(231, 76, 60, 0.8); "
+        "padding: 5px 10px; "
+        "border-radius: 5px; "
+        "border: 2px solid #E74C3C;"
+    );
+    player1TimerLabel->setAlignment(Qt::AlignCenter);
+    player1TimerLabel->setFixedSize(80, 30);
+
+
+
+    uiUpdateTimer = new QTimer(this);
+    connect(uiUpdateTimer, &QTimer::timeout, this, &SecondaryWindow::updateTimerDisplay);
+    uiUpdateTimer->start(100);
 
     
     QPalette palette = this->palette();
@@ -46,7 +81,53 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
     this->showFullScreen();
 }
 
+void SecondaryWindow::updateTimerDisplay() {
+    if (!player1TimerLabel || !player2TimerLabel) {
+        return;
+    }
 
+    if (!game->isTimerEnabled()) {
+        player1TimerLabel->setVisible(false);
+        player2TimerLabel->setVisible(false);
+        return;
+    }
+
+    player1TimerLabel->setVisible(true);
+    player2TimerLabel->setVisible(true);
+
+    int p1Time = game->getPlayer1RemainingTime();
+    int p2Time = game->getPlayer2RemainingTime();
+
+    QString p1Text = QString("%1:%2").arg(p1Time / 60).arg(p1Time % 60, 2, 10, QChar('0'));
+    QString p2Text = QString("%1:%2").arg(p2Time / 60).arg(p2Time % 60, 2, 10, QChar('0'));
+
+    player1TimerLabel->setText(p1Text);
+    player2TimerLabel->setText(p2Text);
+
+    if (p1Time <= 10) {
+        player1TimerLabel->setStyleSheet(
+            "color: white; "
+            "font-size: 14px; "
+            "font-weight: bold; "
+            "background-color: rgba(255, 0, 0, 0.9); "
+            "padding: 5px 10px; "
+            "border-radius: 5px; "
+            "border: 2px solid red;"
+        );
+    }
+
+    if (p2Time <= 10) {
+        player2TimerLabel->setStyleSheet(
+            "color: white; "
+            "font-size: 14px; "
+            "font-weight: bold; "
+            "background-color: rgba(255, 0, 0, 0.9); "
+            "padding: 5px 10px; "
+            "border-radius: 5px; "
+            "border: 2px solid red;"
+        );
+    }
+}
 
 
 void SecondaryWindow::closeEvent(QCloseEvent* event) {
@@ -62,6 +143,11 @@ void SecondaryWindow::resizeEvent(QResizeEvent* event) {
         QPalette palette = this->palette();
         palette.setBrush(QPalette::Window, QBrush(backgroundPixmap.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
         this->setPalette(palette);
+    }
+
+    
+    if (player1TimerLabel) {
+        player1TimerLabel->move(20, this->height() - 200);
     }
 }
 
@@ -125,11 +211,9 @@ void SecondaryWindow::showWinner(const QString& winnerName) {
 	
 	connect(msgBox, &QMessageBox::finished, this, [this](int result) {	
 		if (result == QMessageBox::Ok) {
-			qDebug() << "OK button - calling resetView()"; 
-            this->resetView();
+           this->resetView();
 		}
         else {
-			qDebug() << "Close button - emitting closed()";
 			emit closed();
         }
 	});
@@ -221,6 +305,9 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
 
 void SecondaryWindow::setCurrentPlayer(Color player) {
     currentPlayer = player;
+    if (game->isTimerEnabled()) {
+        game->startPlayerTimer();
+    }
     qDebug() << "Current player changed to:" << (player == Color::Red ? "Red" : "Blue");
 
 }
@@ -599,10 +686,40 @@ void SecondaryWindow::optimizeBoard()
 }
 
 
+void SecondaryWindow::updateMageButtons() {
+    if (mage1Button && game->isPlayer1MageUsed()) {
+        mage1Button->setEnabled(false);
+        mage1Button->setStyleSheet("background-color: rgba(128, 128, 128, 0.7); border: none; opacity: 0.5;");
+    }
+    if (mage2Button && game->isPlayer2MageUsed()) {
+        mage2Button->setEnabled(false);
+        mage2Button->setStyleSheet("background-color: rgba(128, 128, 128, 0.7); border: none; opacity: 0.5;");
+    }
+}
 
+void SecondaryWindow::updatePowerButtons() {
+    if (power1Button && game->isPlayer1PowerUsed()) {
+        power1Button->setEnabled(false);
+        power1Button->setStyleSheet("background-color: rgba(128, 128, 128, 0.7); border: none; opacity: 0.5;");
+    }
+    if (power2Button && game->isPlayer2PowerUsed()) {
+        power2Button->setEnabled(false);
+        power2Button->setStyleSheet("background-color: rgba(128, 128, 128, 0.7); border: none; opacity: 0.5;");
+    }
+}
 void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 {
     qDebug() << "Mage clicked:" << mageName;
+
+    
+    if (color == Color::Red && game->isPlayer1MageUsed()) {
+        QMessageBox::information(this, "Mage Already Used", "Player 1 has already used their mage power this game!");
+        return;
+    }
+    if (color == Color::Blue && game->isPlayer2MageUsed()) {
+        QMessageBox::information(this, "Mage Already Used", "Player 2 has already used their mage power this game!");
+        return;
+    }
 
     if (m_boardView->getBoard().getSize() < m_boardView->getMaxSize())
     {
@@ -742,6 +859,19 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
         break;
     }
 
+
+
+    if (color == Color::Red) {
+        game->setPlayer1MageUsed(true);
+        QMessageBox::information(this, "Mage Used", "Player 1 mage power has been used and cannot be used again this game!");
+    }
+    else {
+        game->setPlayer2MageUsed(true);
+        QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used and cannot be used again this game!");
+    }
+
+    
+    updateMageButtons();
     m_boardView->updateView();
 
     Game& gameInstance = Game::get_Instance();
@@ -752,6 +882,15 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& color)
 {
     qDebug() << "Power clicked:" << powerName;
+
+    if (color == Color::Red && game->isPlayer1PowerUsed()) {
+        QMessageBox::information(this, "Power Already Used", "Player 1 has already used their power this game!");
+        return;
+    }
+    if (color == Color::Blue && game->isPlayer2PowerUsed()) {
+        QMessageBox::information(this, "Power Already Used", "Player 2 has already used their power this game!");
+        return;
+    }
 
     if (m_boardView->getBoard().getSize() < m_boardView->getMaxSize()) {
         QMessageBox::information(this, "Power Clicked", "You cannot use a power if the board is not fully defined yet!");
@@ -847,8 +986,20 @@ void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& colo
         break;
     }
 
-    m_boardView->updateView();
 
+    if(color == Color::Red) {
+        game->setPlayer1PowerUsed(true);
+        QMessageBox::information(this, "Power Used", "Player 1 power has been used and cannot be used again this game!");
+    }
+    else {
+        game->setPlayer2PowerUsed(true);
+        QMessageBox::information(this, "Power Used", "Player 2 power has been used and cannot be used again this game!");
+    }
+
+    
+    updatePowerButtons();
+
+    m_boardView->updateView();
     Game& gameInstance = Game::get_Instance();
     setPlayer1Cards(gameInstance.getPlayer1().getVector());
     setPlayer2Cards(gameInstance.getPlayer2().getVector());
@@ -921,7 +1072,7 @@ void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Nam
     QPixmap mage1Pixmap(mage1ImagePath);
     QIcon mage1Icon(mage1Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
 
-    QPushButton* mage1Button = new QPushButton(this);
+    mage1Button = new QPushButton(this);
     mage1Button->setStyleSheet("background-color: transparent; border: none;");
     mage1Button->setFixedSize(150, 150);
     mage1Button->setIcon(mage1Icon);
@@ -945,8 +1096,7 @@ void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Nam
     QIcon mage2Icon(mage2Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
 
    
-    QPushButton* mage2Button = new QPushButton(this);
-   
+    mage2Button = new QPushButton(this);
     mage2Button->setFixedSize(150, 150);
     mage2Button->setIcon(mage2Icon);
     mage2Button->setIconSize(QSize(150, 150));
@@ -972,76 +1122,60 @@ void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Nam
 
    
     player1CardsLayout->addLayout(player2MageLayout);
+
+    updateMageButtons();
 }
 
-void SecondaryWindow::setPowers(const QString& mage1Name, const QString& mage2Name) {
-   
+void SecondaryWindow::setPowers(const QString& power1Name, const QString& power2Name) {
+    QString power1ImagePath = power1Name + ".jpg";
+    QPixmap power1Pixmap(power1ImagePath);
+    QIcon power1Icon(power1Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
 
-    QString mage1ImagePath = mage1Name + ".jpg";
-    QPixmap mage1Pixmap(mage1ImagePath);
-    QIcon mage1Icon(mage1Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
-
-    
-    QPushButton* mage1Button = new QPushButton(this);
-    mage1Button->setStyleSheet("background-color: transparent; border: none;");
-    mage1Button->setFixedSize(150, 150);
-    mage1Button->setIcon(mage1Icon);
-    mage1Button->setIconSize(QSize(150, 150));
-    connect(mage1Button, &QPushButton::clicked, this, [this, mage1Name]() {
-        onPowerClicked(mage1Name, Color::Red);
+    power1Button = new QPushButton(this); 
+    power1Button->setStyleSheet("background-color: transparent; border: none;");
+    power1Button->setFixedSize(150, 150);
+    power1Button->setIcon(power1Icon);
+    power1Button->setIconSize(QSize(150, 150));
+    connect(power1Button, &QPushButton::clicked, this, [this, power1Name]() {
+        onPowerClicked(power1Name, Color::Red);
         });
 
-    
+    QVBoxLayout* player1PowerLayout = new QVBoxLayout();
+    player1PowerLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Fixed));
+    player1PowerLayout->addWidget(power1Button, 0, Qt::AlignLeft);
+    player1CardsLayout->addLayout(player1PowerLayout);
 
-    
-    QVBoxLayout* player1MageLayout = new QVBoxLayout();
-    player1MageLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Fixed)); 
-    player1MageLayout->addWidget(mage1Button, 0, Qt::AlignLeft);
-    player1CardsLayout->addLayout(player1MageLayout);
+    QString power2ImagePath = power2Name + ".jpg";
+    QPixmap power2Pixmap(power2ImagePath);
+    QIcon power2Icon(power2Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
 
-
-    QString mage2ImagePath = mage2Name + ".jpg";
-    QPixmap mage2Pixmap(mage2ImagePath);
-
-    QIcon mage2Icon(mage2Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
-
-   
-    QPushButton* mage2Button = new QPushButton(this);
-   
-    mage2Button->setFixedSize(150, 150);
-    mage2Button->setIcon(mage2Icon);
-    mage2Button->setIconSize(QSize(150, 150));
-   
-    connect(mage2Button, &QPushButton::clicked, this, [this, mage2Name]() {
-        onPowerClicked(mage2Name, Color::Blue);
+    power2Button = new QPushButton(this);  
+    power2Button->setFixedSize(150, 150);
+    power2Button->setIcon(power2Icon);
+    power2Button->setIconSize(QSize(150, 150));
+    connect(power2Button, &QPushButton::clicked, this, [this, power2Name]() {
+        onPowerClicked(power2Name, Color::Blue);
         });
+    power2Button->setStyleSheet("background-color: rgba(0, 255, 0, 0.3); border: 10px;");
 
-    mage2Button->setStyleSheet("background-color: rgba(0, 255, 0, 0.3); border: 10px;");
+    QVBoxLayout* player2PowerLayout = new QVBoxLayout();
+    player2PowerLayout->setContentsMargins(0, 400, 0, 0);
+    player2PowerLayout->addWidget(power2Button);
+    player2PowerLayout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
+    player1CardsLayout->addLayout(player2PowerLayout);
 
    
-    QVBoxLayout* player2MageLayout = new QVBoxLayout();
-
-    
-    player2MageLayout->setContentsMargins(0, 400, 0, 0); 
-
-    
-    player2MageLayout->addWidget(mage2Button);
-    
-    player2MageLayout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
-
-    
-    player1CardsLayout->addLayout(player2MageLayout);
+    updatePowerButtons();
 }
-
-void SecondaryWindow::setMagesAndPowers(const QString& mage1Name, const QString& mage2Name,
-    const QString& power1Name, const QString& power2Name) {
+void SecondaryWindow::setMagesAndPowers(const QString& mage1Name, const QString& mage2Name,const QString& power1Name, const QString& power2Name) 
+{
     QVBoxLayout* player1CombinedLayout = new QVBoxLayout();
 
     
     QString mage1ImagePath = mage1Name + ".jpg";
     QPixmap mage1Pixmap(mage1ImagePath);
     QIcon mage1Icon(mage1Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
-    QPushButton* mage1Button = new QPushButton(this);
+    mage1Button = new QPushButton(this);
     mage1Button->setIcon(mage1Icon);
     mage1Button->setIconSize(QSize(100, 100));
     mage1Button->setStyleSheet("background-color: transparent; border: none;");
@@ -1053,7 +1187,7 @@ void SecondaryWindow::setMagesAndPowers(const QString& mage1Name, const QString&
     QString power1ImagePath = power1Name + ".jpg";
     QPixmap power1Pixmap(power1ImagePath);
     QIcon power1Icon(power1Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
-    QPushButton* power1Button = new QPushButton(this);
+    power1Button = new QPushButton(this);
     power1Button->setIcon(power1Icon);
     power1Button->setIconSize(QSize(100, 100));
     power1Button->setStyleSheet("background-color: transparent; border: none;");
@@ -1074,7 +1208,7 @@ void SecondaryWindow::setMagesAndPowers(const QString& mage1Name, const QString&
     QString mage2ImagePath = mage2Name + ".jpg";
     QPixmap mage2Pixmap(mage2ImagePath);
     QIcon mage2Icon(mage2Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
-    QPushButton* mage2Button = new QPushButton(this);
+    mage2Button = new QPushButton(this);
     mage2Button->setIcon(mage2Icon);
     mage2Button->setIconSize(QSize(100, 100));
     mage2Button->setStyleSheet("background-color: transparent; border: none;");
@@ -1086,7 +1220,7 @@ void SecondaryWindow::setMagesAndPowers(const QString& mage1Name, const QString&
     QString power2ImagePath = power2Name + ".jpg";
     QPixmap power2Pixmap(power2ImagePath);
     QIcon power2Icon(power2Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
-    QPushButton* power2Button = new QPushButton(this);
+    power2Button = new QPushButton(this);
     power2Button->setIcon(power2Icon);
     power2Button->setIconSize(QSize(100, 100));
     power2Button->setStyleSheet("background-color: transparent; border: none;");
@@ -1098,4 +1232,7 @@ void SecondaryWindow::setMagesAndPowers(const QString& mage1Name, const QString&
     player2CombinedLayout->addWidget(power2Button, 0, Qt::AlignRight);
 
     player1CardsLayout->addLayout(player2CombinedLayout);
+
+    updateMageButtons();
+    updatePowerButtons();
 }

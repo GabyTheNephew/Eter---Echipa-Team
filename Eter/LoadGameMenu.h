@@ -20,9 +20,6 @@ class LoadGameMenu : public QWidget {
 public:
     explicit LoadGameMenu(QWidget* parent = nullptr);
 
-signals:
-    void goBackSelected();
-    void saveFileSelected(const QString& filename);
 
 private:
     struct SaveInfo {
@@ -35,13 +32,23 @@ private:
         int player2Score;
         bool isValid;
     };
+#pragma region Main Methods
     void loadAvailableSaves();
     SaveInfo parseSaveFile(const QString& filePath);
     QPushButton* createSaveButton(const SaveInfo& info);
+#pragma endregion
+
+    
 
 private:
     QLabel* savesLabel;
     QPushButton* goBackButton;
 	QWidget* savesButtonWidget;
     QVBoxLayout* savesButtonLayout;
+
+
+signals:
+    void goBackSelected();
+    void saveFileSelected(const QString& filename);
+
 };

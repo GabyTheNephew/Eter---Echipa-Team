@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include <string_view>
 #include<cstdint>
+#include <QTimer>
+#include <QMessageBox> 
 #include "Board.h"
 #include "Player.h"
 #include "Explosion.h"
@@ -21,6 +23,7 @@
 
 
 
+
 class Game:public QObject
 {
     Q_OBJECT
@@ -28,83 +31,71 @@ class Game:public QObject
    friend class GameSaver;
 
 private:
+#pragma region Game
     int16_t m_round_Counter;
     Board m_gameBoard;
     static Game m_current_Instance;
     GameType m_currentGameType;
     int m_boardMaxSize;
+    QString m_userEmail;
+    QString m_userPassword;
 
-    
 
     std::optional<Explosion> m_explosion;
     bool m_illusionsEnabled;
-    bool m_timerEnabled = false;
-   
+#pragma endregion
 
+#pragma region Player
     Player player1, player2;
+    bool playerMoveCompleted;
     Color currentPlayer;
     int16_t player1RoundsWon;
-	int16_t player2RoundsWon;
+    int16_t player2RoundsWon;
     bool m_player1MageUsed = false;
     bool m_player2MageUsed = false;
     bool m_player1PowerUsed = false;
     bool m_player2PowerUsed = false;
-
     bool m_player1IllusionUsed = false;
     bool m_player2IllusionUsed = false;
-
-    QString m_userEmail;
-    QString m_userPassword;
+    QTimer* player1Timer;
+    QTimer* player2Timer;
+    int timerDuration;
+    int player1RemainingTime;
+    int player2RemainingTime;
+    bool timerActive;
+#pragma endregion
 
     static bool s_forceStop;
+   
 
 
-    Game() : m_round_Counter{ 0 }, m_gameBoard{} {}
+    Game() : m_round_Counter{ 0 }, m_gameBoard{}, timerDuration(90),
+        player1RemainingTime(90), player2RemainingTime(90), timerActive(false) {
+        player1Timer = new QTimer(this);
+        player2Timer = new QTimer(this);
 
+        connect(player1Timer, &QTimer::timeout, this, &Game::onPlayerTimerTimeout);
+        connect(player2Timer, &QTimer::timeout, this, &Game::onPlayerTimerTimeout);
+    }
+#pragma region GameTypes  Methods
     void startTraining();
     void startMageDuel();
     void startPowerDuel();
     void startTournament();
     void startMageDuelAndPower();
     void showExplosionMenu();
-
-    bool playerMoveCompleted;
+#pragma endregion
 
     
-
 
 public:
-    void startLoadedGame();
-    Player& getPlayer1() { return player1; }
-    Player& getPlayer2() { return player2; }
+    bool m_timerEnabled = false;
+    
+#pragma region Game Methods
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
-  
     static Game& get_Instance();
     static void forceStop();
-    
-
-    GameType stringToGameType(std::string_view word);
-    std::string_view gameTypeToString(GameType gameType) const;
-
-    void incrementRoundCounter();
-    bool checkPlayExplosion(Board& m_board);
-    void startGame(GameType selectedGameType);
-
-
-    void setExplosionsEnabled(bool enabled);
-    bool areExplosionsEnabled() const;
-
-    void setIllusionsEnabled(bool enabled);
-    bool areIllusionsEnabled()const;
-
-    bool getPlayerMoveCompleted() const { return playerMoveCompleted; }
-    void setPlayerMoveCompleted(bool completed) { playerMoveCompleted = completed; }
-    Player& getCurrentPlayer();
-
-    Board& getBoard();
-    const Board& getBoard() const;
-
     GameType getCurrentGameType() const;
     int getRoundCounter() const;
     Color getCurrentPlayerColor()const;
@@ -112,22 +103,65 @@ public:
     int getBoardMaxSize() const;
     int getPlayer2Score() const;
     bool isTimerEnabled() const;
+    void incrementRoundCounter();
+    bool checkPlayExplosion(Board& m_board);
+    void startGame(GameType selectedGameType);
+    Board& getBoard();
+    const Board& getBoard() const;
+    void setExplosionsEnabled(bool enabled);
+    bool areExplosionsEnabled() const;
+    void setIllusionsEnabled(bool enabled);
+    bool areIllusionsEnabled()const;
+    void endCurrentRound();
+#pragma endregion
+#pragma region Extras/Helpers Methods
+    GameType stringToGameType(std::string_view word);
+    std::string_view gameTypeToString(GameType gameType) const;
+
+    QString getUserEmail() const;
+    QString getUserPassword() const;
+    void setUserCredentials(const QString& email, const QString& password);
+#pragma endregion
+
+    
+
+#pragma region PlayerElemnts Methods
+    Player& getPlayer1() { return player1; }
+    Player& getPlayer2() { return player2; }
+    void setPlayer1MageUsed(bool used);
+    void setPlayer2MageUsed(bool used);
+    void setPlayer1PowerUsed(bool used);
+    void setPlayer2PowerUsed(bool used);
     bool isPlayer1MageUsed() const;
     bool isPlayer2MageUsed() const;
     bool isPlayer1PowerUsed() const;
     bool isPlayer2PowerUsed() const;
-    QString getUserEmail() const;
-	QString getUserPassword() const;
-    void setUserCredentials(const QString& email, const QString& password);
-
     bool isPlayer1IllusionUsed() const;
     bool isPlayer2IllusionUsed() const;
     void setPlayer1IllusionUsed(bool used);
     void setPlayer2IllusionUsed(bool used);
+    bool getPlayerMoveCompleted() const;
+    void setPlayerMoveCompleted(bool completed);
+    Player& getCurrentPlayer();
 
+#pragma endregion
+
+    
+#pragma region PlayerTimer Methods
+    int getPlayer1RemainingTime() const;
+    int getPlayer2RemainingTime() const;
+    void setTimerDuration(int seconds);
+    int getTimerDuration() const;
+    void startPlayerTimer();
+    void stopPlayerTimer();
+    void resetTimers();
+#pragma endregion
+
+    void startLoadedGame();
 
 public slots:
     void handleBoardClick(int row, int col);
+    void onPlayerTimerTimeout();
 signals:
     void playerActionComplete();
     void gameEnded();

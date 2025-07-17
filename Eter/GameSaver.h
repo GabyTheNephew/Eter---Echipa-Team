@@ -20,10 +20,14 @@ private:
 	static QString generateSaveFileName(const QString& email);
 
 public:
-	static bool saveGame(const QString& email, const QString& password, const Game& game,const QString &filename="");
+#pragma region Main Methods
+	static bool saveGame(const QString& email, const QString& password, const Game& game, const QString& filename = "");
 
-	static bool loadGame(const QString& filename, Game& game,QString& email, QString& password);
+	static bool loadGame(const QString& filename, Game& game, QString& email, QString& password);
+#pragma endregion
 
+	
+#pragma region Convertors Methods
 	static QJsonObject boardToJson(const Board& board);
 	static void jsonToBoard(const QJsonObject& json, Board& board);
 
@@ -37,5 +41,8 @@ public:
 
 	static QJsonObject cardToJson(const SimpleCard& card);
 	static SimpleCard jsonToCard(const QJsonObject& json);
+#pragma endregion
+
+	
 };
 

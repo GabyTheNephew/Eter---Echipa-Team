@@ -138,21 +138,24 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                 this->hide();
 
                
-                connect(intermediateMenu, &IntermediateMenu::startSelected, this, [this, backgroundWindow](bool illusions, bool explosions, bool timer, QString email, QString password) {
-                    backgroundWindow->close();
+                connect(intermediateMenu, &IntermediateMenu::startSelected, this,
+                    [this, backgroundWindow](bool illusions, bool explosions, bool timer, int timerDuration, QString email, QString password) {
+                        backgroundWindow->close();
 
-                 
-                    Game& gameInstance = Game::get_Instance();
-                    gameInstance.setIllusionsEnabled(illusions);
-                    gameInstance.setExplosionsEnabled(explosions);
-                    gameInstance.setUserCredentials(email, password);
+                        Game& gameInstance = Game::get_Instance();
+                        gameInstance.setIllusionsEnabled(illusions);
+                        gameInstance.setExplosionsEnabled(explosions);
+                        gameInstance.m_timerEnabled = timer;
+                        if (timer) {
+                            gameInstance.setTimerDuration(timerDuration);
+                        }
+                        gameInstance.setUserCredentials(email, password);
 
-                    QObject::connect(&gameInstance, &Game::gameEnded, this, [this, email, password]() {
-         
-                        this->show();
-                        }, Qt::SingleShotConnection);
-              
-                    gameInstance.startGame(GameType::Training);
+                        QObject::connect(&gameInstance, &Game::gameEnded, this, [this]() {
+                            this->show();
+                            }, Qt::SingleShotConnection);
+
+                        gameInstance.startGame(GameType::Training); 
                     });
 
              
@@ -195,20 +198,24 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                 this->hide();
 
       
-                connect(intermediateMenu, &IntermediateMenu::startSelected, this, [this, backgroundWindow](bool illusions, bool explosions, bool timer, QString email, QString password) {
-                    backgroundWindow->close();
+                connect(intermediateMenu, &IntermediateMenu::startSelected, this,
+                    [this, backgroundWindow](bool illusions, bool explosions, bool timer, int timerDuration, QString email, QString password) {
+                        backgroundWindow->close();
 
- 
-                    Game& gameInstance = Game::get_Instance();
-                    gameInstance.setIllusionsEnabled(illusions);
-                    gameInstance.setExplosionsEnabled(explosions);
-                    gameInstance.setUserCredentials(email, password);
-                    QObject::connect(&gameInstance, &Game::gameEnded, this, [this, email, password]() {
-                    
-                        this->show();
-                        }, Qt::SingleShotConnection);
+                        Game& gameInstance = Game::get_Instance();
+                        gameInstance.setIllusionsEnabled(illusions);
+                        gameInstance.setExplosionsEnabled(explosions);
+                        gameInstance.m_timerEnabled = timer;
+                        if (timer) {
+                            gameInstance.setTimerDuration(timerDuration);
+                        }
+                        gameInstance.setUserCredentials(email, password);
 
-                    gameInstance.startGame(GameType::MageDuel);
+                        QObject::connect(&gameInstance, &Game::gameEnded, this, [this]() {
+                            this->show();
+                            }, Qt::SingleShotConnection);
+
+                        gameInstance.startGame(GameType::MageDuel); 
                     });
 
     
@@ -251,19 +258,24 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
 
                 this->hide();
 
-                connect(intermediateMenu, &IntermediateMenu::startSelected, this, [this, backgroundWindow](bool illusions, bool explosions, bool timer, QString email, QString password) {
-                    backgroundWindow->close();
+                connect(intermediateMenu, &IntermediateMenu::startSelected, this,
+                    [this, backgroundWindow](bool illusions, bool explosions, bool timer, int timerDuration, QString email, QString password) {
+                        backgroundWindow->close();
 
-                    Game& gameInstance = Game::get_Instance();
-                    gameInstance.setIllusionsEnabled(illusions);
-                    gameInstance.setExplosionsEnabled(explosions);
-                    gameInstance.setUserCredentials(email, password);
-                    QObject::connect(&gameInstance, &Game::gameEnded, this, [this, email, password]() {
-                      
-                        this->show();
-                        }, Qt::SingleShotConnection);
+                        Game& gameInstance = Game::get_Instance();
+                        gameInstance.setIllusionsEnabled(illusions);
+                        gameInstance.setExplosionsEnabled(explosions);
+                        gameInstance.m_timerEnabled = timer;
+                        if (timer) {
+                            gameInstance.setTimerDuration(timerDuration);
+                        }
+                        gameInstance.setUserCredentials(email, password);
 
-                    gameInstance.startGame(GameType::Power);
+                        QObject::connect(&gameInstance, &Game::gameEnded, this, [this]() {
+                            this->show();
+                            }, Qt::SingleShotConnection);
+
+                        gameInstance.startGame(GameType::Power);
                     });
 
           
@@ -306,21 +318,24 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                 this->hide();
 
          
-                connect(intermediateMenu, &IntermediateMenu::startSelected, this, [this, backgroundWindow](bool illusions, bool explosions, bool timer, QString email, QString password) {
-                    backgroundWindow->close();
+                connect(intermediateMenu, &IntermediateMenu::startSelected, this,
+                    [this, backgroundWindow](bool illusions, bool explosions, bool timer, int timerDuration, QString email, QString password) {
+                        backgroundWindow->close();
 
-            
-                    Game& gameInstance = Game::get_Instance();
-                    gameInstance.setIllusionsEnabled(illusions);
-                    gameInstance.setExplosionsEnabled(explosions);
-                    gameInstance.setUserCredentials(email, password);
-                    QObject::connect(&gameInstance, &Game::gameEnded, this, [this, email, password]() {
-                        
-                        this->show();
-                        }, Qt::SingleShotConnection);
+                        Game& gameInstance = Game::get_Instance();
+                        gameInstance.setIllusionsEnabled(illusions);
+                        gameInstance.setExplosionsEnabled(explosions);
+                        gameInstance.m_timerEnabled = timer;
+                        if (timer) {
+                            gameInstance.setTimerDuration(timerDuration);
+                        }
+                        gameInstance.setUserCredentials(email, password);
 
-   
-                    gameInstance.startGame(GameType::MageDuelAndPower);
+                        QObject::connect(&gameInstance, &Game::gameEnded, this, [this]() {
+                            this->show();
+                            }, Qt::SingleShotConnection);
+
+                        gameInstance.startGame(GameType::MageDuelAndPower); 
                     });
 
     

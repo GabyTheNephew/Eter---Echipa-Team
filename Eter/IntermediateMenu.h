@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QCheckBox>
+#include <QComboBox>  
 #include <QLineEdit>
 #include <QLabel> 
 #include <QVBoxLayout>
@@ -18,28 +19,47 @@ class IntermediateMenu : public QWidget {
 public:
     explicit IntermediateMenu(QWidget* parent = nullptr);
 
+
+
+private:
+#pragma region Validator Methods
+    bool validateInput();
+    bool isValidEmail(const std::string& email);
+    bool isValidPassword(const std::string& password);
+#pragma endregion
+
+private:
+#pragma region CheckBox 
+    QCheckBox* illusionsCheckBox;
+    QCheckBox* explosionsCheckBox;
+    QCheckBox* timerCheckBox;
+    QComboBox* timerComboBox;
+#pragma endregion
+
+#pragma region Labels
+    QLabel* timerLabel;
+    QLabel* emailLabel;
+    QLabel* passwordLabel;
+#pragma endregion
+
+#pragma region Button
+    QPushButton* startButton;
+    QPushButton* goBackButton;
+
+#pragma endregion
+
+
+#pragma region LineEdit
+    QLineEdit* emailLineEdit;
+    QLineEdit* passwordLineEdit;
+#pragma endregion
+
+
 signals:
-    void startSelected(bool illusions, bool explosions, bool timer, QString email, QString password);
+    void startSelected(bool illusions, bool explosions, bool timer, int timerDuration, QString email, QString password);
     void goBackSelected();
 
 private slots:
     void onStartClicked();
-
-private:
-    bool validateInput();   
-    bool isValidEmail(const std::string& email);
-    bool isValidPassword(const std::string& password);
-
-private:
-    QCheckBox* illusionsCheckBox;
-    QCheckBox* explosionsCheckBox;
-    QCheckBox* timerCheckBox;
-    QPushButton* startButton;
-    QPushButton* goBackButton;
-
-    QLabel* emailLabel;
-    QLineEdit* emailLineEdit;
-    QLabel* passwordLabel;
-    QLineEdit* passwordLineEdit;
 
 };

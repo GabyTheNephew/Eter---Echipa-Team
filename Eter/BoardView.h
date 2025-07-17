@@ -11,22 +11,23 @@ class BoardView : public QWidget {
     Q_OBJECT
 
 public:
-    explicit BoardView(Board& board, QWidget* parent = nullptr, int maxSize = 3);
-
+#pragma region Board Methods
+ explicit BoardView(Board& board, QWidget* parent = nullptr, int maxSize = 3);
     void updateView();
-
-    bool canPlaceCard(const SimpleCard& card, int row, int col) const;
-    void placeCard(const SimpleCard& card, int row, int col);
-
     Board& getBoard();
-
     int getMaxSize();
     void setIsMaxSize(bool isMaxSized);
     bool getIsMaxSize()const;
 
 	QString getBoardStatusInfo() const;
+#pragma endregion
+
+#pragma region Card Methods
+bool canPlaceCard(const SimpleCard& card, int row, int col) const;
+    void placeCard(const SimpleCard& card, int row, int col);
     bool shouldDisplayPosition(int row, int col) const;
     QString getButtonStyle(int row, int col) const;
+#pragma endregion
 
 signals:
     void cellClicked(int row, int col);

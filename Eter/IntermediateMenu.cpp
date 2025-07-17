@@ -5,7 +5,7 @@ IntermediateMenu::IntermediateMenu(QWidget* parent) : QWidget(parent) {
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowModality(Qt::ApplicationModal);
 
-    setFixedSize(400, 450);
+    setFixedSize(450, 500);
     QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
     int x = (screenGeometry.width() - this->width()) / 2;
     int y = (screenGeometry.height() - this->height()) / 2;
@@ -40,7 +40,33 @@ IntermediateMenu::IntermediateMenu(QWidget* parent) : QWidget(parent) {
     explosionsCheckBox->setStyleSheet(checkboxStyle);
     timerCheckBox->setStyleSheet(checkboxStyle);
 
-   
+    timerLabel = new QLabel("Timer Duration:", this);
+    timerLabel->setStyleSheet("font-size: 14px; color: white; padding: 5px;");
+    timerLabel->setVisible(false);
+
+    timerComboBox = new QComboBox(this);
+    timerComboBox->addItem("60 seconds", 60);
+    timerComboBox->addItem("90 seconds", 90);
+    timerComboBox->addItem("120 seconds", 120);
+    timerComboBox->setCurrentIndex(1);
+    timerComboBox->setStyleSheet(R"(
+        QComboBox {
+            background-color: #333333;
+            color: white;
+            border: 2px solid #555555;
+            border-radius: 5px;
+            padding: 8px;
+            font-size: 14px;
+        }
+    )");
+    timerComboBox->setVisible(false);
+
+    connect(timerCheckBox, &QCheckBox::toggled, this, [this](bool checked) {
+        timerLabel->setVisible(checked);
+        timerComboBox->setVisible(checked);
+        });
+
+
     emailLabel = new QLabel("Email:", this);
     emailLabel->setStyleSheet("font-size: 14px; color: white; padding: 5px;");
 
@@ -109,6 +135,8 @@ IntermediateMenu::IntermediateMenu(QWidget* parent) : QWidget(parent) {
     mainLayout->addWidget(illusionsCheckBox);
     mainLayout->addWidget(explosionsCheckBox);
     mainLayout->addWidget(timerCheckBox);
+    mainLayout->addWidget(timerLabel);
+    mainLayout->addWidget(timerComboBox);
 
     mainLayout->addSpacing(15);  
 
@@ -133,10 +161,13 @@ IntermediateMenu::IntermediateMenu(QWidget* parent) : QWidget(parent) {
 
 void IntermediateMenu::onStartClicked() {
     if (validateInput()) {
+        int duration = timerCheckBox->isChecked() ?
+            timerComboBox->currentData().toInt() : 0;
         emit startSelected(
             illusionsCheckBox->isChecked(),
             explosionsCheckBox->isChecked(),
             timerCheckBox->isChecked(),
+            duration,
             emailLineEdit->text(),
             passwordLineEdit->text()
         );

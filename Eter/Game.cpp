@@ -4,8 +4,54 @@
 Game Game::m_current_Instance;
 bool Game::s_forceStop = false;
 
+void Game::endCurrentRound() {
+	
+	player1.ResetVector();
+	player2.ResetVector();
+	m_gameBoard.resizeBoard(1);
+	incrementRoundCounter();
+	currentPlayer = Color::Red;
 
+	
+	resetTimers();
 
+	
+	int16_t winCondition;
+	switch (m_currentGameType) {
+	case GameType::Training:
+		winCondition = 2;
+		break;
+	case GameType::MageDuel:
+	case GameType::Power:
+		winCondition = 3;
+		break;
+	case GameType::MageDuelAndPower:
+		winCondition = 2;
+		break;
+	default:
+		winCondition = 2;
+		break;
+	}
+
+	if (player1RoundsWon >= winCondition || player2RoundsWon >= winCondition) {
+		emit gameEnded();
+	}
+}
+void Game::setPlayer1MageUsed(bool used) {
+	m_player1MageUsed = used;
+}
+
+void Game::setPlayer2MageUsed(bool used) {
+	m_player2MageUsed = used;
+}
+
+void Game::setPlayer1PowerUsed(bool used) {
+	m_player1PowerUsed = used;
+}
+
+void Game::setPlayer2PowerUsed(bool used) {
+	m_player2PowerUsed = used;
+}
 
 
 GameType Game::getCurrentGameType() const {
@@ -182,6 +228,9 @@ void Game::startLoadedGame()
 
 		playerMoveCompleted = false;
 		gameWindow->setCurrentPlayer(currentPlayer);
+		if (m_timerEnabled) {
+			startPlayerTimer();
+		}
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
@@ -264,6 +313,72 @@ void Game::startLoadedGame()
 	}
 }
 
+void Game::setTimerDuration(int seconds) {
+	timerDuration = seconds;
+	resetTimers();
+}
+
+int Game::getTimerDuration() const {
+	return timerDuration;
+}
+
+void Game::startPlayerTimer() {
+	if (!m_timerEnabled) return;
+
+	stopPlayerTimer();
+
+	if (currentPlayer == Color::Red) {
+		player1Timer->start(1000);
+		timerActive = true;
+	}
+	else {
+		player2Timer->start(1000);
+		timerActive = true;
+	}
+}
+
+void Game::stopPlayerTimer() {
+	player1Timer->stop();
+	player2Timer->stop();
+	timerActive = false;
+}
+
+
+void Game::resetTimers() {
+	player1RemainingTime = timerDuration;
+	player2RemainingTime = timerDuration;
+	stopPlayerTimer();
+}
+
+void Game::onPlayerTimerTimeout() {
+	if (currentPlayer == Color::Red) {
+		player1RemainingTime--;
+		if (player1RemainingTime <= 0) {
+			QMessageBox::information(nullptr, "Time's Up!", "Player 1's time expired! Player 2 wins this round!");
+			player2RoundsWon++; 
+			endCurrentRound();
+			return;
+		}
+	}
+	else {
+		player2RemainingTime--;
+		if (player2RemainingTime <= 0) {
+			QMessageBox::information(nullptr, "Time's Up!", "Player 2's time expired! Player 1 wins this round!");
+			player1RoundsWon++; 
+			endCurrentRound(); 
+			return;
+		}
+	}
+}
+
+int Game::getPlayer1RemainingTime() const {
+	return player1RemainingTime;
+}
+
+int Game::getPlayer2RemainingTime() const {
+	return player2RemainingTime;
+}
+
 Game& Game::get_Instance()
 {
 	return m_current_Instance;
@@ -342,6 +457,9 @@ void Game::startTraining() {
 		playerMoveCompleted = false;
 
 		trainingWindow->setCurrentPlayer(currentPlayer);
+		if (m_timerEnabled) {
+			startPlayerTimer();
+		}
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
@@ -489,6 +607,9 @@ void Game::startMageDuel()
 		playerMoveCompleted = false;
 
 		trainingWindow->setCurrentPlayer(currentPlayer);
+		if (m_timerEnabled) {
+			startPlayerTimer();
+		}
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
@@ -631,6 +752,9 @@ void Game::startPowerDuel() {
 		playerMoveCompleted = false;
 	
 		trainingWindow->setCurrentPlayer(currentPlayer);
+		if (m_timerEnabled) {
+			startPlayerTimer();
+		}
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
@@ -786,6 +910,9 @@ void Game::startMageDuelAndPower()
 		playerMoveCompleted = false;
 
 		trainingWindow->setCurrentPlayer(currentPlayer);
+		if (m_timerEnabled) {
+			startPlayerTimer();
+		}
 
 		bool roundInProgress = true;
 		while (roundInProgress) {
@@ -875,7 +1002,6 @@ void Game::startMageDuelAndPower()
 
 	}
 }
-
 void Game::showExplosionMenu()
 {
 	std::string input;
@@ -970,6 +1096,16 @@ bool Game::areIllusionsEnabled() const
 	return m_illusionsEnabled;
 }
 
+bool Game::getPlayerMoveCompleted() const
+{
+	return playerMoveCompleted;
+}
+
+void Game::setPlayerMoveCompleted(bool completed)
+{
+	playerMoveCompleted = completed;
+}
+
 Player& Game::getCurrentPlayer() {
 	return (currentPlayer == Color::Red) ? player1 : player2;
 }
@@ -981,6 +1117,7 @@ void Game::incrementRoundCounter()
 	this->m_round_Counter++; 
 	m_player1IllusionUsed = false;
 	m_player2IllusionUsed = false;
+	resetTimers();
 }
 
 bool Game::checkPlayExplosion(Board& m_board)
@@ -1032,6 +1169,10 @@ void Game::handleBoardClick(int row, int col) {
 	}
 
 	playerMoveCompleted = true; 
+
+	if (m_timerEnabled) {
+		stopPlayerTimer();
+	}
 }
 
 

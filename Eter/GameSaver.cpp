@@ -69,6 +69,10 @@ bool GameSaver::saveGame(const QString& email, const QString& password, const Ga
     savedData["player1IllusionUsed"] = nonConstGame.isPlayer1IllusionUsed();
     savedData["player2IllusionUsed"] = nonConstGame.isPlayer2IllusionUsed();
 
+    savedData["timerDuration"] = nonConstGame.getTimerDuration();
+    savedData["player1RemainingTime"] = nonConstGame.getPlayer1RemainingTime();
+    savedData["player2RemainingTime"] = nonConstGame.getPlayer2RemainingTime();
+
 
 	QJsonDocument doc(savedData);
     QDir saveDir;
@@ -144,6 +148,15 @@ bool GameSaver::loadGame(const QString& filename, Game& game, QString& email, QS
         gameInstance.m_player1IllusionUsed = savedData["player1IllusionUsed"].toBool();
         gameInstance.m_player2IllusionUsed = savedData["player2IllusionUsed"].toBool();
 
+        if (savedData.contains("timerDuration")) {
+            gameInstance.setTimerDuration(savedData["timerDuration"].toInt());
+        }
+        if (savedData.contains("player1RemainingTime")) {
+            gameInstance.player1RemainingTime = savedData["player1RemainingTime"].toInt();
+        }
+        if (savedData.contains("player2RemainingTime")) {
+            gameInstance.player2RemainingTime = savedData["player2RemainingTime"].toInt();
+        }
         
         gameInstance.setUserCredentials(email, password);
 
