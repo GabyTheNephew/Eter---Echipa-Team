@@ -69,6 +69,15 @@ bool GameSaver::saveGame(const QString& email, const QString& password, const Ga
     savedData["player1IllusionUsed"] = nonConstGame.isPlayer1IllusionUsed();
     savedData["player2IllusionUsed"] = nonConstGame.isPlayer2IllusionUsed();
 
+    savedData["explosionActivated"] = nonConstGame.m_explosionActivated;
+    if (nonConstGame.m_explosion)
+    {
+        savedData["currentExplosion"] = explosionToJson(*nonConstGame.m_explosion);
+    }
+    else 
+    {
+        savedData["currentExplosion"] = QJsonObject(); 
+    }
     savedData["timerDuration"] = nonConstGame.getTimerDuration();
     savedData["player1RemainingTime"] = nonConstGame.getPlayer1RemainingTime();
     savedData["player2RemainingTime"] = nonConstGame.getPlayer2RemainingTime();
@@ -147,6 +156,18 @@ bool GameSaver::loadGame(const QString& filename, Game& game, QString& email, QS
         gameInstance.m_player2PowerUsed = savedData["player2PowerUsed"].toBool();
         gameInstance.m_player1IllusionUsed = savedData["player1IllusionUsed"].toBool();
         gameInstance.m_player2IllusionUsed = savedData["player2IllusionUsed"].toBool();
+
+        gameInstance.m_explosionActivated = savedData["explosionActivated"].toBool();
+
+        QJsonObject explosionObj = savedData["currentExplosion"].toObject();
+        if (!explosionObj.isEmpty()) 
+        {
+            gameInstance.m_explosion = jsonToExplosion(explosionObj);
+        }
+        else 
+        {
+            gameInstance.m_explosion.reset();
+        }
 
         if (savedData.contains("timerDuration")) {
             gameInstance.setTimerDuration(savedData["timerDuration"].toInt());
@@ -316,4 +337,44 @@ SimpleCard GameSaver::jsonToCard(const QJsonObject& json)
     int value = json["value"].toInt();
     Color color = stringToEnum<Color>(json["color"].toString().toStdString());
     return SimpleCard(value, color);
+}
+
+QJsonObject GameSaver::explosionToJson(const Explosion& explosion)
+{
+	QJsonObject explosionObj;
+	QJsonArray posArray;
+
+    for(const auto& [x,y,action]:explosion.getPositions())
+    {
+        QJsonObject positionObj;
+        positionObj["x"] = x;
+        positionObj["y"] = y;
+        positionObj["action"] = enumToString(action).c_str();
+        posArray.append(positionObj);
+	}
+
+    explosionObj["positions"] = posArray;
+    return explosionObj;
+}
+
+std::unique_ptr<Explosion> GameSaver::jsonToExplosion(const QJsonObject& json)
+{
+
+	auto explosion = std::make_unique<Explosion>();
+	explosion->positions.clear();
+
+
+    QJsonArray positionsArray = json["positions"].toArray();
+    for (const auto& posValue : positionsArray) 
+    {
+        QJsonObject pos = posValue.toObject();
+        int16_t x = pos["x"].toInt();
+        int16_t y = pos["y"].toInt();
+        ActionType action = stringToEnum<ActionType>(pos["action"].toString().toStdString());
+
+        explosion->positions.emplace_back(x, y, action);
+    }
+
+    return explosion;
+    
 }

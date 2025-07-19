@@ -133,6 +133,17 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 	int16_t rows = m_board.size();
 	int16_t columns = m_board[0].size();
 
+	if(x>=0 && x < rows && y >= 0 && y < columns) {
+		if (!m_board[x][y].empty() && m_board[x][y].back().getColor() == Color::Hole) 
+		{
+			return false; 
+		}
+		if(!m_board[x][y].empty() && m_board[x][y].back().getColor() == Color::IlusionRed) 
+		{
+			return false; 
+		}
+	}
+
 	bool cardOnBoard = false;
 	for (int16_t i = 0; i < rows; ++i) {
 		for (int16_t j = 0; j < columns; ++j) {
@@ -531,7 +542,7 @@ bool Board::checkRow(int16_t row)
 
 	for (int16_t i = 0; i < m_board[0].size(); i++)
 	{
-		if (m_board[row][i].empty())
+		if (m_board[row][i].empty() ||m_board[row][i].back().getColor() == Color::Hole)
 		{
 			return false;
 		}
@@ -547,7 +558,7 @@ bool Board::checkColumn(int16_t column)
 
 	for (int16_t i = 0; i < m_board.size(); i++)
 	{
-		if (m_board[i][column].empty())
+		if (m_board[i][column].empty() || m_board[i][column].back().getColor() == Color::Hole)
 		{
 			return false;
 		}
@@ -575,6 +586,10 @@ bool Board::canBePushed(const SimpleCard& card, const Position& position) const
 	if (m_board[line][column].empty())
 	{
 		return true;
+	}
+
+	if (m_board[line][column].back().getColor() == Color::Hole) {
+		return false;
 	}
 
 	if (card.getValue() > m_board[line][column].back().getValue())

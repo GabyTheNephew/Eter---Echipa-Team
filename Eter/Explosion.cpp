@@ -15,16 +15,35 @@ Explosion::Explosion()
 	this->vectorInstantiation(3);
 }
 
+Explosion::Explosion(bool empty)
+{
+	if (!empty)
+	{
+		this->vectorInstantiation(3);
+	}
+}
+
 void Explosion::vectorInstantiation(int16_t size)
 {
 	
 	std::mt19937 generator(static_cast<unsigned>(std::time(nullptr)));
 
+	int16_t minEffects, maxEffects;
+	if (size == 3) 
+	{
+		minEffects = 2;
+		maxEffects = 4;
+	}
+	else 
+	{
+		minEffects = 3;
+		maxEffects = 6;
+	}
 	
-	std::uniform_int_distribution<int> numActionsDist(2, 3);  
-	std::uniform_int_distribution<int> positionDist(0, 2);    
+	std::uniform_int_distribution<int> numActionsDist(minEffects, maxEffects);
+	std::uniform_int_distribution<int> positionDist(0, size-1);    
 	
-	std::discrete_distribution<int> actionDist({ 10, 45, 45 });
+	std::discrete_distribution<int> actionDist({ 5, 47, 48 });
 
 	int16_t numActions = numActionsDist(generator);
 

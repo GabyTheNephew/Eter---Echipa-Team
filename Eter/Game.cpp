@@ -37,6 +37,280 @@ void Game::endCurrentRound() {
 		emit gameEnded();
 	}
 }
+
+void Game::handleExplosionActivation()
+{
+	if (!canActivateExplosion())
+	{
+		return;
+	}
+	Color playerWhoTriggered = currentPlayer;
+
+	QMessageBox::StandardButton reply=QMessageBox::question(
+	nullptr,
+		"Explosion Avalible",
+		QString("Player %1,you can activate an explosion!").arg(playerWhoTriggered == Color::Red ? "1" : "2"),
+		QMessageBox::Yes | QMessageBox::No,
+		QMessageBox::No
+	);
+
+	if (reply == QMessageBox::Yes) {
+		activateExplosion();
+	}
+}
+void Game::showExplosionRotationDialog()
+{
+	if (!m_explosion) {
+		m_explosion = std::make_unique<Explosion>();
+	}
+	bool confirmed = false;
+
+	while (!confirmed) {
+		QString previewText = getExplosionPreviewGrid();
+
+		QMessageBox previewBox;
+		previewBox.setWindowTitle("Explosion Preview");
+		previewBox.setText("Current explosion effects:");
+		previewBox.setDetailedText(previewText);
+
+		QPushButton* rotateLeftBtn = previewBox.addButton("Rotate 90° Left", QMessageBox::ActionRole);
+		QPushButton* rotateRightBtn = previewBox.addButton("Rotate 90° Right", QMessageBox::ActionRole);
+		QPushButton* rotate180Btn = previewBox.addButton("Rotate 180°", QMessageBox::ActionRole);
+		QPushButton* confirmBtn = previewBox.addButton("Confirm Explosion", QMessageBox::AcceptRole);
+		QPushButton* cancelBtn = previewBox.addButton("Cancel", QMessageBox::RejectRole);
+
+		previewBox.exec();
+
+		if (previewBox.clickedButton() == rotateLeftBtn) {
+			m_explosion->rotationLeft(m_boardMaxSize);
+		}
+		else if (previewBox.clickedButton() == rotateRightBtn) {
+			m_explosion->rotationRight(m_boardMaxSize);
+		}
+		else if (previewBox.clickedButton() == rotate180Btn) {
+			m_explosion->rotationDown(m_boardMaxSize);
+		}
+		else if (previewBox.clickedButton() == confirmBtn) {
+			applyExplosionEffects(*m_explosion);
+			m_explosionActivated = true;
+			QMessageBox::information(nullptr, "Explosion!", "The explosion has been activated!");
+			confirmed = true;
+		}
+		else {
+			
+			confirmed = true;
+		}
+	}
+}
+void Game::applyExplosionEffects(const Explosion& explosion)
+{
+	if (wouldCreateIsolatedCards(explosion)) {
+		QMessageBox::information(nullptr, "Invalid Explosion",
+			"Some effects were ignored to prevent isolated cards.");
+		return; 
+	}
+
+
+	for (const auto& [x, y, action] : explosion.getPositions())
+	{
+		if(x<0|| x>=m_gameBoard.getRowSize() || y<0 || y>=m_gameBoard.getColumnSize())
+		{
+			continue;
+		}
+
+		switch (action)
+		{
+		case ActionType::explode:
+		{
+			if (!m_gameBoard[{x, y}].empty()) {
+				m_gameBoard[{x, y}].clear();
+			}
+			break;
+		}
+
+		case ActionType::giveBack:
+		{
+			if(!m_gameBoard[{x, y}].empty()) 
+			{
+				SimpleCard topCard = m_gameBoard[{x, y}].back();
+
+				if (topCard.getColor() == Color::Red || topCard.getColor() == Color::usedRed) 
+				{
+					SimpleCard returnCard(topCard.getValue(), Color::Red);
+					player1.makeCardValid(returnCard);
+					player1.addRestrictedCard(returnCard);
+				}
+				else if (topCard.getColor() == Color::Blue || topCard.getColor() == Color::usedBlue)
+				{
+					SimpleCard returnCard(topCard.getValue(), Color::Blue);
+					player2.makeCardValid(returnCard);
+					player2.addRestrictedCard(returnCard);
+				}
+
+				m_gameBoard.popCard({ x, y });
+			}
+			break;
+		}
+		case ActionType::hole:
+		{
+			if (!m_gameBoard[{x, y}].empty())
+			{
+				m_gameBoard[{x, y}].clear();
+			}
+			m_gameBoard.pushCard(SimpleCard(0, Color::Hole), { x, y });
+			break;
+		}
+		}
+	}
+}
+bool Game::wouldCreateIsolatedCards(const Explosion& explosion) const
+{
+	Board test_board = m_gameBoard;
+
+	for (const auto& [x, y, action] : explosion.getPositions())
+	{
+		if(x < 0 || x >= test_board.getRowSize() || y < 0 || y >= test_board.getColumnSize())
+		{
+			continue;
+		}
+
+		switch (action)
+		{
+			case ActionType::explode:
+			{
+				if (!test_board[{x, y}].empty())
+				{
+					test_board[{x, y}].clear();
+				}
+				break;
+			}
+			case ActionType::giveBack:
+			{
+				if (!test_board[{x, y}].empty())
+				{
+					test_board[{x, y}].clear();
+				}
+				break;
+			}
+			case ActionType::hole:
+			{
+				if (!test_board[{x, y}].empty())
+				{
+					test_board[{x, y}].clear();
+				}
+				test_board.pushCard(SimpleCard(0, Color::Hole), { x, y });
+				break;
+			}
+		}
+	}
+
+	return !areCardsConnected(test_board);
+}
+bool Game::areCardsConnected(const Board& test_board) const
+{
+	std::vector<std::pair<int16_t, int16_t>> validCards;
+
+	for (int16_t i = 0; i < test_board.getRowSize(); ++i) {
+		for (int16_t j = 0; j < test_board.getColumnSize(); ++j) {
+			if (!test_board[{i, j}].empty() &&
+				test_board[{i, j}].back().getColor() != Color::Hole) {
+				validCards.push_back({ i, j });
+			}
+		}
+	}
+
+
+	if(validCards.size()<=1)
+	{
+		return true;
+	}	
+
+	for (const auto& [x, y] : validCards)
+	{
+		bool hasNeighbours = false;
+
+		std::vector<std::pair<int16_t, int16_t>> directions = {
+			{-1, 0}, {1, 0}, {0, -1}, {0, 1},
+			{-1, -1}, {-1, 1}, {1, -1}, {1, 1}
+		};
+
+		for (const auto& [dx, dy] : directions)
+		{
+			int16_t newX = x + dx;
+			int16_t newY = y + dy;
+
+			if (newX >= 0 && newX < test_board.getRowSize() && newY >= 0 && newY < test_board.getColumnSize() && !test_board[{newX, newY}].empty() && test_board[{newX, newY}].back().getColor() != Color::Hole)
+			{
+				hasNeighbours = true;
+				break;
+			}
+
+			
+		}
+		if (!hasNeighbours)
+		{
+			return false;
+		}
+
+	}
+	return true;
+}
+QString Game::getExplosionPreviewGrid() const
+{
+	if(!m_explosion)
+	{
+		return "No explosion preview available.";
+	}
+
+	int16_t gridSize = m_boardMaxSize;
+
+	std::vector<std::vector<QString>> grid(gridSize, std::vector<QString>(gridSize, "  -  "));
+
+	for(const auto& [x,y,action]: m_explosion->getPositions())
+	{
+		if(x>=0 && x<gridSize && y>=0 && y<gridSize)
+		{
+			switch (action)
+			{
+			case ActionType::explode:
+				grid[x][y] = "EXP";
+				break;
+			case ActionType::giveBack:
+				grid[x][y] = "GIVE";
+				break;
+			case ActionType::hole:
+				grid[x][y] = "HOLE";
+				break;
+			}
+		}
+	}
+
+	QString result;
+	for (int16_t i = 0; i < gridSize; i++)
+	{
+		for(int16_t j = 0; j < gridSize; j++)
+		{
+			result += grid[i][j];
+
+			if(j< gridSize - 1) {
+				result += " | ";
+			}
+		}
+
+		result += "\n";
+		if(i< gridSize - 1) {
+			result += QString("-").repeated(gridSize * 7 - 1) + "\n";
+		}
+	}
+
+	result += "\n\nLegend:\n";
+	result += "EXP  = Remove from game\n";
+	result += "GIVE = Return to hand\n";
+	result += "HOLE = Create hole\n";
+	result += "-    = No effect\n";
+
+	return result;
+}
 void Game::setPlayer1MageUsed(bool used) {
 	m_player1MageUsed = used;
 }
@@ -147,6 +421,8 @@ void Game::startLoadedGame()
 	{
 		m_player1IllusionUsed = false;
 		m_player2IllusionUsed = false;
+		m_explosionActivated = false;
+		m_explosion.reset();
 	}
 
 	switch (m_currentGameType) {
@@ -247,6 +523,11 @@ void Game::startLoadedGame()
 					gameWindow->setCurrentPlayer(Color::Red);
 					currentPlayer = Color::Red;
 					qDebug() << "Player 2's turn.";
+				}
+
+				if (canActivateExplosion()) {
+					handleExplosionActivation();
+					gameWindow->updateBoardView();
 				}
 				playerMoveCompleted = false;
 			}
@@ -423,6 +704,8 @@ void Game::startTraining() {
 	player2RoundsWon = 0;
 	m_player1IllusionUsed = false;
 	m_player2IllusionUsed = false;
+	m_explosionActivated = false;
+	m_explosion.reset();
 
 
 	if (m_illusionsEnabled) {
@@ -477,12 +760,15 @@ void Game::startTraining() {
 					currentPlayer = Color::Red;
 					qDebug() << "Player 2's turn.";
 				}
-			}
 
-			if (playerMoveCompleted) {
-				playerMoveCompleted = false; 
+				if (canActivateExplosion()) {
+					handleExplosionActivation();
+					trainingWindow->updateBoardView(); 
+				}
+				playerMoveCompleted = false;
 			}
-			else {
+			else 
+			{
 				continue;
 			}
 
@@ -567,6 +853,8 @@ void Game::startMageDuel()
 	player2RoundsWon = 0;
 	m_player1IllusionUsed = false;
 	m_player2IllusionUsed = false;
+	m_explosionActivated = false;
+	m_explosion.reset();
 
 	if (m_illusionsEnabled) {
 		canPlayIllusion = std::make_pair(true, true);
@@ -627,12 +915,14 @@ void Game::startMageDuel()
 					currentPlayer = Color::Red;
 					qDebug() << "Player 2's turn.";
 				}
+				if (canActivateExplosion()) {
+					handleExplosionActivation();
+					trainingWindow->updateBoardView(); 
+				}
+				playerMoveCompleted = false;
 			}
-
-			if (playerMoveCompleted) {
-				playerMoveCompleted = false; 
-			}
-			else {
+			else 
+			{
 				continue; 
 			}
 
@@ -712,6 +1002,8 @@ void Game::startPowerDuel() {
 	player2RoundsWon = 0;
 	m_player1IllusionUsed = false;
 	m_player2IllusionUsed = false;
+	m_explosionActivated = false;
+	m_explosion.reset();
 
 	if (m_illusionsEnabled) {
 		canPlayIllusion = std::make_pair(true, true);
@@ -772,12 +1064,15 @@ void Game::startPowerDuel() {
 					currentPlayer = Color::Red;
 					qDebug() << "Player 2's turn.";
 				}
-			}
 
-			if (playerMoveCompleted) {
-				playerMoveCompleted = false; 
+				if (canActivateExplosion()) {
+					handleExplosionActivation();
+					trainingWindow->updateBoardView(); 
+				}
+				playerMoveCompleted = false;
 			}
-			else {
+			else 
+			{
 				continue; 
 			}
 
@@ -863,6 +1158,8 @@ void Game::startMageDuelAndPower()
 	player2RoundsWon = 0;
 	m_player1IllusionUsed = false;
 	m_player2IllusionUsed = false;
+	m_explosionActivated = false;
+	m_explosion.reset();
 
 	if (m_illusionsEnabled) {
 		canPlayIllusion = std::make_pair(true, true);
@@ -930,12 +1227,15 @@ void Game::startMageDuelAndPower()
 					currentPlayer = Color::Red;
 					qDebug() << "Player 2's turn.";
 				}
-			}
+				if (canActivateExplosion()) {
+					handleExplosionActivation();
+					trainingWindow->updateBoardView(); 
+				}
 
-			if (playerMoveCompleted) {
-				playerMoveCompleted = false; 
+				playerMoveCompleted = false;
 			}
-			else {
+			else 
+			{
 				continue; 
 			}
 
@@ -1002,50 +1302,6 @@ void Game::startMageDuelAndPower()
 
 	}
 }
-void Game::showExplosionMenu()
-{
-	std::string input;
-
-
-	std::cout << "=== Explosion Menu ===\n";
-	std::cout <<
-		"Type 'explosions' to enable explosions, 'no explosions' to disable them, 'illusions' to enable illusions, 'no illusions' to disable them or 'start' to begin the game:\n";
-
-	while (true)
-	{
-		std::getline(std::cin, input);
-
-		if (input == "explosions")
-		{
-			setExplosionsEnabled(true);
-			std::cout << "Explosions enabled!\n";
-		}
-		else if (input == "no explosions")
-		{
-			setExplosionsEnabled(false);
-			std::cout << "Explosions disabled!\n";
-		}
-		else if (input == "illusions")
-		{
-			setIllusionsEnabled(true);
-			std::cout << "Illusions enabled!\n";
-		}
-		else if (input == "no illusions")
-		{
-			setIllusionsEnabled(false);
-			std::cout << "Illusions disabled!\n";
-		}
-		else if (input == "start")
-		{
-			std::cout << "Starting the game...\n";
-			break; 
-		}
-		else
-		{
-			std::cout << "Unknown command. Please type 'explosions', 'no explosions', or 'start'.\n";
-		}
-	}
-}
 
 void Game::startGame(GameType selectedGameType)
 {
@@ -1078,12 +1334,18 @@ void Game::startGame(GameType selectedGameType)
 void Game::setExplosionsEnabled(bool enabled)
 {
 
-	m_explosion.emplace(Explosion());
+	m_explosionsEnabled = enabled;
+
+	if (!enabled) 
+	{
+		m_explosion.reset();
+		m_explosionActivated = false;
+	}
 }
 
 bool Game::areExplosionsEnabled() const
 {
-	return m_explosion.has_value();
+	return m_explosionsEnabled;
 }
 
 void Game::setIllusionsEnabled(bool enabled)
@@ -1117,33 +1379,103 @@ void Game::incrementRoundCounter()
 	this->m_round_Counter++; 
 	m_player1IllusionUsed = false;
 	m_player2IllusionUsed = false;
+
+	player1.clearRestrictedCards();
+	player2.clearRestrictedCards();
+	m_explosionActivated = false;
+	m_explosion.reset();
+
 	resetTimers();
 }
 
-bool Game::checkPlayExplosion(Board& m_board)
+bool Game::checkPlayExplosion(Board& m_board)const 
 {
-	if (!m_explosion.has_value())
+	if (!areExplosionsEnabled() || m_explosionActivated) {
+		return false;
+	}
+
+	int16_t completedRowsColumnsOrDiagonals = 0;
+	int16_t minSize = (m_currentGameType == GameType::Training) ? 3 : 4;
+	if (m_board.getRowSize() < minSize || m_board.getColumnSize() < minSize) 
+	{
+		qDebug() << "Board too small for explosions:" << m_board.getRowSize() << "x" << m_board.getColumnSize()<< "< required" << minSize << "x" << minSize;
+		return false;
+	}
+	for(int16_t i=0;i<m_board.getRowSize();i++)
+	{
+		if (m_board.checkRow(i))
+		{
+			completedRowsColumnsOrDiagonals++;
+		}
+	}
+
+	for(int16_t i=0;i<m_board.getColumnSize();i++)
+	{
+		if (m_board.checkColumn(i))
+		{
+			completedRowsColumnsOrDiagonals++;
+		}
+	}
+
+	bool mainDiagonalComplete = true;
+	bool secondaryDiagonalComplete = true;
+
+	if (m_board.getColumnSize() == m_board.getRowSize())
+	{
+		for (int16_t i = 0; i < m_board.getRowSize(); i++)
+		{
+			if (m_board[{i, i}].empty() || m_board[{i, i}].back().getColor() == Color::Hole)
+			{
+				mainDiagonalComplete = false;
+				break;
+			}
+		}
+
+		for(int16_t i = 0; i < m_board.getRowSize(); i++)
+		{
+			if (m_board[{i, m_board.getRowSize() - 1 - i}].empty() || m_board[{i, m_board.getRowSize() - 1 - i}].back().getColor() == Color::Hole)
+			{
+				secondaryDiagonalComplete = false;
+				break;
+			}
+		}
+
+		if (mainDiagonalComplete) 
+		{
+			completedRowsColumnsOrDiagonals++;
+		}
+		if (secondaryDiagonalComplete) 
+		{
+			completedRowsColumnsOrDiagonals++;
+		}
+	}
+
+
+	return completedRowsColumnsOrDiagonals >= 2;
+}
+
+bool Game::canActivateExplosion() const
+{
+	if(!areExplosionsEnabled()) {
+		return false; 
+	}
+
+	if (m_explosionActivated)
 	{
 		return false;
 	}
 
-	int16_t count = 0;
-	for (int16_t i = 0; i < m_board.getSize(); i++)
-	{
-		if (m_board.checkColumn(i) == true)
-		{
-			count++;
-		}if (m_board.checkRow(i) == true)
-		{
-			count++;
-		}
+	return checkPlayExplosion(const_cast<Board&>(m_gameBoard));
+}
 
-		if (count >= 2)
-		{
-			return true;
-		}
+void Game::activateExplosion()
+{
+	if (!m_explosion) {
+		m_explosion = std::make_unique<Explosion>();
+		m_explosion->vectorInstantiation(m_boardMaxSize);
 	}
-	return false;
+
+	showExplosionRotationDialog();
 }
 
 

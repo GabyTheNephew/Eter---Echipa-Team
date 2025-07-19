@@ -49,7 +49,7 @@ public:
 	Board(Board&& board)noexcept;
 	Board& operator=(Board&& board)noexcept;
 	Board& operator=(const Board& board);
-
+	~Board() = default;
 	std::deque<SimpleCard>& operator[] (const Position& position);
 	const std::deque<SimpleCard>& operator [] (const Position& position) const;
 #pragma endregion

@@ -25,6 +25,7 @@ private:
 	Power m_power;
 	std::vector<SimpleCard> m_simpleCardsVector;
 	std::vector<SimpleCard> m_pastSimpleCardsVector;
+	std::vector<SimpleCard> m_restrictedCards;
 	using Position = std::tuple<int16_t, int16_t>;
 
 #pragma endregion
@@ -68,6 +69,10 @@ public:
 	void deleteCardFromPastVector(SimpleCard& cardToDelete);
 	void makeCardInvalid(SimpleCard card);
 	void makeCardValid(SimpleCard& card);
+
+	void addRestrictedCard(const SimpleCard& card);
+	void clearRestrictedCards();
+	bool isCardRestricted(const SimpleCard& card) const;
 #pragma endregion
 
 

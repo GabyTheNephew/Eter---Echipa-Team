@@ -19,7 +19,7 @@
 #include <ctime>
 #include "GameTypes.h"
 #include "EnumConversion.h"
-
+#include <memory>
 
 
 
@@ -41,7 +41,9 @@ private:
     QString m_userPassword;
 
 
-    std::optional<Explosion> m_explosion;
+    std::unique_ptr<Explosion> m_explosion;
+    bool m_explosionActivated = false;
+    bool m_explosionsEnabled = false;
     bool m_illusionsEnabled;
 #pragma endregion
 
@@ -66,8 +68,6 @@ private:
 #pragma endregion
 
     static bool s_forceStop;
-   
-
 
     Game() : m_round_Counter{ 0 }, m_gameBoard{}, timerDuration(90),
         player1RemainingTime(90), player2RemainingTime(90), timerActive(false) {
@@ -83,7 +83,6 @@ private:
     void startPowerDuel();
     void startTournament();
     void startMageDuelAndPower();
-    void showExplosionMenu();
 #pragma endregion
 
     
@@ -104,7 +103,9 @@ public:
     int getPlayer2Score() const;
     bool isTimerEnabled() const;
     void incrementRoundCounter();
-    bool checkPlayExplosion(Board& m_board);
+    bool checkPlayExplosion(Board& m_board)const;
+    bool canActivateExplosion() const;
+    void activateExplosion();
     void startGame(GameType selectedGameType);
     Board& getBoard();
     const Board& getBoard() const;
@@ -113,7 +114,19 @@ public:
     void setIllusionsEnabled(bool enabled);
     bool areIllusionsEnabled()const;
     void endCurrentRound();
+
+    void handleExplosionActivation();
+    void showExplosionRotationDialog();
+    void applyExplosionEffects(const Explosion& explosion);
+
+    bool wouldCreateIsolatedCards(const Explosion& explosion)const;
+    bool areCardsConnected(const Board& test_board)const;
+
+    QString getExplosionPreviewGrid() const;
+
 #pragma endregion
+
+
 #pragma region Extras/Helpers Methods
     GameType stringToGameType(std::string_view word);
     std::string_view gameTypeToString(GameType gameType) const;

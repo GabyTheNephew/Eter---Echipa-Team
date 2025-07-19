@@ -148,6 +148,25 @@ void Player::makeCardValid(SimpleCard& card)
 	m_simpleCardsVector.push_back(card);
 }
 
+void Player::addRestrictedCard(const SimpleCard& card)
+{
+	m_restrictedCards.push_back(card);
+}
+
+void Player::clearRestrictedCards()
+{
+	m_restrictedCards.clear();
+}
+
+bool Player::isCardRestricted(const SimpleCard& card) const
+{
+	return std::find_if(m_restrictedCards.begin(), m_restrictedCards.end(),
+		[&card](const auto& restrictedCard)
+		{
+			return restrictedCard.getValue() == card.getValue() && restrictedCard.getColor() == card.getColor();
+		}) != m_restrictedCards.end();
+}
+
 std::string Player::GetVectorColor()
 {
 	auto validCard = std::find_if(m_simpleCardsVector.begin(), m_simpleCardsVector.end(),

@@ -41,6 +41,9 @@ public:
 
 	static QJsonObject cardToJson(const SimpleCard& card);
 	static SimpleCard jsonToCard(const QJsonObject& json);
+
+	static QJsonObject explosionToJson(const Explosion& explosion);
+	static std::unique_ptr<Explosion> jsonToExplosion(const QJsonObject& json);
 #pragma endregion
 
 	

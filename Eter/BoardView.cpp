@@ -270,6 +270,17 @@ QString BoardView::getButtonStyle(int row, int col)const
 {
     bool isWithinBoard = (row >= 0 && row < board.getRowSize() && col >= 0 && col < board.getColumnSize());
     bool hasCard = isWithinBoard && !board[{row, col}].empty();
+    bool isHole = hasCard && board[{row, col}].back().getColor() == Color::Hole;
+    
+    if (isHole) {
+        return "QPushButton {"
+            "    background-color: #333333;"
+            "    border: 3px solid #FF0000;"
+            "    border-radius: 10px;"
+            "    color: white;"
+            "    font-weight: bold;"
+            "}";
+    }
 
     if (hasCard) {
         return "QPushButton {"

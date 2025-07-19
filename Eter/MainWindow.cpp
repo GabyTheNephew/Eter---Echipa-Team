@@ -110,7 +110,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
             }
 
             if (text == "Training") {
-                qDebug() << "Intrat in if de Training\n";
+                qDebug() << "Started Training\n";
 
                
                 auto* backgroundWindow = new QWidget();
@@ -172,7 +172,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
             }
 
             if (text == "Mage Duel") {
-                qDebug() << "Intrat în Mage Duel.";
+                qDebug() << "Started Mage Duel.";
 
                 auto* backgroundWindow = new QWidget();
                 backgroundWindow->setWindowTitle("Mage Duel Setup");
@@ -231,7 +231,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
             }
 
             if (text == "Power Duel") {
-                qDebug() << "Intrat în Power Duel.";
+                qDebug() << "Started Power Duel.";
 
             
                 auto* backgroundWindow = new QWidget();
@@ -291,7 +291,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
             }
 
             if (text == "Mage and Power Duel") {
-                qDebug() << "Intrat în Mage and Power Duel.";
+                qDebug() << "Started Mage and Power Duel.";
 
             
                 auto* backgroundWindow = new QWidget();

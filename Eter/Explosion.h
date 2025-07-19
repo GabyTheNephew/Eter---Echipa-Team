@@ -19,14 +19,13 @@ std::string ActionTypeToString(const ActionType& actionType);
 
 class Explosion
 {
-private:
-	std::vector<std::tuple<int16_t, int16_t, ActionType>> positions;
 
 
 public:
-
+	std::vector<std::tuple<int16_t, int16_t, ActionType>> positions;
 
 	Explosion();
+	Explosion(bool empty);
 
 	void vectorInstantiation(int16_t size);
 
