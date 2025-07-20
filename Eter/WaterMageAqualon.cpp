@@ -24,63 +24,67 @@ bool WaterMageAqualon::playMageAqualon(Board& board, bool rowOrColumn, int16_t x
 
 	std::vector<std::deque<SimpleCard>> moved;
 
-	if(board.getSize() >= 3 && (x==0 || x==board.getSize()-1))
+	if (rowOrColumn)
 	{
-		if (rowOrColumn)
+		if ((x == 0 || x == board.getColumnSize() - 1) && board.checkColumn(x))
 		{
-			if (board.checkColumn(x))
+			for (int i = 0; i < board.getRowSize(); ++i)
 			{
-				for (int i = 0; i < board.getSize(); i++)
-				{
-					moved.push_back(board[{i, x}]);
-				}
-
-				if (x == 0)
-				{
-					board.removeColumn(0);
-					board.expandColumn(Board::ColumnExpandDirection::Right);
-				}
-				else if (x == board.getSize() - 1)
-				{
-					board.removeColumn(board.getSize() - 1);
-					board.expandColumn(Board::ColumnExpandDirection::Left);
-				}
-
-				for (int i = 0; i < board.getSize(); i++)
-				{
-					board[{i, board.getSize() - 1 - x}] = moved[i];
-				}
-
-				return true;
+				moved.push_back(board[{i, x}]);
 			}
+
+			if (x == 0)
+			{
+				board.removeColumn(0);
+				board.expandColumn(Board::ColumnExpandDirection::Right);
+
+				for (int i = 0; i < board.getRowSize(); i++)
+				{
+					board[{i, board.getColumnSize() - 1}] = moved[i];
+				}
+			}
+			else
+			{
+				board.removeColumn(board.getColumnSize() - 1);
+				board.expandColumn(Board::ColumnExpandDirection::Left);
+				for (int i = 0; i < board.getRowSize(); i++)
+				{
+					board[{i, 0}] = moved[i];
+				}
+			}
+
+			return true;
+
+
 		}
-		else
+	}
+	else
+	{
+		if ((x == 0 || x == board.getRowSize() - 1) && board.checkRow(x))
 		{
-			if (board.checkRow(x))
+			for (int i = 0; i < board.getColumnSize(); ++i)
 			{
-				for (int i = 0; i < board.getSize(); i++)
-				{
-					moved.push_back(board[{x, i}]);
-				}
-
-				if (x == 0)
-				{
-					board.removeRow(0);
-					board.expandRow(Board::RowExpandDirection::Down);
-				}
-				else if (x == board.getSize() - 1)
-				{
-					board.removeRow(board.getSize() - 1);
-					board.expandRow(Board::RowExpandDirection::Up);
-				}
-
-				for (int i = 0; i < board.getSize(); i++)
-				{
-					board[{board.getSize() - 1 - x, i}] = moved[i];
-				}
-
-				return true;
+				moved.push_back(board[{x, i}]);
 			}
+			if (x == 0)
+			{
+				board.removeRow(0);
+				board.expandRow(Board::RowExpandDirection::Down);
+				for (int i = 0; i < board.getColumnSize(); i++)
+				{
+					board[{board.getRowSize() - 1, i}] = moved[i];
+				}
+			}
+			else
+			{
+				board.removeRow(board.getRowSize() - 1);
+				board.expandRow(Board::RowExpandDirection::Up);
+				for (int i = 0; i < board.getColumnSize(); i++)
+				{
+					board[{0, i}] = moved[i];
+				}
+			}
+			return true;
 		}
 	}
 	return false;

@@ -37,6 +37,15 @@ void Game::endCurrentRound() {
 		emit gameEnded();
 	}
 }
+void Game::resetMageFlags()
+{
+	m_player1MageUsed = false;
+	m_player2MageUsed = false;
+	m_player1PowerUsed = false;
+	m_player2PowerUsed = false;
+	m_player1IllusionUsed = false;
+	m_player2IllusionUsed = false;
+}
 
 void Game::handleExplosionActivation()
 {
@@ -206,6 +215,10 @@ bool Game::wouldCreateIsolatedCards(const Explosion& explosion) const
 
 	return !areCardsConnected(test_board);
 }
+bool Game::wouldMageCreateIsolatedCards(const Board& testBoard) const
+{
+	return !areCardsConnected(testBoard);
+}
 bool Game::areCardsConnected(const Board& test_board) const
 {
 	std::vector<std::pair<int16_t, int16_t>> validCards;
@@ -255,6 +268,7 @@ bool Game::areCardsConnected(const Board& test_board) const
 	}
 	return true;
 }
+
 QString Game::getExplosionPreviewGrid() const
 {
 	if(!m_explosion)
@@ -517,12 +531,12 @@ void Game::startLoadedGame()
 				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
 					gameWindow->setCurrentPlayer(Color::Blue);
 					currentPlayer = Color::Blue;
-					qDebug() << "Player 1's turn.";
+					qDebug() << "Player 2's turn.";
 				}
 				else if (currentPlayer == Color::Blue && player2.numberofValidCards() > 0) {
 					gameWindow->setCurrentPlayer(Color::Red);
 					currentPlayer = Color::Red;
-					qDebug() << "Player 2's turn.";
+					qDebug() << "Player 1's turn.";
 				}
 
 				if (canActivateExplosion()) {
@@ -753,12 +767,12 @@ void Game::startTraining() {
 				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
 					trainingWindow->setCurrentPlayer(Color::Blue);
 					currentPlayer = Color::Blue;
-					qDebug() << "Player 1's turn.";
+					qDebug() << "Player 2's turn.";
 				}
 				else if (currentPlayer == Color::Blue && player2.numberofValidCards() > 0) {
 					trainingWindow->setCurrentPlayer(Color::Red);
 					currentPlayer = Color::Red;
-					qDebug() << "Player 2's turn.";
+					qDebug() << "Player 1's turn.";
 				}
 
 				if (canActivateExplosion()) {
@@ -908,12 +922,12 @@ void Game::startMageDuel()
 				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
 					trainingWindow->setCurrentPlayer(Color::Blue);
 					currentPlayer = Color::Blue;
-					qDebug() << "Player 1's turn.";
+					qDebug() << "Player 2's turn.";
 				}
 				else if (currentPlayer == Color::Blue && player2.numberofValidCards() > 0) {
 					trainingWindow->setCurrentPlayer(Color::Red);
 					currentPlayer = Color::Red;
-					qDebug() << "Player 2's turn.";
+					qDebug() << "Player 1's turn.";
 				}
 				if (canActivateExplosion()) {
 					handleExplosionActivation();
@@ -1057,12 +1071,12 @@ void Game::startPowerDuel() {
 				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
 					trainingWindow->setCurrentPlayer(Color::Blue);
 					currentPlayer = Color::Blue;
-					qDebug() << "Player 1's turn.";
+					qDebug() << "Player 2's turn.";
 				}
 				else if (currentPlayer == Color::Blue && player2.numberofValidCards() > 0) {
 					trainingWindow->setCurrentPlayer(Color::Red);
 					currentPlayer = Color::Red;
-					qDebug() << "Player 2's turn.";
+					qDebug() << "Player 1's turn.";
 				}
 
 				if (canActivateExplosion()) {
@@ -1220,12 +1234,12 @@ void Game::startMageDuelAndPower()
 				if (currentPlayer == Color::Red && player1.numberofValidCards() > 0) {
 					trainingWindow->setCurrentPlayer(Color::Blue);
 					currentPlayer = Color::Blue;
-					qDebug() << "Player 1's turn.";
+					qDebug() << "Player 2's turn.";
 				}
 				else if (currentPlayer == Color::Blue && player2.numberofValidCards() > 0) {
 					trainingWindow->setCurrentPlayer(Color::Red);
 					currentPlayer = Color::Red;
-					qDebug() << "Player 2's turn.";
+					qDebug() << "Player 1's turn.";
 				}
 				if (canActivateExplosion()) {
 					handleExplosionActivation();

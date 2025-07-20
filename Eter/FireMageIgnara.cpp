@@ -22,11 +22,14 @@ std::string FireMageIgnara::getDescription() const
 
 bool FireMageIgnara::playMageIgnara(Board& board, Color color, int16_t x, int16_t y)
 {
-	if (board[{x,y}].size() >= 2)
-		if (board[{x,y}].back().getColor() != color && board[{x,y}][board[{x,y}].size()-2].getColor() == color)
+	if (board[{x,y}].size() >= 2 && !board[{x,y}].empty())
+		if (board[{x,y}].back().getColor() != color && board[{x,y}].back().getColor()!=Color::Hole)
 		{
-			board[{x,y}].pop_back();
-			return true;
+			if (board[{x, y}][board[{x, y}].size() - 2].getColor() == color)
+			{
+				board[{x, y}].pop_back();
+				return true;
+			}
 		}
 	return false;
 }

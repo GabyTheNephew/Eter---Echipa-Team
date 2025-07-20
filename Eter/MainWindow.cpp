@@ -73,7 +73,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                   
                     QString email, password;
                     Game& gameInstance = Game::get_Instance();
-
+                    gameInstance.resetMageFlags();
                     if (GameSaver::loadGame(filename, gameInstance, email, password)) {
                         loadGameMenu->close();
                         this->hide();
@@ -143,6 +143,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                         backgroundWindow->close();
 
                         Game& gameInstance = Game::get_Instance();
+                        gameInstance.resetMageFlags();
                         gameInstance.setIllusionsEnabled(illusions);
                         gameInstance.setExplosionsEnabled(explosions);
                         gameInstance.m_timerEnabled = timer;
@@ -203,6 +204,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                         backgroundWindow->close();
 
                         Game& gameInstance = Game::get_Instance();
+                        gameInstance.resetMageFlags();
                         gameInstance.setIllusionsEnabled(illusions);
                         gameInstance.setExplosionsEnabled(explosions);
                         gameInstance.m_timerEnabled = timer;
@@ -263,6 +265,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                         backgroundWindow->close();
 
                         Game& gameInstance = Game::get_Instance();
+                        gameInstance.resetMageFlags();
                         gameInstance.setIllusionsEnabled(illusions);
                         gameInstance.setExplosionsEnabled(explosions);
                         gameInstance.m_timerEnabled = timer;
@@ -323,6 +326,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                         backgroundWindow->close();
 
                         Game& gameInstance = Game::get_Instance();
+                        gameInstance.resetMageFlags();
                         gameInstance.setIllusionsEnabled(illusions);
                         gameInstance.setExplosionsEnabled(explosions);
                         gameInstance.m_timerEnabled = timer;

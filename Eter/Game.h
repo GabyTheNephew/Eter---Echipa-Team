@@ -120,7 +120,9 @@ public:
     void applyExplosionEffects(const Explosion& explosion);
 
     bool wouldCreateIsolatedCards(const Explosion& explosion)const;
+    bool wouldMageCreateIsolatedCards(const Board& testBoard) const;
     bool areCardsConnected(const Board& test_board)const;
+    void resetMageFlags();
 
     QString getExplosionPreviewGrid() const;
 

@@ -711,7 +711,12 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 {
     qDebug() << "Mage clicked:" << mageName;
 
-    
+    if (currentPlayer != color) 
+    {
+        QMessageBox::information(this, "Invalid Mage",QString("Only the current player (%1) can use their mage!")
+            .arg(currentPlayer == Color::Red ? "Player 1 (Red)" : "Player 2 (Blue)"));
+        return;
+    }
     if (color == Color::Red && game->isPlayer1MageUsed()) {
         QMessageBox::information(this, "Mage Already Used", "Player 1 has already used their mage power this game!");
         return;
@@ -750,9 +755,33 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
             int endCol = QInputDialog::getInt(this, "Input End Column", "Enter end column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
             if (!ok) break; 
 
+            Board testBoard = m_boardView->getBoard(); 
+            if (!testBoard[{startRow, startCol}].empty() && testBoard[{startRow, startCol}].back().getColor() == color && testBoard[{endRow, endCol}].empty())
+            {
+                testBoard.moveSpace(startRow, startCol, endRow, endCol);
+                if (game->wouldMageCreateIsolatedCards(testBoard)) {
+                    QMessageBox::warning(this, "Invalid Mage Move",
+                        "This move would create isolated cards! Choose different positions.");
+                    returnedValue = false;
+                    continue;
+                }
+            }
 
             AirMageVelora AirMageVelora;
             returnedValue = AirMageVelora.playMageVelora(m_boardView->getBoard(), color, startRow, startCol, endRow, endCol);
+            if (returnedValue)
+            {
+                if (color == Color::Red) 
+                {
+                    game->setPlayer1MageUsed(true);
+                    QMessageBox::information(this, "Mage Used", "Player 1 mage power has been used!");
+                }
+                else 
+                {
+                    game->setPlayer2MageUsed(true);
+                    QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
+                }
+            }
         } while (returnedValue == false);
         break;
     }
@@ -765,12 +794,34 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
         int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
         if (!ok) break; 
 
+        Board testBoard = m_boardView->getBoard();
+        if (testBoard[{row, col}].empty())
+        {
+            testBoard[{row, col}].push_back(EterCard(color));
+            if (game->wouldMageCreateIsolatedCards(testBoard)) 
+            {
+                QMessageBox::warning(this, "Invalid Mage Move","Placing Eter here would create isolated cards! Choose a different position.");
+                break;
+            }
+        }
+
         AirMageZephyraCrow AirMageZephyraCrow;
         AirMageZephyraCrow.playMageZephyraCrow(m_boardView->getBoard(), color, row, col);
+
+        if (color == Color::Red) 
+        {
+            game->setPlayer1MageUsed(true);
+            QMessageBox::information(this, "Mage Used", "Player 1 mage power has been used!");
+        }
+        else 
+        {
+            game->setPlayer2MageUsed(true);
+            QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
+        }
         break;
     }
     case Mages::EarthMageBumbleroot: {
-        EarthMageBumbleroot EarthMageBumbleroot;
+        
 
         bool ok;
 
@@ -781,12 +832,100 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
         int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
         if (!ok) break; 
 
+        Board testBoard = m_boardView->getBoard();
+        if (testBoard[{row, col}].empty()) 
+        {
+            testBoard[{row, col}].push_back({ 6, Color::Hole });
+            if (game->wouldMageCreateIsolatedCards(testBoard)) 
+            {
+                QMessageBox::warning(this, "Invalid Mage Move","Creating a hole here would create isolated cards! Choose a different position.");
+                break;
+            }
+        }
+
+        EarthMageBumbleroot EarthMageBumbleroot;
         EarthMageBumbleroot.playMageBumbleroot(m_boardView->getBoard(), row, col);
+
+        if (color == Color::Red)
+        {
+            game->setPlayer1MageUsed(true);
+            QMessageBox::information(this, "Mage Used", "Player 1 mage power has been used!");
+        }
+        else 
+        {
+            game->setPlayer2MageUsed(true);
+            QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
+        }
+
         break;
     }
-    case Mages::EarthMageElderbranch: {
-        EarthMageElderbranch EarthMageElderbranch;
+    case Mages::EarthMageElderbranch: 
+    {
+        bool ok;
+		int16_t row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
+        if (!ok) break;
 
+        int col = QInputDialog::getInt(this, "Input Target Column", "Enter target column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
+        if (!ok) break;
+
+        if (m_boardView->getBoard()[{row, col}].empty())
+        {
+            QMessageBox::warning(this, "Invalid Target", "Target position must have a card!");
+            break;
+        }
+
+        int value = QInputDialog::getInt(this, "Input Card Value", "Choose card value from your hand (1-4):", 1, 1, 4, 1, &ok);
+        if (!ok) break;
+
+        bool hasCard = false;
+        for (const auto& card : game->getCurrentPlayer().getVector())
+        {
+            if (card.getValue() == value && card.getColor() == color) 
+            {
+                hasCard = true;
+                break;
+            }
+        }
+
+        if (!hasCard) 
+        {
+            QMessageBox::warning(this, "Invalid Card", "You don't have this card in your hand!");
+            break;
+        }
+
+        Board testBoard = m_boardView->getBoard();
+        testBoard[{row, col}].push_back(SimpleCard(value, color));
+
+        if (game->wouldMageCreateIsolatedCards(testBoard)) 
+        {
+            QMessageBox::warning(this, "Invalid Mage Move", "This move would create isolated cards! Choose a different position.");
+            break;
+        }
+
+        EarthMageElderbranch elderbranch;
+        if (elderbranch.playMageElderbranch(m_boardView->getBoard(), color, value, row, col)) 
+        {
+            SimpleCard usedCard(value, color);
+            game->getCurrentPlayer().makeCardInvalid(usedCard);
+            game->getCurrentPlayer().getPastVector().push_back(usedCard);
+
+            QMessageBox::information(this, "Mage Success", "Successfully covered opponent's card!");
+
+            if (color == Color::Red) 
+            {
+                game->setPlayer1MageUsed(true);
+                QMessageBox::information(this, "Mage Used", "Player 1 mage power has been used!");
+            }
+            else 
+            {
+                game->setPlayer2MageUsed(true);
+                QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
+            }
+        }
+        else 
+        {
+            QMessageBox::warning(this, "Invalid Move", "Cannot cover that card with the selected value!");
+        }
         break;
     }
     case Mages::FireMageIgnara: {
@@ -800,39 +939,191 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
         int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
         if (!ok) break; 
 
+        if (m_boardView->getBoard()[{row, col}].size() < 2) 
+        {
+            QMessageBox::warning(this, "Invalid Target", "Target position must have at least 2 cards (one covering yours)!");
+            break;
+        }
+
+        auto& stack = m_boardView->getBoard()[{row, col}];
+        if (stack[stack.size() - 2].getColor() != color)
+        {
+            QMessageBox::warning(this, "Invalid Target", "Your card is not being covered at this position!");
+            break;
+        }
+
+        if (stack.back().getColor() == color) 
+        {
+            QMessageBox::warning(this, "Invalid Target", "You cannot remove your own card!");
+            break;
+        }
+
         FireMageIgnara FireMageIgnara;
-        FireMageIgnara.playMageIgnara(m_boardView->getBoard(), color, row, col);
+        if (FireMageIgnara.playMageIgnara(m_boardView->getBoard(), color, row, col)) 
+        {
+            QMessageBox::information(this, "Mage Success", "Successfully removed opponent's card covering yours!");
+            if (color == Color::Red)
+            {
+                game->setPlayer1MageUsed(true);
+                QMessageBox::information(this, "Mage Used", "Player 1 mage power has been used!");
+            }
+            else
+            {
+                game->setPlayer2MageUsed(true);
+                QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
+            }
+        
+        }
+        else 
+        {
+            QMessageBox::warning(this, "Invalid Move", "Cannot remove card at this position!");
+        }
         break;
     }
     case Mages::FireMagePyrofang: {
 
         bool ok;
 
+        QString availableOptions = "Available full rows/columns with your cards:\n";
+        bool hasValidTargets = false;
 
-        int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; 
+        for (int i = 0; i < m_boardView->getBoard().getRowSize(); i++)
+        {
+            if (m_boardView->getBoard().checkRow(i)) 
+            {
+                bool hasPlayerCard = false;
+                for (int j = 0; j < m_boardView->getBoard().getColumnSize(); j++) 
+                {
+                    if (!m_boardView->getBoard()[{i, j}].empty() && m_boardView->getBoard()[{i, j}].back().getColor() == color) 
+                    {
+                        hasPlayerCard = true;
+                        break;
+                    }
+                }
+                if (hasPlayerCard) 
+                {
+                    availableOptions += QString("Row %1\n").arg(i);
+                    hasValidTargets = true;
+                }
+            }
+        }
 
-        bool rowOrColumn = QInputDialog::getInt(this, "Input Row Or Column", "Enter 0 for column or 1 for row:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; 
+        for (int j = 0; j < m_boardView->getBoard().getColumnSize(); j++) 
+        {
+            if (m_boardView->getBoard().checkColumn(j))
+            {
+                bool hasPlayerCard = false;
+                for (int i = 0; i < m_boardView->getBoard().getRowSize(); i++)
+                {
+                    if (!m_boardView->getBoard()[{i, j}].empty() && m_boardView->getBoard()[{i, j}].back().getColor() == color) 
+                    {
+                        hasPlayerCard = true;
+                        break;
+                    }
+                }
+                if (hasPlayerCard) 
+                {
+                    availableOptions += QString("Column %1\n").arg(j);
+                    hasValidTargets = true;
+                }
+            }
+        }
+        if (!hasValidTargets) 
+        {
+            QMessageBox::information(this, "No Valid Targets", "No full rows or columns contain your cards!");
+            break;
+        }
+
+        QMessageBox::information(this, "Available Targets", availableOptions);
+
+        QStringList items;
+        items << "Row" << "Column";
+        QString item = QInputDialog::getItem(this, "Select Type", "Choose row or column:", items, 0, false, &ok);
+        if (!ok) break;
+
+        bool isColumn = (item == "Column");
+
+        int maxIndex = isColumn ? m_boardView->getBoard().getColumnSize() - 1 : m_boardView->getBoard().getRowSize() - 1;
+        int index = QInputDialog::getInt(this, QString("Select %1").arg(item),QString("Enter %1 index:").arg(item.toLower()), 0, 0, maxIndex, 1, &ok);
+        if (!ok) break;
+
+        Board testBoard = m_boardView->getBoard();
+        if (isColumn) {
+            testBoard.emptyColumn(index);
+        }
+        else {
+            testBoard.emptyRow(index);
+        }
 
 
-        FireMagePyrofang FireMagePyrofang;
-        FireMagePyrofang.playMagePyrofang(m_boardView->getBoard(), color, rowOrColumn, row);
+        if (game->wouldMageCreateIsolatedCards(testBoard))
+        {
+            QMessageBox::warning(this, "Invalid Mage Move","Removing this row/column would create isolated cards!");
+            break;
+        }
+
+        FireMagePyrofang pyrofang;
+        if (pyrofang.playMagePyrofang(m_boardView->getBoard(), color, isColumn, index)) 
+        {
+            QMessageBox::information(this, "Mage Success", QString("Successfully removed %1 %2!").arg(item.toLower()).arg(index));
+        
+            if (color == Color::Red) 
+            {
+                game->setPlayer1MageUsed(true);
+                QMessageBox::information(this, "Mage Used", "Player 1 mage power has been used!");
+            }
+            else 
+            {
+                game->setPlayer2MageUsed(true);
+                QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
+            }
+        }
+        else 
+        {
+            QMessageBox::warning(this, "Invalid Move", "Cannot remove this row/column!");
+        }
         break;
     }
     case Mages::WaterMageAqualon: {
 
         bool ok;
 
+        QStringList items;
+        items << "Row" << "Column";
+        QString item = QInputDialog::getItem(this, "Select Type", "Choose row or column:", items, 0, false, &ok);
+        if (!ok) break;
 
-        int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; 
+        bool isColumn = (item == "Column");
 
-        bool rowOrColumn = QInputDialog::getInt(this, "Input Row Or Column", "Enter 0 for column or 1 for row:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; 
+        int maxIndex = isColumn ? m_boardView->getBoard().getColumnSize() - 1 : m_boardView->getBoard().getRowSize() - 1;
+
+        QStringList edgeOptions;
+        edgeOptions << "0 (First)" << QString("%1 (Last)").arg(maxIndex);
+        QString edgeChoice = QInputDialog::getItem(this, "Select Edge", QString("Choose which edge %1:").arg(item.toLower()), edgeOptions, 0, false, &ok);
+        if (!ok) break;
+
+        int index = edgeChoice.startsWith("0") ? 0 : maxIndex;
+        
 
         WaterMageAqualon WaterMageAqualon;
-        WaterMageAqualon.playMageAqualon(m_boardView->getBoard(),rowOrColumn, row);
+        if (WaterMageAqualon.playMageAqualon(m_boardView->getBoard(), isColumn, index)) 
+        {
+            QMessageBox::information(this, "Mage Success",QString("Successfully moved %1 %2 to opposite edge!").arg(item.toLower()).arg(index));
+        
+            if (color == Color::Red) 
+            {
+                game->setPlayer1MageUsed(true);
+                QMessageBox::information(this, "Mage Used", "Player 1 mage power has been used!");
+            }
+            else 
+            {
+                game->setPlayer2MageUsed(true);
+                QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
+            }
+        }
+        else {
+            QMessageBox::warning(this, "Invalid Move", "Cannot move this row/column! Make sure it's at the edge and fully occupied.");
+        }
         break;
     }
     case Mages::WaterMageChillThoughts: {
@@ -851,25 +1142,36 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
         int endCol = QInputDialog::getInt(this, "Input End Column", "Enter end column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
         if (!ok) break; 
 
+        Board testBoard = m_boardView->getBoard();
+        if (!testBoard[{startRow, startCol}].empty()) 
+        {
+            testBoard.moveSpace(startRow, startCol, endRow, endCol);
+            if (game->wouldMageCreateIsolatedCards(testBoard)) 
+            {
+                QMessageBox::warning(this, "Invalid Mage Move","This move would create isolated cards! Choose different positions.");
+                break;
+            }
+        }
         WaterMageChillThoughts WaterMageChillThoughts;
         WaterMageChillThoughts.playMageChillThoughts(m_boardView->getBoard(), color, startRow, startCol, endRow, endCol);
+
+
+        if (color == Color::Red) 
+        {
+            game->setPlayer1MageUsed(true);
+            QMessageBox::information(this, "Mage Used", "Player 1 mage power has been used!");
+        }
+        else 
+        {
+            game->setPlayer2MageUsed(true);
+            QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
+        }
+        
         break;
     }
     default:
         break;
     }
-
-
-
-    if (color == Color::Red) {
-        game->setPlayer1MageUsed(true);
-        QMessageBox::information(this, "Mage Used", "Player 1 mage power has been used and cannot be used again this game!");
-    }
-    else {
-        game->setPlayer2MageUsed(true);
-        QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used and cannot be used again this game!");
-    }
-
     
     updateMageButtons();
     m_boardView->updateView();

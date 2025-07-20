@@ -27,15 +27,18 @@ bool FireMagePyrofang::playMagePyrofang(Board& board, Color color, bool rowOrCol
 		if (board.checkColumn(x))
 		{
 
-			for (int16_t i = 0; i < board.getSize(); i++)
+			for (int16_t i = 0; i < board.getRowSize(); i++)
 			{
-				if (board[{i, x}].back().getColor() == Color::Hole)
+				if (!board[{i, x}].empty())
 				{
-					break;
-				}
-				else if (board[{i, x}].back().getColor() == color)
-				{
-					ok = true;
+					if (board[{i, x}].back().getColor() == Color::Hole)
+					{
+						break;
+					}
+					else if (board[{i, x}].back().getColor() == color)
+					{
+						ok = true;
+					}
 				}
 			}
 			if (ok)
@@ -50,15 +53,18 @@ bool FireMagePyrofang::playMagePyrofang(Board& board, Color color, bool rowOrCol
 		if (board.checkRow(x))
 		{
 
-			for (int16_t i = 0; i < board.getSize(); i++)
+			for (int16_t i = 0; i < board.getColumnSize(); i++)
 			{
-				if (board[{x, i}].back().getColor() == Color::Hole)
+				if (!board[{x, i}].empty())
 				{
-					break;
-				}
-				else if (board[{x, i}].back().getColor() == color)
-				{
-					ok = true;
+					if (board[{x, i}].back().getColor() == Color::Hole)
+					{
+						break;
+					}
+					else if (board[{x, i}].back().getColor() == color)
+					{
+						ok = true;
+					}
 				}
 			}
 			if (ok)
