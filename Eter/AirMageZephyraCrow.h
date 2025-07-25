@@ -1,6 +1,5 @@
 #pragma once
 #include "Board.h"
-#include "EterCard.h"
 #include <iostream>
 #include <string_view>
 

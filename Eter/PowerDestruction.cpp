@@ -20,47 +20,45 @@ std::string_view PowerDestruction::getDescription()const
 	return m_desctiption;
 }
 
-bool PowerDestruction::checkDestructionPower(Player& player)
+bool PowerDestruction::checkDestructionPower(Player& opponent)
 {
-	if (player.getPastVector().empty())
+	return !opponent.getPastVector().empty();
+}
+
+bool PowerDestruction::playDestructionPower(Board& board, Player& opponent)
+{
+	if (!checkDestructionPower(opponent))
 	{
 		return false;
 	}
-	else
+
+
+	SimpleCard lastCard = opponent.getPastVector().back();
+	Color opponentColor = (lastCard.getColor() == Color::usedRed) ? Color::Red : Color::Blue;
+
+	
+	for (int i = 0; i < board.getRowSize(); i++)
 	{
-		return true;
-	}
-}
-
-void PowerDestruction::playDestructionPower(Player& player)
-{
-
-	std::string color = player.GetVectorColor();
-
-
-	if (checkDestructionPower(player))
-	{
-		for (auto it = player.getPastVector().rbegin(); it != player.getPastVector().rend(); ++it)
+		for (int j = 0; j < board.getColumnSize(); j++)
 		{
-			auto card = *it;
-
-			if (color == "Red")
+			if (!board[{i, j}].empty())
 			{
-				if (card.getColor() == Color::usedBlue)
+				SimpleCard& topCard = board[{i, j}].back();
+				if (topCard.getValue() == lastCard.getValue() &&
+					(topCard.getColor() == opponentColor ||
+						topCard.getColor() == Color::increasedRed ||
+						topCard.getColor() == Color::increasedBlue ||
+						topCard.getColor() == Color::decreasedRed ||
+						topCard.getColor() == Color::decreasedBlue))
 				{
-					player.deleteCardFromPastVector(card);
-					break;
-				}
-			}
-			if (color == "Blue")
-			{
-				if (card.getColor() == Color::usedRed)
-				{
-					player.deleteCardFromPastVector(card);
-					break;
+					
+					board.popCard({ i, j });
+					opponent.getPastVector().pop_back();
+					return true;
 				}
 			}
 		}
 	}
-}
 
+	return false;
+}

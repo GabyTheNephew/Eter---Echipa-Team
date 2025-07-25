@@ -1,5 +1,5 @@
 #include "PowerControlledExplosion.h"
-
+#include "Game.h"
 
 
 const std::string PowerControlledExplosion::m_name = "PowerControlledExplosion";
@@ -19,32 +19,33 @@ std::string PowerControlledExplosion::getDescription() const
 	return m_description;
 }
 
-void PowerControlledExplosion::playControlledExplosioPower(Board& board, Player player, int16_t x, int16_t y)
+bool PowerControlledExplosion::playControlledExplosionPower(Game& game)
 {
-	if (player.GetVectorColor() == "Red")
+	if (!checkControlledExplosionPower(game))
 	{
-
-		SimpleCard card = player.chooseCard();
-		card.setColor(Color::IlusionRed);
-		player.getPastVector().push_back(card);
-		board[{x, y}].push_back(card);
-
-
-	}
-	if (player.GetVectorColor() == "Blue")
-	{
-		SimpleCard card = player.chooseCard();
-		card.setColor(Color::IlusionBlue);
-
-		player.getPastVector().push_back(card);
-		board[{x, y}].push_back(card);
+		return false;
 	}
 
+	game.activateExplosion();
 
+	return true;
 }
 
-bool PowerControlledExplosion::checkControlledExplosioPower(Board& board, Player& player, int16_t x, int16_t y)
+bool PowerControlledExplosion::checkControlledExplosionPower(Game& game)
 {
-	return true;
 
+	if (!game.areExplosionsEnabled())
+	{
+		return false;
+	}
+
+	Board& board = game.getBoard();
+	int minSize = (game.getCurrentGameType() == GameType::Training) ? 3 : 4;
+
+	if (board.getRowSize() < minSize || board.getColumnSize() < minSize)
+	{
+		return false;
+	}
+
+	return true;
 }

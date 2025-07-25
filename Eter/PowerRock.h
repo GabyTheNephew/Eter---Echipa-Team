@@ -17,7 +17,7 @@ public:
 	std::string getName() const;
 	std::string getDescription() const;
 
-	void playRockPower(Board& board, Player& player, int16_t x, int16_t y);
+	bool playRockPower(Board& board, Player& player, const SimpleCard& selectedCard, int16_t x, int16_t y);
 	bool checkRockPower(Board& board, int16_t x, int16_t y);
 };
 

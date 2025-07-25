@@ -24,6 +24,16 @@ void PowerTide::playTidePower(Board& board, int16_t x1, int16_t y1, int16_t x2, 
 
 bool PowerTide::checkTidePower(Board& board, int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
+	if (x1 < 0 || x1 >= board.getRowSize() || y1 < 0 || y1 >= board.getColumnSize() || x2 < 0 || x2 >= board.getRowSize() || y2 < 0 || y2 >= board.getColumnSize()) 
+	{
+		return false;
+	}
+
+	if (x1 == x2 && y1 == y2) 
+	{
+		return false;
+	}
+
 	if (!board[{x1, y1}].empty() && !board[{x2, y2}].empty())
 	{
 		return true;

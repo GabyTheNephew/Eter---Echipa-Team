@@ -19,54 +19,63 @@ std::string PowerMist::getDescription() const
 	return m_description;
 }
 
-void PowerMist::playMistPower(Board& board, Player player, int16_t x, int16_t y)
+bool PowerMist::playMistPower(Board& board, Player& player, const SimpleCard& selectedCard, int16_t x, int16_t y)
 {
-	if (player.GetVectorColor() == "Red")
+	if (!checkMistPower(board, player))
 	{
-
-		SimpleCard card = player.chooseCard();
-		card.setColor(Color::IlusionRed);
-		player.getPastVector().push_back(card);
-		board[{x, y}].push_back(card);
-
-
+		return false;
 	}
-	if (player.GetVectorColor() == "Blue")
+
+	if (selectedCard.getValue() == 5)
 	{
-		SimpleCard card = player.chooseCard();
-		card.setColor(Color::IlusionBlue);
-		player.getPastVector().push_back(card);
-		board[{x, y}].push_back(card);
+		return false; 
 	}
+
+	if (!board.canBePlaced(x, y) || !board[{x, y}].empty()) 
+	{
+		return false; 
+	}
+
+	SimpleCard illusionCard = selectedCard;
+
+
+	if (player.GetVectorColor() == "Red") 
+	{
+		illusionCard.setColor(Color::IlusionRed);
+	}
+	else 
+	{
+		illusionCard.setColor(Color::IlusionBlue);
+	}
+
+	board.pushCard(illusionCard, { x, y });
+	player.makeCardInvalid(selectedCard);
+	player.getPastVector().push_back(illusionCard);
+
+	return true;
 
 
 }
 
 bool PowerMist::checkMistPower(Board& board, Player& player)
 {
-	bool notMoreThanOne = true;
-	for (int i = 0; i <board.getSize() ; i++)
+	for (int i = 0; i <board.getRowSize() ; i++)
 	{
-		for (int j = 0; j <board.getSize() ; j++)
+		for (int j = 0; j <board.getColumnSize() ; j++)
 		{
 			if (!board[{i, j}].empty()) {
+				Color topCardColor = board[{i, j}].back().getColor();
 
-				if (player.GetVectorColor() == "Red")
+				if (player.GetVectorColor() == "Red" && topCardColor == Color::IlusionRed) 
 				{
-					if (board[{i, j}].back().getColor() == Color::IlusionRed)
-					{
-						notMoreThanOne = false;
-					}
+					return false;
 				}
-				else if (player.GetVectorColor() == "Blue")
+				if (player.GetVectorColor() == "Blue" && topCardColor == Color::IlusionBlue) 
 				{
-					if (board[{i, j}].back().getColor() == Color::IlusionBlue)
-					{
-						notMoreThanOne = false;
-					}
+					return false; 
 				}
 			}
 		}
 	}
-	return notMoreThanOne;
+	return true;
 }

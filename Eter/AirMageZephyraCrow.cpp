@@ -21,7 +21,7 @@ bool AirMageZephyraCrow::playMageZephyraCrow(Board& board, Color color, int16_t 
 {
 	if (board[{x,y}].empty())
 	{
-		board[{x,y}].push_back(EterCard(color));
+		board[{x,y}].push_back(SimpleCard(5, color));
 		return true;
 	}
 	return false;

@@ -17,7 +17,7 @@ public:
 	std::string getName() const;
 	std::string getDescription() const;
 
-	void playSquallPower(Board& board, Player& player1, Player& player2, int16_t x, int16_t y);
-	bool checkSquallPower(Board& board, int16_t x, int16_t y);
+	void playSquallPower(Board& board, Player& player1, Player& player2, const std::string& currentPlayerColor, int16_t x, int16_t y);
+	bool checkSquallPower(Board& board, const std::string& currentPlayerColor, int16_t x, int16_t y);
 
 };

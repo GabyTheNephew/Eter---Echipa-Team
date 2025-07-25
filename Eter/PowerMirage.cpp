@@ -19,59 +19,63 @@ std::string PowerMirage::getDescription() const
 	return m_description;
 }
 
-void PowerMirage::playMiragePower(Board& board,Player player, int16_t x, int16_t y)
+bool PowerMirage::playMiragePower(Board& board,Player& player, const SimpleCard& newCard, int16_t x, int16_t y)
 {
-	if (player.GetVectorColor() == "Red") 
+	
+	if (!checkMiragePower(board, player)) 
 	{
-		SimpleCard card = player.chooseCard();
-		card.setColor(Color::IlusionRed);
-		
-		player.makeCardValid(board[{x, y}].back());
-		player.getPastVector().erase(std::find(player.getPastVector().begin(), player.getPastVector().end(),board[{x, y}].back()));
-		player.getPastVector().push_back(card);
-		board[{x, y}].pop_back();
-		board[{x, y}].push_back(card);
-		
+		return false;
+	}
+	
+	if (x < 0 || x >= board.getRowSize() || y < 0 || y >= board.getColumnSize()) 
+	{
+		return false;
+	}
 
-	}
-	if (player.GetVectorColor() == "Blue") 
+	if (board[{x, y}].empty())
 	{
-		SimpleCard card = player.chooseCard();
-		card.setColor(Color::IlusionBlue);
-		
-		player.makeCardValid(board[{x, y}].back());
-		player.getPastVector().erase(std::find(player.getPastVector().begin(), player.getPastVector().end(), board[{x, y}].back()));
-		player.getPastVector().push_back(card);
-		board[{x, y}].pop_back();
-		board[{x, y}].push_back(card);
+		return false;
 	}
-	
-	
+
+	Color playerIllusionColor = (player.GetVectorColor() == "Red") ? Color::IlusionRed : Color::IlusionBlue;
+	if (board[{x, y}].back().getColor() != playerIllusionColor)
+	{
+		return false;
+	}
+
+	if (newCard.getValue() == 5) 
+	{
+		return false;
+	}
+
+	SimpleCard oldIllusion = board[{x, y}].back();
+	SimpleCard newIllusion = newCard;
+	newIllusion.setColor(playerIllusionColor);
+	board[{x, y}].pop_back();
+	board[{x, y}].push_back(newIllusion);
+
+	SimpleCard returnedCard = oldIllusion;
+	returnedCard.setColor((player.GetVectorColor() == "Red") ? Color::Red : Color::Blue);
+	player.makeCardValid(returnedCard);
+	player.makeCardInvalid(newCard);
+
+	return true;
 }
 
-bool PowerMirage::checkMiragePower(Board& board,Player& player, int16_t x, int16_t y)
+bool PowerMirage::checkMiragePower(Board& board,Player& player)
 {
-	if (player.GetVectorColor() == "Red")
+	Color playerIllusionColor = (player.GetVectorColor() == "Red") ? Color::IlusionRed : Color::IlusionBlue;
+
+	
+	for (int16_t i = 0; i < board.getRowSize(); i++) 
 	{
-		for(int16_t i=0;i<board.getSize();i++)
-			for (int16_t j = 0; j < board.getSize(); j++)
+		for (int16_t j = 0; j < board.getColumnSize(); j++) 
+		{
+			if (!board[{i, j}].empty() && board[{i, j}].back().getColor() == playerIllusionColor) 
 			{
-				if (board[{i, j}].back().getColor() == Color::IlusionRed)
-				{
-					return true;
-				}
+				return true;
 			}
-	}
-	if (player.GetVectorColor() == "Blue")
-	{
-		for (int16_t i = 0; i < board.getSize(); i++)
-			for (int16_t j = 0; j < board.getSize(); j++)
-			{
-				if (board[{i, j}].back().getColor() == Color::IlusionBlue)
-				{
-					return true;
-				}
-			}
+		}
 	}
 	return false;
 }

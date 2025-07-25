@@ -1,6 +1,6 @@
 #include "LoadGameMenu.h"
 
-
+#pragma region Load
 LoadGameMenu::LoadGameMenu(QWidget* parent) : QWidget(parent) {
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowModality(Qt::ApplicationModal);
@@ -13,16 +13,16 @@ LoadGameMenu::LoadGameMenu(QWidget* parent) : QWidget(parent) {
 
     setStyleSheet("background-color: #222222; border-radius: 15px; color: white;");
 
-	QVBoxLayout* mainLayout = new QVBoxLayout(this);
-	mainLayout->setContentsMargins(30, 30, 30, 30);
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(30, 30, 30, 30);
 
-	savesLabel = new QLabel("Available Saves:",this);
+    savesLabel = new QLabel("Available Saves:", this);
     savesLabel->setStyleSheet("font-size: 18px; padding: 10px; font-weight: bold;");
-	savesLabel->setAlignment(Qt::AlignCenter);
-	mainLayout->addWidget(savesLabel);
+    savesLabel->setAlignment(Qt::AlignCenter);
+    mainLayout->addWidget(savesLabel);
 
 
-	QScrollArea* scrollArea = new QScrollArea(this);
+    QScrollArea* scrollArea = new QScrollArea(this);
     scrollArea->setStyleSheet(R"(
         QScrollArea {
             background-color: #333333;
@@ -40,18 +40,18 @@ LoadGameMenu::LoadGameMenu(QWidget* parent) : QWidget(parent) {
         }
     )");
 
-	savesButtonWidget = new QWidget();
-	savesButtonLayout = new QVBoxLayout(savesButtonWidget);
+    savesButtonWidget = new QWidget();
+    savesButtonLayout = new QVBoxLayout(savesButtonWidget);
 
-	loadAvailableSaves();
+    loadAvailableSaves();
 
-	scrollArea->setWidget(savesButtonWidget);
-	scrollArea->setWidgetResizable(true);
-	scrollArea->setMinimumHeight(300);
+    scrollArea->setWidget(savesButtonWidget);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setMinimumHeight(300);
 
-	mainLayout->addWidget(scrollArea);
+    mainLayout->addWidget(scrollArea);
 
-	goBackButton = new QPushButton("Go Back", this);
+    goBackButton = new QPushButton("Go Back", this);
 
     goBackButton->setStyleSheet(R"(
         QPushButton {
@@ -68,9 +68,9 @@ LoadGameMenu::LoadGameMenu(QWidget* parent) : QWidget(parent) {
         }
     )");
 
-	mainLayout->addWidget(goBackButton, 0, Qt::AlignCenter);
+    mainLayout->addWidget(goBackButton, 0, Qt::AlignCenter);
 
-	connect(goBackButton, &QPushButton::clicked, this, &LoadGameMenu::goBackSelected);
+    connect(goBackButton, &QPushButton::clicked, this, &LoadGameMenu::goBackSelected);
 
 }
 
@@ -85,7 +85,7 @@ void LoadGameMenu::loadAvailableSaves()
         return;
     }
 
-	QStringList saveFiles = saveDir.entryList(QStringList() << "*.json", QDir::Files);
+    QStringList saveFiles = saveDir.entryList(QStringList() << "*.json", QDir::Files);
 
     if (saveFiles.isEmpty()) {
         QLabel* noSavesLabel = new QLabel("No save files found.", this);
@@ -107,6 +107,9 @@ void LoadGameMenu::loadAvailableSaves()
             });
     }
 }
+
+#pragma endregion
+
 
 LoadGameMenu::SaveInfo LoadGameMenu::parseSaveFile(const QString& filePath)
 {

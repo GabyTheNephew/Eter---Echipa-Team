@@ -1,5 +1,5 @@
 #include "PowerBlizzard.h"
-
+#include "Game.h"
 
 
 const std::string PowerBlizzard::m_name = "PowerBlizzard";
@@ -19,54 +19,41 @@ std::string PowerBlizzard::getDescription() const
 	return m_description;
 }
 
-void PowerBlizzard::playBlizzardPower(Board& board, Player player1,Player player2, int16_t x, int16_t y,char position, std::vector<SimpleCard>& PastCards, std::optional<std::pair<bool, bool>>& canPlayIllusion)
+void PowerBlizzard::playBlizzardPower(Game& game, bool isRow, int index)
 {
-	std::vector<std::pair<int16_t, int16_t>> invalidPos;
-	if (position == 'R')
+	
+	Board& board = game.getBoard();
+	game.m_restrictedPositions.clear();
+
+	if (isRow) 
 	{
-		for (int16_t i = 0; i < board.getSize(); i++)
+		for (int j = 0; j < board.getColumnSize(); j++) 
 		{
-			invalidPos.push_back({ x,i });
+			game.m_restrictedPositions.push_back({ index, j });
 		}
 	}
-	else
+	else 
 	{
-		if (position == 'C')
+		for (int i = 0; i < board.getRowSize(); i++)
 		{
-			for (int16_t i = 0; i < board.getSize(); i++)
-			{
-				invalidPos.push_back({ i,y });
-			}
+			game.m_restrictedPositions.push_back({ i, index });
 		}
 	}
 
-	if (player1.numberofValidCards() > 0)
-	{
-		int16_t pozX, pozY;
-		std::cout << "Player 1's turn\n";
-		bool check = false;
-
-
-		while (check == false) 
-		{
-			SimpleCard chosenCard = player1.chooseCard();
-			std::cin >> pozX >> pozY;
-			std::pair<int16_t, int16_t> poz = { pozX,pozY };
-
-			if (chosenCard.getValue() != 0 && std::find(invalidPos.begin(), invalidPos.end(), poz) == invalidPos.end())
-			{
-				player2.playCard(chosenCard, board, PastCards, canPlayIllusion);
-				check = true;
-			}
-			board.print();
-
-		}
-		
-	}
-
+	game.m_restrictionRemainingTurns = 2;
 }
 
-bool PowerBlizzard::checkBlizzardPower(Board& board, Player& player, int16_t x, int16_t y)
+bool PowerBlizzard::checkBlizzardPower(Board& board)
 {
-	return (board.canBePlaced(x, y));
+	for (int i = 0; i < board.getRowSize(); i++)
+	{
+		for (int j = 0; j < board.getColumnSize(); j++) 
+		{
+			if (board.canBePlaced(i, j)) 
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }

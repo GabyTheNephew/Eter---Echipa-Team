@@ -5,6 +5,8 @@
 #include "Player.h"
 #include "SimpleCard.h"
 
+class Game;
+
 class PowerControlledExplosion
 {
 private:
@@ -18,7 +20,7 @@ public:
 	std::string getName()const;
 	std::string getDescription()const;
 
-	void playControlledExplosioPower(Board& board, Player player, int16_t x, int16_t y);
-	bool checkControlledExplosioPower(Board& board, Player& player, int16_t x, int16_t y);
+	bool playControlledExplosionPower(Game& game);
+	bool checkControlledExplosionPower(Game& game);
 
 };

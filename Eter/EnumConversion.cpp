@@ -31,6 +31,8 @@ std::string enumToString<Color>(Color color) {
         return "decreasedBlue";
     case Color::Hole: 
         return "Hole";
+	case Color::Border:
+		return "Border";
     default: throw std::invalid_argument("Unknown Color enum value");
     }
 }
@@ -60,6 +62,8 @@ Color stringToEnum<Color>(const std::string& str) {
         return Color::decreasedBlue;
     if (str == "Hole")
         return Color::Hole;
+	if (str == "Border")
+		return Color::Border;
     throw std::invalid_argument("Invalid Color string: " + str);
 }
 
@@ -117,6 +121,8 @@ std::string enumToString<Power>(Power power) {
     switch (power) {
     case Power::PowerEarthquake:
         return "PowerEarthquake";
+	case Power::PowerWaterfall:
+		return "PowerWaterfall";
     case Power::PowerTide:
         return "PowerTide";
     case Power::PowerStorm:
@@ -125,6 +131,42 @@ std::string enumToString<Power>(Power power) {
         return "PowerSquall";
     case Power::PowerGale:
         return "PowerGale";
+	case Power::PowerWave:
+		return "PowerWave";
+    case Power::PowerGust:
+		return "PowerGust";
+    case Power::PowerWhirlpool:
+		return "PowerWhirlpool";
+    case Power::PowerAsh:
+		return "PowerAsh";
+    case Power::PowerBlizzard:
+		return "PowerBlizzard";
+	case Power::PowerMist:
+		return "PowerMist";
+    case Power::PowerMirage:
+		return "PowerMirage";
+    case Power::PowerRock:
+		return "PowerRock";
+    case Power::PowerSupport:
+		return "PowerSupport";
+    case Power::PowerCrumble:
+		return "PowerCrumble";
+    case Power::PowerControlledExplosion:
+		return "PowerControlledExplosion";
+    case Power::PowerDestruction:
+		return "PowerDestruction";
+    case Power::PowerFlame:
+		return "PowerFlame";
+    case Power::PowerFire:
+		return "PowerFire";
+    case Power::PowerSpark:
+		return "PowerSpark";
+	case Power::PowerHurricane:
+		return "PowerHurricane";
+    case Power::PowerAvalanche:
+		return "PowerAvalanche";
+    case Power::PowerBorder:
+		return "PowerBorder";
     default:
         throw std::invalid_argument("Unknown Power enum value");
     }
@@ -136,12 +178,51 @@ Power stringToEnum<Power>(const std::string& str) {
         return Power::PowerEarthquake;
     if (str == "PowerTide")
         return Power::PowerTide;
+	if (str == "PowerWaterfall")
+		return Power::PowerWaterfall;
     if (str == "PowerStorm")
         return Power::PowerStorm;
     if (str == "PowerSquall")
         return Power::PowerSquall;
     if (str == "PowerGale")
         return Power::PowerGale;
+	if (str == "PowerWave")
+		return Power::PowerWave;
+    if (str == "PowerGust")
+		return Power::PowerGust;
+    if (str == "PowerWhirlpool")
+		return Power::PowerWhirlpool;
+	if (str == "PowerAsh")
+		return Power::PowerAsh;
+	if (str == "PowerBlizzard")
+		return Power::PowerBlizzard;
+    if(str == "PowerMist")
+		return Power::PowerMist;
+    if (str == "PowerMirage")
+		return Power::PowerMirage;
+	if (str == "PowerRock")
+		return Power::PowerRock;
+    if (str == "PowerSupport")
+        return Power::PowerSupport;
+	if (str == "PowerCrumble")
+		return Power::PowerCrumble;
+    if (str == "PowerControlledExplosion")
+		return Power::PowerControlledExplosion;
+    if (str == "PowerDestruction")
+		return Power::PowerDestruction;
+	if (str == "PowerFlame")
+		return Power::PowerFlame;
+	if (str == "PowerFire")
+		return Power::PowerFire;
+	if (str == "PowerSpark")
+		return Power::PowerSpark;
+	if (str == "PowerHurricane")
+		return Power::PowerHurricane;
+	if (str == "PowerAvalanche")
+		return Power::PowerAvalanche;
+	if (str == "PowerBorder")
+		return Power::PowerBorder;
+
     throw std::invalid_argument("Invalid Power string: " + str);
 }
 

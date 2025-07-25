@@ -16,7 +16,7 @@ public:
 	std::string getName() const;
 	std::string getDescription() const;
 
-	void playWhirlpoolPower(Board & board, int16_t xFirst, int16_t yFirst, int16_t xSecound, int16_t ySecound);
-	bool checkWhirlpoolPower(Board& board, int16_t xFirst, int16_t yFirst, int16_t xSecond, int16_t ySecond);
+	void playWhirlpoolPower(Board & board, int16_t row, int16_t yFirst, int16_t ySecound);
+	bool checkWhirlpoolPower(Board& board, int16_t row, int16_t yFirst, int16_t ySecond);
 };
 

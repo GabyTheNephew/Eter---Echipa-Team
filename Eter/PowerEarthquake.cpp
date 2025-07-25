@@ -21,8 +21,8 @@ std::string PowerEarthquake::getDescription() const
 void PowerEarthquake::playEarthquakePower(Board& board)
 {
 
-	for (int16_t i = 0; i < board.getSize(); i++)
-		for (int16_t j = 0; j < board.getSize(); j++)
+	for (int16_t i = 0; i < board.getRowSize(); i++)
+		for (int16_t j = 0; j < board.getColumnSize(); j++)
 		{
 			if (!board[{i, j}].empty())
 			{

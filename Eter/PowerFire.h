@@ -18,7 +18,7 @@ public:
 	std::string getName() const;
 	std::string getDescription() const;
 
-	void playFirePower(Board& board, Player& player1, Player& player2, int16_t value);
+	bool playFirePower(Board& board, Player& player1, Player& player2, int16_t value);
 	bool checkFirePower(Board& board, int16_t value);
 
 };

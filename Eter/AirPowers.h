@@ -1,10 +1,7 @@
 #pragma once
-
-enum class AirPowers {
-	PowerSquall,
-	PowerGale,
-	PowerHurricane,
-	PowerGust,
-	PowerMirage,
-	PowerStorm
-};
+#include "PowerSquall.h"
+#include "PowerGale.h"
+#include "PowerHurricane.h"
+#include "PowerGust.h"
+#include "PowerMirage.h"
+#include "PowerStorm.h"

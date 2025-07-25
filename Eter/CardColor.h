@@ -13,6 +13,7 @@ enum class Color {
 	decreasedRed,
 	decreasedBlue,
 	Hole,
+	Border
 };
 
 std::string ColorToString(const Color& color);

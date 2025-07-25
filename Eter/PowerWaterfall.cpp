@@ -25,15 +25,16 @@ bool PowerWaterfall::checkWaterfallPower(Board& board)
 {
 	for (int16_t i = 0; i < board.getRowSize(); i++)
 	{
-		if (board.checkColumn(i))
+		int ocupiedPositions = 0;
+		for(int16_t j = 0; j < board.getColumnSize(); j++)
 		{
-			return true;
+			if (!board[{j, i}].empty())
+			{
+				ocupiedPositions++;
+			}
 		}
-	}
 
-	for (int16_t i = 0; i < board.getColumnSize(); i++)
-	{
-		if (board.checkRow(i))
+		if(ocupiedPositions >= 3)
 		{
 			return true;
 		}
@@ -41,129 +42,35 @@ bool PowerWaterfall::checkWaterfallPower(Board& board)
 	return false;
 }
 
-void PowerWaterfall::PrintColumns(Board& board)
-{
-	std::cout << "Columns with at least 3 pozitions occupied: \n";
 
-	for (int16_t i = 0; i < board.getRowSize(); i++)
+
+void PowerWaterfall::playWaterfallPower(Board& board, int16_t row, bool cascadeLeft)
+{
+	std::deque<SimpleCard> mergedStack;
+
+	if (cascadeLeft)
 	{
-		if (board.checkColumn(i))
+		for (int16_t col = board.getColumnSize() - 1; col >= 0; col--)
 		{
-			std::cout << "Column " << i << " has at least 3  pozitions occupied.\n";
+			for (auto& card : board[{row, col}])
+			{
+				mergedStack.push_back(card);
+			}
+			board[{row, col}].clear();
 		}
+
+		board[{row, 0}] = std::move(mergedStack);
 	}
-}
-
-void PowerWaterfall::PrintRows(Board& board)
-{
-	
-	std::cout << "Rows with at least 3 pozitions occupied: \n";
-	for (int16_t i = 0; i < board.getColumnSize(); i++)
+	else
 	{
-		if (board.checkRow(i))
+		for (int16_t col = 0; col < board.getColumnSize(); col++)
 		{
-			std::cout << "Row " << i << " has at least 3  pozitions occupied.\n";
+			for (auto& card : board[{row, col}])
+			{
+				mergedStack.push_back(card);
+			}
+			board[{row, col}].clear();
 		}
-	}
-}
-
-void PowerWaterfall::playWaterfallPower(Board& board, Player& player)
-{
-	if (checkWaterfallPower(board))
-	{
-		PrintColumns(board);
-		PrintRows(board);
-		int16_t choice;
-		std::cout << "Chose what you want to move(1 for row , 2 for column): \n";
-		std::cin >> choice;
-
-		if (choice != 1 && choice != 2) {
-			std::cout << "Invalid Choice.\n";
-			return;
-		}
-		std::cout << "Enter the index of the row/column you want to move: \n";
-		int16_t index;
-		std::cin >> index;
-
-		std::cout << "Pick the direction you want to move the cards(1 for beginig,2 for end): \n";
-		int16_t direction;
-		std::cin >> direction;
-
-		std::deque<SimpleCard> mergedStack;
-		if (choice == 1)
-		{
-			if (index < 0 || index >= board.getColumnSize() || board.canBePlaced(index, 0) || board.canBePlaced(index, (board.getColumnSize() - 1)))
-			{
-				std::cout << "Invalid line index.\n";
-				return;
-			}
-
-			if (direction == 1)
-			{
-
-				for (int16_t i = 1; i < board.getRowSize(); i++)
-				{
-					mergedStack.insert(mergedStack.end(), board[{index, i}].begin(), board[{index, i}].end());
-					board[{index, i}].clear();
-				}
-				auto& topStack = board[{index, 0}];
-				mergedStack.insert(mergedStack.end(), topStack.begin(), topStack.end());
-				topStack.clear();
-				board[{index, 0}] = std::move(mergedStack);
-			}
-			else
-				if (direction == 2)
-				{
-					for (int16_t i = board.getRowSize() - 1; i >= 1; i--)
-					{
-						mergedStack.insert(mergedStack.end(), board[{index, i}].begin(), board[{index, i}].end());
-						board[{index, i}].clear();
-					}
-					auto& topStack = board[{index, board.getRowSize() - 1}];
-					mergedStack.insert(mergedStack.end(), topStack.begin(), topStack.end());
-					topStack.clear();
-					board[{index, board.getRowSize() - 1}] = std::move(mergedStack);
-				}
-		}
-		else
-			if (choice == 2)
-			{
-				if (index < 0 || index >= board.getRowSize() || board.canBePlaced(index, 0) || board.canBePlaced(index, (board.getRowSize() - 1)))
-				{
-					std::cout << "Invalid line index.\n";
-					return;
-				}
-
-				if (direction == 1)
-				{
-
-					for (int16_t i = 1; i < board.getColumnSize(); i++)
-					{
-						mergedStack.insert(mergedStack.end(), board[{i, index}].begin(), board[{ i, index}].end());
-						board[{ i, index}].clear();
-					}
-					auto& topStack = board[{ 0, index}];
-					mergedStack.insert(mergedStack.end(), topStack.begin(), topStack.end());
-					topStack.clear();
-					board[{ 0, index}] = std::move(mergedStack);
-				}
-				else
-					if (direction == 2)
-					{
-						for (int16_t i = board.getColumnSize() - 1; i >= 1; i--)
-						{
-							mergedStack.insert(mergedStack.end(), board[{i, index}].begin(), board[{i, index}].end());
-							board[{i, index}].clear();
-						}
-						auto& topStack = board[{(board.getColumnSize() - 1), index }];
-						mergedStack.insert(mergedStack.end(), topStack.begin(), topStack.end());
-						topStack.clear();
-						board[{ (board.getRowSize() - 1), index}] = std::move(mergedStack);
-					}
-			}
-			else
-			{
-				std::cout << "No column has at least 3 cards." << std::endl;
-			}
+		board[{row, board.getColumnSize() - 1}] = std::move(mergedStack);
 	}
 }

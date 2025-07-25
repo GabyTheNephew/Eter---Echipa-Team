@@ -14,15 +14,13 @@
 #include "BoardView.h"
 #include "Board.h"
 #include "Game.h"
-#include "PowerGale.h"
-#include "PowerEarthquake.h"
-#include "PowerTide.h"
-#include "PowerStorm.h"
-#include "PowerSquall.h"
 #include <algorithm>
 #include <QMessageBox>
 #include <QInputDialog>
-
+#include "FirePowers.h"
+#include "WaterPowers.h"
+#include "EarthPowers.h"
+#include "AirPowers.h"
 class Game;
 class SecondaryWindow : public QWidget {
     Q_OBJECT

@@ -18,7 +18,7 @@ public:
 	std::string getName()const;
 	std::string getDescription()const;
 
-	void playMistPower(Board& board, Player player, int16_t x, int16_t y);
+	bool playMistPower(Board& board, Player& player, const SimpleCard& selectedCard, int16_t x, int16_t y);
 	bool checkMistPower(Board& board, Player& player);
 
 };

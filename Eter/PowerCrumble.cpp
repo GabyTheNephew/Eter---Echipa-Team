@@ -19,26 +19,69 @@ std::string PowerCrumble::getDescription() const
 	return m_description;
 }
 
-void PowerCrumble::playCrumblePower(Board& board, int16_t x, int16_t y)
+bool PowerCrumble::playCrumblePower(Board& board, Color playerColor, int16_t x, int16_t y)
 {
 
-	board[{x, y}].back().setValue(board[{x, y}].back().getValue() - 1);
-	Color color = board[{x, y}].back().getColor();
-	if (ColorToString(color) == "Blue")
-	{
-		board[{x, y}].back().setColor(Color::decreasedBlue);
-	}
-	if (ColorToString(color) == "Red")
-	{
-		board[{x, y}].back().setColor(Color::decreasedRed);
-	}
-}
-
-bool PowerCrumble::checkCrumblePower(Board& board, int16_t x, int16_t y)
-{
-	if (board[{x, y}].back().getValue() == 1)
+	if (!checkCrumblePower(board, playerColor, x, y))
 	{
 		return false;
 	}
+
+	SimpleCard& targetCard = board[{x, y}].back();
+	targetCard.setValue(targetCard.getValue() - 1);
+
+	
+	if (playerColor == Color::Red) 
+	{
+		targetCard.setColor(Color::decreasedBlue);
+	}
+	else if (playerColor == Color::Blue) 
+	{
+		targetCard.setColor(Color::decreasedRed);
+	}
+
+	return true;
+}
+
+bool PowerCrumble::checkCrumblePower(Board& board, Color playerColor, int16_t x, int16_t y)
+{
+	if (x < 0 || x >= board.getRowSize() || y < 0 || y >= board.getColumnSize())
+	{
+		return false;
+	}
+
+	if (board[{x, y}].empty())
+	{
+		return false;
+	}
+
+	SimpleCard& targetCard = board[{x, y}].back();
+	if (targetCard.getValue() == 1)
+	{
+		return false;
+	}
+
+	Color cardColor = targetCard.getColor();
+	if (playerColor == Color::Red)
+	{
+		if (cardColor != Color::Blue && cardColor != Color::decreasedBlue)
+		{
+			return false;
+		}
+	}
+	else 
+		if (playerColor == Color::Blue)
+	{
+	
+		if (cardColor != Color::Red && cardColor != Color::decreasedRed)
+		{
+			return false;
+		}
+	}
+	if (cardColor == Color::decreasedRed || cardColor == Color::decreasedBlue)
+	{
+		return false;
+	}
+
 	return true;
 }

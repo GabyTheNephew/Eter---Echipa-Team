@@ -15,8 +15,8 @@ public:
 	std::string_view getName()const;
 	std::string_view getDescription()const;
 
-	bool checkFlamePower(Board& board,Player& player);
-	void playFlamePower(Board& board, Player& player);
+	bool checkFlamePower(Board& board, Color playerColor);
+	bool playFlamePower(Board& board, Color playerColor, int16_t placeX, int16_t placeY, const SimpleCard& cardToPlace);
 };
 
 

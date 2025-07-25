@@ -19,55 +19,50 @@ std::string_view PowerFlame::getDescription() const
 	return m_description;
 }
 
-bool PowerFlame::checkFlamePower(Board& board, Player& player)
+bool PowerFlame::checkFlamePower(Board& board, Color playerColor)
 {
-	std::string playerColor = player.GetVectorColor();
-	bool foundIllusion = false;
+	Color opponentIllusion = (playerColor == Color::Red) ? Color::IlusionBlue : Color::IlusionRed;
 
-	for (int16_t i = 0; i < board.getSize(); i++)
+	for (int16_t i = 0; i < board.getRowSize(); i++)
 	{
-		for (int16_t j = 0; j < board.getSize(); j++)
+		for (int16_t j = 0; j < board.getColumnSize(); j++)
 		{
-			auto& cards = board[{i, j}];
-
-			if (!cards.empty() && foundIllusion==false)
+			if (!board[{i, j}].empty())
 			{
-				Color topCardColor = cards.back().getColor();
-
-				if(playerColor=="Red" && topCardColor==Color::IlusionBlue)
+				if (board[{i, j}].back().getColor() == opponentIllusion)
 				{
-					foundIllusion = true;
-					cards.back().setColor(Color::Blue);
+					return true;
 				}
-				else
-					if (playerColor == "Blue" && topCardColor == Color::IlusionRed)
-					{
-						foundIllusion = true;
-						cards.back().setColor(Color::Red);
-					}
 			}
 		}
 	}
-	return foundIllusion;
+	return false;
 }
 
-void PowerFlame::playFlamePower(Board& board, Player& player)
+bool PowerFlame::playFlamePower(Board& board, Color playerColor, int16_t placeX, int16_t placeY, const SimpleCard& cardToPlace)
 {
+	Color opponentIllusion = (playerColor == Color::Red) ? Color::IlusionBlue : Color::IlusionRed;
+	Color revealedColor = (opponentIllusion == Color::IlusionBlue) ? Color::Blue : Color::Red;
 
-	if (checkFlamePower(board, player)==false)
+	bool illusionRevealed = false;
+	for (int16_t i = 0; i < board.getRowSize() && !illusionRevealed; i++)
 	{
-		std::cout << "You don't have a valid target for Flame power\n";
-		return;
+		for (int16_t j = 0; j < board.getColumnSize() && !illusionRevealed; j++)
+		{
+			if (!board[{i, j}].empty() && board[{i, j}].back().getColor() == opponentIllusion)
+			{
+				board[{i, j}].back().setColor(revealedColor);
+				illusionRevealed = true;
+			}
+		}
 	}
-	else
-	{
-		SimpleCard card = player.chooseCard();
-		std::optional<std::pair<bool, bool>> canPlayIllusion = std::make_pair(false, false);
-		std::vector<SimpleCard> pastcards = player.getPastVector();
 
-		std::cout << "You can place the card anywher on the board\n";
-		player.playCard(card, board, pastcards, canPlayIllusion);
+	if (!illusionRevealed)
+	{
+		return false;
+	}
 
 	
-	}
+	board.pushCard(cardToPlace, { placeX, placeY });
+	return true;
 }

@@ -1,5 +1,7 @@
 ﻿#include "Player.h"
 
+
+#pragma region Constructors and destructors
 Player::Player()
 {
 	m_name = "Player";
@@ -13,38 +15,16 @@ Player::Player(std::string_view name, std::vector <SimpleCard> simpleCards, std:
 Player::Player(std::string_view name, std::vector<SimpleCard> simpleCards, std::vector<SimpleCard> simplePastCards, bool checkMage) :
 	m_name{ name }, m_simpleCardsVector{ simpleCards }, m_pastSimpleCardsVector(simplePastCards)
 {
-	m_mage =static_cast<Mages>(asignMage());
+	m_mage = static_cast<Mages>(asignMage());
 }
 
 Player::~Player()
 {
 }
 
-void Player::setMage(Mages mage)
-{
-	m_mage = mage;
-}
+#pragma endregion
 
-void Player::setPower(Power power)
-{
-	m_power = power;
-}
-
-void Player::setName(std::string_view name)
-{
-	m_name = name;
-}
-
-std::string_view Player::getName()
-{
-	return m_name;
-}
-
-int Player::getMageAssignment()
-{
-	return static_cast<int>(m_mage);
-}
-
+#pragma region Extras
 void Player::printSimpleCards()
 {
 	for (auto& card : m_simpleCardsVector)
@@ -63,155 +43,6 @@ void Player::printPastSimpleCards()
 	}
 }
 
-void Player::reasignMage()
-{
-	m_mage = static_cast<Mages>(asignMage());
-}
-
-void Player::setVector(std::vector<SimpleCard>& simpleCardsVector)
-{
-	m_simpleCardsVector = simpleCardsVector;
-}
-
-void Player::setPastVector(std::vector<SimpleCard>& pastsimpleCardsVector)
-{
-	m_pastSimpleCardsVector = pastsimpleCardsVector;
-}
-
-
-const std::vector<SimpleCard>& Player::getVector()
-{
-	return m_simpleCardsVector;
-}
-
-std::vector<SimpleCard>& Player::getPastVector()
-{
-	return m_pastSimpleCardsVector;
-}
-
-void Player::ResetVector()
-{
-	for (auto& card : m_simpleCardsVector)
-	{
-		if (card.getColor() == Color::usedRed)
-			card.setColor(Color::Red);
-		else
-			if (card.getColor() == Color::usedBlue)
-				card.setColor(Color::Blue);
-	}
-}
-
-void Player::makeCardInvalid(SimpleCard card)
-{
-	auto wantedCard=std::find_if(m_simpleCardsVector.begin(), m_simpleCardsVector.end(),
-		[&card](const auto& currentCard)
-		{
-			return currentCard.getValue() == card.getValue() && currentCard.getColor() == card.getColor();
-		});
-
-	if (wantedCard != m_simpleCardsVector.end()) {
-		if (card.getColor() == Color::Red || card.getColor() == Color::IlusionRed) {
-			wantedCard->setColor(Color::usedRed);
-		}
-		else if (card.getColor() == Color::Blue || card.getColor() == Color::IlusionBlue) {
-			wantedCard->setColor(Color::usedBlue);
-		}
-	}
-
-}
-
-
-void Player::makeCardValid(SimpleCard& card)
-{
-	for (auto& currentCard : m_simpleCardsVector)
-	{
-		if (currentCard.getValue() == card.getValue())
-		{
-			if ((currentCard.getColor() == Color::usedRed && card.getColor() == Color::Red) || (currentCard.getColor() == Color::usedBlue && card.getColor() == Color::Blue))
-			{
-				currentCard.setColor(card.getColor());
-
-				m_pastSimpleCardsVector.erase(
-					std::remove_if(m_pastSimpleCardsVector.begin(), m_pastSimpleCardsVector.end(),
-						[&card](const auto& pastCard)
-						{
-							return pastCard.getValue() == card.getValue() && (pastCard.getColor() == Color::usedRed || pastCard.getColor() == Color::usedBlue);
-						}),
-					m_pastSimpleCardsVector.end()
-				);
-				return;
-
-			}
-		}
-	}
-
-	m_simpleCardsVector.push_back(card);
-}
-
-void Player::addRestrictedCard(const SimpleCard& card)
-{
-	m_restrictedCards.push_back(card);
-}
-
-void Player::clearRestrictedCards()
-{
-	m_restrictedCards.clear();
-}
-
-bool Player::isCardRestricted(const SimpleCard& card) const
-{
-	return std::find_if(m_restrictedCards.begin(), m_restrictedCards.end(),
-		[&card](const auto& restrictedCard)
-		{
-			return restrictedCard.getValue() == card.getValue() && restrictedCard.getColor() == card.getColor();
-		}) != m_restrictedCards.end();
-}
-
-std::string Player::GetVectorColor()
-{
-	auto validCard = std::find_if(m_simpleCardsVector.begin(), m_simpleCardsVector.end(),
-		[](const auto& card)
-		{
-			return card.getColor() == Color::Red || card.getColor() == Color::Blue;
-		});
-	if (validCard != m_simpleCardsVector.end()) {
-		return (validCard->getColor() == Color::Red) ? "Red" : "Blue";
-	}
-
-	throw "All cards of the player are used";
-
-}
-
-void Player::deleteCardFromPastVector(SimpleCard& cardToDelete)
-{
-	for (auto& card : m_pastSimpleCardsVector)
-	{
-		if (card.getValue() == cardToDelete.getValue() && card.getColor() == cardToDelete.getColor())
-		{
-			m_pastSimpleCardsVector.erase(
-				std::remove_if(m_pastSimpleCardsVector.begin(),
-					m_pastSimpleCardsVector.end(),
-
-					[&card](const auto& element)
-					{
-						return element.getValue() == card.getValue() && element.getColor() == card.getColor();
-					}),
-
-				m_pastSimpleCardsVector.end());
-			break;
-		}
-	}
-}
-
-int Player::asignMage()
-{
-	std::random_device random;
-	std::mt19937 generator(random());
-	std::uniform_int_distribution<int> dist(0, 7);
-	return dist(generator);
-}
-
-
 SimpleCard Player::chooseCard()
 {
 	int16_t chosen_card;
@@ -228,16 +59,6 @@ SimpleCard Player::chooseCard()
 		}
 	}
 
-}
-
-int Player::numberofValidCards()
-{
-	return std::count_if(m_simpleCardsVector.begin(), m_simpleCardsVector.end(),
-		[](const auto& card)
-		{
-			return card.getColor() == Color::Red || card.getColor() == Color::Blue;
-		}
-	);
 }
 
 void Player::playCard(SimpleCard& card, Board& game_board, std::vector<SimpleCard>& pastcards, std::optional<std::pair<bool, bool>>& canPlayIllusion)
@@ -400,10 +221,45 @@ void Player::playMage(Mages mage, Board& game_board) {
 	}
 }
 
+#pragma endregion
+
+#pragma region Restrict
+
+void Player::addRestrictedCard(const SimpleCard& card)
+{
+	m_restrictedCards.push_back(card);
+}
+
+void Player::clearRestrictedCards()
+{
+	m_restrictedCards.clear();
+}
+
+bool Player::isCardRestricted(const SimpleCard& card) const
+{
+	return std::find_if(m_restrictedCards.begin(), m_restrictedCards.end(),
+		[&card](const auto& restrictedCard)
+		{
+			return restrictedCard.getValue() == card.getValue() && restrictedCard.getColor() == card.getColor();
+		}) != m_restrictedCards.end();
+}
+
+
+#pragma endregion
+
+#pragma region Getters
+Power Player::getPower() const {
+	return m_power;
+}
+
+Mages Player::getMageEnum() const
+{
+	return m_mage;
+}
 
 std::string Player::getMage()
 {
-	
+
 	switch (this->m_mage)
 	{
 	case Mages::AirMageVelora:
@@ -416,7 +272,7 @@ std::string Player::getMage()
 		return "AirMageZephyraCrow";
 		break;
 	}
-	case Mages::EarthMageBumbleroot: 
+	case Mages::EarthMageBumbleroot:
 	{
 		return "EarthMageBumbleroot";
 		break;
@@ -432,24 +288,202 @@ std::string Player::getMage()
 	case Mages::FireMagePyrofang: {
 
 		return "FireMagePyrofang";
-		break; 
+		break;
 	}
 	case Mages::WaterMageAqualon: {
 		return "WaterMageAqualon";
 		break;
 	}
-	case Mages::WaterMageChillThoughts: 
+	case Mages::WaterMageChillThoughts:
 	{
 		return "WaterMageChillThoughts";
 		break;
 	}
-		default:
-			break;
+	default:
+		break;
 	}
+}
+
+const std::vector<SimpleCard>& Player::getVector()
+{
+	return m_simpleCardsVector;
+}
+
+std::vector<SimpleCard>& Player::getPastVector()
+{
+	return m_pastSimpleCardsVector;
+}
+
+std::string_view Player::getName()
+{
+	return m_name;
+}
+
+int Player::getMageAssignment()
+{
+	return static_cast<int>(m_mage);
+}
+
+std::string Player::GetVectorColor()
+{
+	auto validCard = std::find_if(m_simpleCardsVector.begin(), m_simpleCardsVector.end(),
+		[](const auto& card)
+		{
+			return card.getColor() == Color::Red || card.getColor() == Color::Blue;
+		});
+	if (validCard != m_simpleCardsVector.end()) {
+		return (validCard->getColor() == Color::Red) ? "Red" : "Blue";
+	}
+
+	throw "All cards of the player are used";
+
+}
+
+int Player::numberofValidCards()
+{
+	return std::count_if(m_simpleCardsVector.begin(), m_simpleCardsVector.end(),
+		[](const auto& card)
+		{
+			return card.getColor() == Color::Red || card.getColor() == Color::Blue;
+		}
+	);
 }
 
 
 
+#pragma endregion
+
+#pragma region Setters
+void Player::assignPower() {
+	std::random_device random;
+	std::mt19937 generator(random());
+	std::uniform_int_distribution<int> dist(0, 24);
+	m_power = static_cast<Power>(dist(generator));
+}
+
+void Player::reassignPower() {
+	assignPower();
+}
+
+void Player::deleteCardFromPastVector(SimpleCard& cardToDelete)
+{
+	for (auto& card : m_pastSimpleCardsVector)
+	{
+		if (card.getValue() == cardToDelete.getValue() && card.getColor() == cardToDelete.getColor())
+		{
+			m_pastSimpleCardsVector.erase(
+				std::remove_if(m_pastSimpleCardsVector.begin(),
+					m_pastSimpleCardsVector.end(),
+
+					[&card](const auto& element)
+					{
+						return element.getValue() == card.getValue() && element.getColor() == card.getColor();
+					}),
+
+				m_pastSimpleCardsVector.end());
+			break;
+		}
+	}
+}
+
+int Player::asignMage()
+{
+	std::random_device random;
+	std::mt19937 generator(random());
+	std::uniform_int_distribution<int> dist(0, 7);
+	return dist(generator);
+}
+
+void Player::setMage(Mages mage)
+{
+	m_mage = mage;
+}
+
+void Player::setPower(Power power)
+{
+	m_power = power;
+}
+
+void Player::setName(std::string_view name)
+{
+	m_name = name;
+}
+
+void Player::reasignMage()
+{
+	m_mage = static_cast<Mages>(asignMage());
+}
+
+void Player::setVector(std::vector<SimpleCard>& simpleCardsVector)
+{
+	m_simpleCardsVector = simpleCardsVector;
+}
+
+void Player::setPastVector(std::vector<SimpleCard>& pastsimpleCardsVector)
+{
+	m_pastSimpleCardsVector = pastsimpleCardsVector;
+}
+
+
+
+void Player::ResetVector()
+{
+	for (auto& card : m_simpleCardsVector)
+	{
+		if (card.getColor() == Color::usedRed)
+			card.setColor(Color::Red);
+		else
+			if (card.getColor() == Color::usedBlue)
+				card.setColor(Color::Blue);
+	}
+}
+
+void Player::makeCardInvalid(SimpleCard card)
+{
+	auto wantedCard = std::find_if(m_simpleCardsVector.begin(), m_simpleCardsVector.end(),
+		[&card](const auto& currentCard)
+		{
+			return currentCard.getValue() == card.getValue() && currentCard.getColor() == card.getColor();
+		});
+
+	if (wantedCard != m_simpleCardsVector.end()) {
+		if (card.getColor() == Color::Red || card.getColor() == Color::IlusionRed) {
+			wantedCard->setColor(Color::usedRed);
+		}
+		else if (card.getColor() == Color::Blue || card.getColor() == Color::IlusionBlue) {
+			wantedCard->setColor(Color::usedBlue);
+		}
+	}
+
+}
+
+
+void Player::makeCardValid(SimpleCard& card)
+{
+	for (auto& currentCard : m_simpleCardsVector)
+	{
+		if (currentCard.getValue() == card.getValue())
+		{
+			if ((currentCard.getColor() == Color::usedRed && card.getColor() == Color::Red) || (currentCard.getColor() == Color::usedBlue && card.getColor() == Color::Blue))
+			{
+				currentCard.setColor(card.getColor());
+
+				m_pastSimpleCardsVector.erase(
+					std::remove_if(m_pastSimpleCardsVector.begin(), m_pastSimpleCardsVector.end(),
+						[&card](const auto& pastCard)
+						{
+							return pastCard.getValue() == card.getValue() && (pastCard.getColor() == Color::usedRed || pastCard.getColor() == Color::usedBlue);
+						}),
+					m_pastSimpleCardsVector.end()
+				);
+				return;
+
+			}
+		}
+	}
+
+	m_simpleCardsVector.push_back(card);
+}
 void Player::initiateBoard(Board& board, Position& pos)
 {
 	auto& [line, column] = pos;
@@ -540,23 +574,4 @@ void Player::initiateBoard(Board& board, Position& pos)
 }
 
 
-
-void Player::assignPower() {
-	std::random_device random;
-	std::mt19937 generator(random());
-	std::uniform_int_distribution<int> dist(0, 4);
-	m_power = static_cast<Power>(dist(generator));
-}
-
-void Player::reassignPower() {
-	assignPower();
-}
-
-Power Player::getPower() const {
-	return m_power;
-}
-
-Mages Player::getMageEnum() const
-{
-	return m_mage;
-}
+#pragma endregion

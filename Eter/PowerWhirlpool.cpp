@@ -18,57 +18,42 @@ std::string PowerWhirlpool::getDescription() const
 	return m_description;
 }
 
-void PowerWhirlpool::playWhirlpoolPower(Board& board,int16_t xFirst, int16_t yFirst, int16_t xSecond, int16_t ySecond)
+void PowerWhirlpool::playWhirlpoolPower(Board& board, int16_t row, int16_t yFirst, int16_t ySecound)
 {
-	
+	if(yFirst>ySecound)
+		std::swap(yFirst, ySecound);
 
-	if (board[{xFirst, yFirst}].back().getValue() > board[{xSecond, ySecond}].back().getValue())
+	int16_t middle = yFirst + 1;
+
+	SimpleCard firstCard = board[{row, yFirst}].back();
+	SimpleCard secondCard = board[{row, ySecound}].back();
+
+	board[{row, yFirst}].pop_back();
+	board[{row, ySecound}].pop_back();
+
+	if (firstCard.getValue() >= secondCard.getValue())
 	{
-		auto card1 = SimpleCard(board[{xFirst, yFirst}].back().getValue(), board[{xFirst, yFirst}].back().getColor());
-		board.pushCard(card1, { xFirst, ySecond - 1 });
-		auto card2 = SimpleCard(board[{xSecond, ySecond}].back().getValue(), board[{xSecond, ySecond}].back().getColor());
-		board.pushCard(card1, { xFirst, ySecond - 1 });
+		board.pushCard(secondCard, { row, middle });
+		board.pushCard(firstCard, { row, middle });
 	}
 	else
 	{
-		if (board[{xFirst, yFirst}].back().getValue() < board[{xSecond, ySecond}].back().getValue())
-		{
-			auto card2 = SimpleCard(board[{xSecond, ySecond}].back().getValue(), board[{xSecond, ySecond}].back().getColor());
-			board.pushCard(card2, { xFirst, ySecond - 1 });
-			auto card1 = SimpleCard(board[{xFirst, yFirst}].back().getValue(), board[{xFirst, yFirst}].back().getColor());
-			board.pushCard(card1, { xFirst, ySecond - 1 });
-		}
-		else {
-			
-		}
+		board.pushCard(firstCard, { row, middle });
+		board.pushCard(secondCard, { row, middle });
 	}
-
 }
 
-bool PowerWhirlpool::checkWhirlpoolPower(Board& board, int16_t xFirst, int16_t yFirst, int16_t xSecond, int16_t ySecond)
+bool PowerWhirlpool::checkWhirlpoolPower(Board& board, int16_t row, int16_t yFirst, int16_t ySecond)
 {
-	if (ySecond < yFirst)
-	{
-		std::swap(ySecond, yFirst);
-	}
+		if(row<0||row >= board.getRowSize() || yFirst < 0 || yFirst >= board.getColumnSize() || ySecond < 0 || ySecond >= board.getColumnSize())
+		{
+			return false;
+		}
 
-	if (xFirst != xSecond)
-	{
-		
-		return false;
-	}
+		if (yFirst > ySecond) 
+			std::swap(yFirst, ySecond);
 
-	if (abs(ySecond - yFirst) != 2)
-	{
-		
-		return false;
-	}
 
-	if (board[{xFirst, ySecond - 1}].back().getValue() == NULL)
-	{
-		
-		return false;
-	}
-
-	return true;
+		return (ySecond - yFirst == 2) && board[{row, yFirst}].size() == 1 && board[{row, ySecond}].size() == 1 && board[{row, yFirst + 1}].empty();
+			
 }

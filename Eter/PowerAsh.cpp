@@ -19,92 +19,91 @@ std::string_view PowerAsh::getDescription()const
 	return m_description;
 }
 
-bool PowerAsh::checkAshPower(Player& player)
+std::vector<int16_t> PowerAsh::getEliminatedCardValues(Board& board, Player& player)
 {
-	int16_t cnt1 = 0;
-	int16_t cnt2 = 0;
-	std::string color = player.GetVectorColor();
-	if (color == "Red")
-		color = "usedRed";
-	else
-		color = "usedBlue";
+	std::vector<int16_t> eliminatedValues;
+	Color playerColor = (player.GetVectorColor() == "Red") ? Color::Red : Color::Blue;
 
 	
-	for (auto& card : player.getPastVector())
+	std::map<int16_t, int16_t> handCards;
+	for (const auto& card : player.getVector())
 	{
-		if (color == ColorToString(card.getColor()))
-			cnt1++;
+		if (card.getColor() == playerColor ||card.getColor() == Color::usedRed ||card.getColor() == Color::usedBlue)
+		{
+			handCards[card.getValue()]++;
+		}
 	}
 
-	for (auto& card : player.getVector())
-	{
-		if (color == ColorToString(card.getColor()))
-			cnt2++;
-	}
-
-	if (cnt1 < cnt2)
-		return true;
-	else
-		return false;
-
-}
-
-void PowerAsh::playAshPower(Board& board,Player& player)
-{
 	
-	std::string usedColor = (player.GetVectorColor() == "Red") ? "usedRed" : "usedBlue";
-
-	if (checkAshPower(player) == false)
+	std::map<int16_t, int16_t> boardCards;
+	for (int i = 0; i < board.getRowSize(); i++)
 	{
-		std::cout << "You can't use this power right now!\n";
-		return;
-	}
-
-
-	std::vector<SimpleCard> eligibleCards;
-	for (const auto& card : player.getVector()) {
-		if (ColorToString(card.getColor()) == usedColor) {
-			bool inPast = false;
-			for (const auto& pastCard : player.getPastVector()) {
-				if (card.getValue() == pastCard.getValue() && ColorToString(card.getColor()) == ColorToString(pastCard.getColor())) {
-					inPast = true;
-					break;
+		for (int j = 0; j < board.getColumnSize(); j++)
+		{
+			if (!board[{i, j}].empty())
+			{
+				for (const auto& boardCard : board[{i, j}])
+				{
+					if (boardCard.getColor() == playerColor ||boardCard.getColor() == Color::increasedRed ||boardCard.getColor() == Color::increasedBlue ||boardCard.getColor() == Color::decreasedRed ||boardCard.getColor() == Color::decreasedBlue)
+					{
+						boardCards[boardCard.getValue()]++;
+					}
 				}
 			}
-			if (!inPast) {
-				eligibleCards.push_back(card);
-			}
 		}
 	}
 
-	if (eligibleCards.empty()) {
-		std::cout << "There are no cards to replay!\n";
-		return;
-	}
-
-	SimpleCard chosenCard;
-	if (eligibleCards.size() > 1) 
+	
+	for (const auto& [value, handCount] : handCards)
 	{
-		std::cout << "Select a card to replay:\n";
-		for (size_t i = 0; i < eligibleCards.size(); ++i) {
-			std::cout << i + 1 << ". "<< "Card Value: " << eligibleCards[i].getValue()<< ", Color: " << ColorToString(eligibleCards[i].getColor())<< '\n';
-	}
-	int16_t choice;
-		while (true) {
-			std::cout << "Enter your choice (1-" << eligibleCards.size() << "): ";
-			std::cin >> choice;
-			if (choice > 0 && choice <= static_cast<int>(eligibleCards.size())) {
-				chosenCard = eligibleCards[choice - 1];
-				break;
-			}
-			else {
-				std::cout << "Invalid choice. Try again.\n";
+		int16_t boardCount = boardCards[value];
+		if (handCount > boardCount)
+		{
+		
+			for (int16_t i = 0; i < (handCount - boardCount); i++)
+			{
+				eliminatedValues.push_back(value);
 			}
 		}
 	}
-	std::optional<std::pair<bool, bool>> canPlayIllusion = std::make_pair(false, false);
-	std::vector<SimpleCard> PastCards = player.getPastVector();
-	player.makeCardValid(chosenCard); 
-	player.playCard(chosenCard, board, PastCards, canPlayIllusion);
+
+	return eliminatedValues;
 }
 
+bool PowerAsh::checkAshPower(Board& board, Player& player)
+{
+	return !getEliminatedCardValues(board, player).empty();
+}
+
+bool PowerAsh::playAshPower(Board& board, Player& player, int16_t cardValue, int16_t x, int16_t y)
+{
+	std::vector<int16_t> eliminatedValues = getEliminatedCardValues(board, player);
+
+	
+	bool canReplay = false;
+	for (int16_t value : eliminatedValues)
+	{
+		if (value == cardValue)
+		{
+			canReplay = true;
+			break;
+		}
+	}
+
+	if (!canReplay)
+	{
+		return false;
+	}
+
+	
+	if (!board.canBePlaced(x, y))
+	{
+		return false;
+	}
+
+	Color playerColor = player.GetVectorColor()=="Red"?Color::Red:Color::Blue;
+	
+	board.pushCard(SimpleCard(cardValue, playerColor), { x, y });
+
+	return true;
+}

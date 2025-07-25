@@ -25,6 +25,10 @@ void PowerStorm::playStormPower(Board& board, int16_t x, int16_t y)
 
 bool PowerStorm::checkStormPower(Board& board, int16_t x, int16_t y)
 {
+	if (x < 0 || x >= board.getRowSize() || y < 0 || y >= board.getColumnSize()) 
+	{
+		return false;
+	}
 	if (board[{x, y}].size() >= 2)
 	{
 		return true;

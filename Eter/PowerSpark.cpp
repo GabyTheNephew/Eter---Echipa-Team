@@ -17,61 +17,46 @@ std::string_view PowerSpark::getDescription() const
 	return m_name;
 }
 
-void PowerSpark::printCoveredCards(Board& board, Player& player)
-{
-	std::string playerColor = player.GetVectorColor();
-	bool foundCoveredCards = false;
 
-	std::cout << "Covered cards are: \n";
+bool PowerSpark::checkSparkPower(Board& board, Color playerColor)
+{
 
 	for (int16_t i = 0; i < board.getRowSize(); i++)
 	{
 		for (int16_t j = 0; j < board.getColumnSize(); j++)
 		{
 			const auto& cards = board[{i, j}];
-
 			if (cards.size() > 1)
 			{
-				bool playerCardFound = false;
-				for (int16_t k = 0; k < cards.size(); k++)
+				Color topCardColor = cards.back().getColor();
+				bool isOpponentCard = false;
+
+				if (playerColor == Color::Red)
 				{
-					if ((playerColor == "Red" && cards[k].getColor() == Color::Red) || (playerColor == "Blue" && cards[k].getColor() == Color::Blue))
-					{
-						playerCardFound = true;
-					}
-					else if (playerCardFound)
-					{
-						std::cout << "- Card With Value " << cards[k].getValue() << " at ( " << i << " " << j << ")\n";
-						foundCoveredCards = true;
-						break;
-					}
+					isOpponentCard = (topCardColor == Color::Blue ||topCardColor == Color::increasedBlue ||topCardColor == Color::decreasedBlue);
 				}
-			}
-		}
-	}	
-
-}
-
-bool PowerSpark::checkSparkPower(Board& board, Player& player)
-{
-
-	std::string playerColor = player.GetVectorColor();
-
-
-	for (int16_t i = 0; i < board.getSize(); i++)
-	{
-		for (int16_t j = 0; j < board.getSize(); j++)
-		{
-			const auto& cards = board[{i, j}];
-			if (ColorToString(cards[cards.size()].getColor()) != playerColor)
-			{
-				if (cards.size() > 1)
+				else
 				{
-					for (int16_t k = 1; k < cards.size(); k++)
+					isOpponentCard = (topCardColor == Color::Red ||topCardColor == Color::increasedRed ||topCardColor == Color::decreasedRed);
+				}
+				if (isOpponentCard)
+				{
+					for (int16_t k = 0; k < cards.size() - 1; k++)
 					{
-						if ((playerColor == "Red" && cards[k].getColor() == Color::Red) || (playerColor == "Blue" && cards[k].getColor() == Color::Blue))
+						Color cardColor = cards[k].getColor();
+						if (playerColor == Color::Red)
 						{
-							return true;
+							if (cardColor == Color::Red ||cardColor == Color::increasedRed ||cardColor == Color::decreasedRed)
+							{
+								return true;
+							}
+						}
+						else
+						{
+							if (cardColor == Color::Blue ||cardColor == Color::increasedBlue ||cardColor == Color::decreasedBlue)
+							{
+								return true;
+							}
 						}
 					}
 				}
@@ -81,27 +66,58 @@ bool PowerSpark::checkSparkPower(Board& board, Player& player)
 	return false;
 }
 
-void PowerSpark::playSparkPower(Board& board, Player& player)
+bool PowerSpark::playSparkPower(Board& board, Color playerColor, int16_t sourceX, int16_t sourceY, int16_t cardIndex, int16_t destX, int16_t destY)
 {
 
-	printCoveredCards(board, player);
-
-	std::cout << "Chose a card to you want to move";
-	SimpleCard selectedCard = player.chooseCard();
-
-	int16_t rowOfTheSelectedCard,columnOfTheSeectedCard;
-	std::cout << "Enter the source coordinates of the chosen card (row col): ";
-	std::cin >> rowOfTheSelectedCard >> columnOfTheSeectedCard;
-
-	try {
-		board.popCardAt({ rowOfTheSelectedCard, columnOfTheSeectedCard }, selectedCard);
-	}
-	catch (const std::exception& e) {
-		std::cout << "Error: Invalid source coordinates or card not found.\n";
-		return;
+	if (sourceX < 0 || sourceX >= board.getRowSize() || sourceY < 0 || sourceY >= board.getColumnSize())
+	{
+		return false;
 	}
 
-	std::optional<std::pair<bool, bool>> canPlayIllusion = std::make_pair(false,false);
-	auto pastvector = player.getPastVector();
-	player.playCard(selectedCard, board, pastvector, canPlayIllusion);
+	auto& sourceStack = board[{sourceX, sourceY}];
+	if (sourceStack.size() <= 1 || cardIndex >= sourceStack.size() - 1)
+	{
+		return false;
+	}
+
+	SimpleCard& targetCard = sourceStack[cardIndex];
+	bool isPlayerCard = false;
+
+	if (playerColor == Color::Red)
+	{
+		isPlayerCard = (targetCard.getColor() == Color::Red ||targetCard.getColor() == Color::increasedRed ||targetCard.getColor() == Color::decreasedRed);
+	}
+	else
+	{
+		isPlayerCard = (targetCard.getColor() == Color::Blue ||targetCard.getColor() == Color::increasedBlue ||targetCard.getColor() == Color::decreasedBlue);
+	}
+
+	if (!isPlayerCard)
+	{
+		return false;
+	}
+
+	Color topCardColor = sourceStack.back().getColor();
+	bool isOpponentOnTop = false;
+
+	if (playerColor == Color::Red)
+	{
+		isOpponentOnTop = (topCardColor == Color::Blue ||topCardColor == Color::increasedBlue ||topCardColor == Color::decreasedBlue);
+	}
+	else
+	{
+		isOpponentOnTop = (topCardColor == Color::Red ||topCardColor == Color::increasedRed ||topCardColor == Color::decreasedRed);
+	}
+
+	if (!isOpponentOnTop)
+	{
+		return false;
+	}
+
+	SimpleCard cardToMove = targetCard;
+	sourceStack.erase(sourceStack.begin() + cardIndex);
+
+	board.pushCard(cardToMove, { destX, destY });
+
+	return true;
 }

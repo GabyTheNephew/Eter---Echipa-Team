@@ -1,8 +1,10 @@
 #include "GameSaver.h"
 
+#pragma region Save and load logic
+
 QString GameSaver::generateSaveFileName(const QString& email)
 {
-	QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss");
+    QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss");
     QString cleanEmail = email;
     return QString("save_%1_%2.json").arg(cleanEmail, timestamp);
 }
@@ -40,7 +42,7 @@ bool GameSaver::saveGame(const QString& email, const QString& password, const Ga
     QJsonObject savedData;
 
     savedData["email"] = email;
-    savedData["password"] = password;  
+    savedData["password"] = password;
     savedData["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
 
     savedData["gameType"] = enumToString(nonConstGame.getCurrentGameType()).c_str();
@@ -74,18 +76,18 @@ bool GameSaver::saveGame(const QString& email, const QString& password, const Ga
     {
         savedData["currentExplosion"] = explosionToJson(*nonConstGame.m_explosion);
     }
-    else 
+    else
     {
-        savedData["currentExplosion"] = QJsonObject(); 
+        savedData["currentExplosion"] = QJsonObject();
     }
     savedData["timerDuration"] = nonConstGame.getTimerDuration();
     savedData["player1RemainingTime"] = nonConstGame.getPlayer1RemainingTime();
     savedData["player2RemainingTime"] = nonConstGame.getPlayer2RemainingTime();
 
 
-	QJsonDocument doc(savedData);
+    QJsonDocument doc(savedData);
     QDir saveDir;
-	saveDir.mkpath("saves");
+    saveDir.mkpath("saves");
 
 
     QFile file("saves/" + saveFileName);
@@ -142,7 +144,7 @@ bool GameSaver::loadGame(const QString& filename, Game& game, QString& email, QS
         jsonToPlayer(savedData["player1"].toObject(), gameInstance.player1);
         jsonToPlayer(savedData["player2"].toObject(), gameInstance.player2);
 
-      
+
         gameInstance.m_illusionsEnabled = savedData["illusionsEnabled"].toBool();
         if (savedData["explosionsEnabled"].toBool()) {
             gameInstance.setExplosionsEnabled(true);
@@ -160,11 +162,11 @@ bool GameSaver::loadGame(const QString& filename, Game& game, QString& email, QS
         gameInstance.m_explosionActivated = savedData["explosionActivated"].toBool();
 
         QJsonObject explosionObj = savedData["currentExplosion"].toObject();
-        if (!explosionObj.isEmpty()) 
+        if (!explosionObj.isEmpty())
         {
             gameInstance.m_explosion = jsonToExplosion(explosionObj);
         }
-        else 
+        else
         {
             gameInstance.m_explosion.reset();
         }
@@ -178,19 +180,22 @@ bool GameSaver::loadGame(const QString& filename, Game& game, QString& email, QS
         if (savedData.contains("player2RemainingTime")) {
             gameInstance.player2RemainingTime = savedData["player2RemainingTime"].toInt();
         }
-        
+
         gameInstance.setUserCredentials(email, password);
 
         qDebug() << "Game loaded successfully!";
         return true;
 
-	}
+    }
     catch (const std::exception& e) {
         qDebug() << "Error loading game:" << e.what();
         return false;
     }
 }
 
+#pragma endregion
+
+#pragma region ToJson Convertors
 QJsonObject GameSaver::boardToJson(const Board& board)
 {
     QJsonObject boardObj;
@@ -199,54 +204,28 @@ QJsonObject GameSaver::boardToJson(const Board& board)
     boardObj["rowSize"] = board.getRowSize();
     boardObj["columnSize"] = board.getColumnSize();
 
-	for (int i = 0; i < board.getRowSize(); ++i) 
+    for (int i = 0; i < board.getRowSize(); ++i)
     {
-        for (int j = 0; j < board.getColumnSize(); ++j) 
+        for (int j = 0; j < board.getColumnSize(); ++j)
         {
             QJsonObject positionObj;
-			positionObj["row"] = i;
-			positionObj["column"] = j;
-			
-			QJsonArray cardsAtPosition;
-            const auto& stack = board[{i,j}];
+            positionObj["row"] = i;
+            positionObj["column"] = j;
+
+            QJsonArray cardsAtPosition;
+            const auto& stack = board[{i, j}];
             for (const auto& card : stack)
             {
-				cardsAtPosition.append(cardToJson(card));
+                cardsAtPosition.append(cardToJson(card));
             }
 
-			positionObj["cards"] = cardsAtPosition;
-			boardArray.append(positionObj);
-        }
-	}
-	boardObj["positions"] = boardArray;
-	return boardObj;
-}
-
-void GameSaver::jsonToBoard(const QJsonObject& json, Board& board)
-{
-	int rowSize = json["rowSize"].toInt();
-	int columnSize = json["columnSize"].toInt();
-
-    board.resizeBoard(std::max(rowSize, columnSize));
-
-	QJsonArray positionsArray = json["positions"].toArray();
-
-    for (const auto& posValues : positionsArray)
-    {
-        QJsonObject pos = posValues.toObject();
-        int row = pos["row"].toInt();
-        int col = pos["column"].toInt();
-
-        QJsonArray cards = pos["cards"].toArray();
-
-        for (const auto& cardValue : cards)
-        {
-            SimpleCard card = jsonToCard(cardValue.toObject());
-            board.pushCard(card, { row, col });
+            positionObj["cards"] = cardsAtPosition;
+            boardArray.append(positionObj);
         }
     }
+    boardObj["positions"] = boardArray;
+    return boardObj;
 }
-
 QJsonObject GameSaver::playerToJson(const Player& player)
 {
     QJsonObject playerObj;
@@ -264,7 +243,7 @@ QJsonObject GameSaver::playerToJson(const Player& player)
         playerObj["power"] = enumToString(nonConstPlayer.getPower()).c_str();
     }
     catch (...) {
-        playerObj["power"] = "None"; 
+        playerObj["power"] = "None";
     }
     playerObj["color"] = nonConstPlayer.GetVectorColor().c_str();
 
@@ -273,6 +252,68 @@ QJsonObject GameSaver::playerToJson(const Player& player)
 
     return playerObj;
 }
+QJsonArray GameSaver::cardVectorToJson(const std::vector<SimpleCard>& cards)
+{
+    QJsonArray array;
+    for (const auto& card : cards) {
+        array.append(cardToJson(card));
+    }
+    return array;
+}
+QJsonObject GameSaver::cardToJson(const SimpleCard& card)
+{
+    QJsonObject cardObj;
+    cardObj["value"] = card.getValue();
+    cardObj["color"] = enumToString(card.getColor()).c_str();
+    return cardObj;
+}
+QJsonObject GameSaver::explosionToJson(const Explosion& explosion)
+{
+    QJsonObject explosionObj;
+    QJsonArray posArray;
+
+    for (const auto& [x, y, action] : explosion.getPositions())
+    {
+        QJsonObject positionObj;
+        positionObj["x"] = x;
+        positionObj["y"] = y;
+        positionObj["action"] = enumToString(action).c_str();
+        posArray.append(positionObj);
+    }
+
+    explosionObj["positions"] = posArray;
+    return explosionObj;
+}
+
+#pragma endregion
+
+#pragma region JsonTo
+
+void GameSaver::jsonToBoard(const QJsonObject& json, Board& board)
+{
+    int rowSize = json["rowSize"].toInt();
+    int columnSize = json["columnSize"].toInt();
+
+    board.resizeBoard(std::max(rowSize, columnSize));
+
+    QJsonArray positionsArray = json["positions"].toArray();
+
+    for (const auto& posValues : positionsArray)
+    {
+        QJsonObject pos = posValues.toObject();
+        int row = pos["row"].toInt();
+        int col = pos["column"].toInt();
+
+        QJsonArray cards = pos["cards"].toArray();
+
+        for (const auto& cardValue : cards)
+        {
+            SimpleCard card = jsonToCard(cardValue.toObject());
+            board.pushCard(card, { row, col });
+        }
+    }
+}
+
 
 void GameSaver::jsonToPlayer(const QJsonObject& json, Player& player)
 {
@@ -306,14 +347,6 @@ void GameSaver::jsonToPlayer(const QJsonObject& json, Player& player)
     player.setPastVector(usedCards);
 }
 
-QJsonArray GameSaver::cardVectorToJson(const std::vector<SimpleCard>& cards)
-{
-    QJsonArray array;
-    for (const auto& card : cards) {
-        array.append(cardToJson(card));
-    }
-    return array;
-}
 
 std::vector<SimpleCard> GameSaver::jsonToCardVector(const QJsonArray& json)
 {
@@ -324,13 +357,6 @@ std::vector<SimpleCard> GameSaver::jsonToCardVector(const QJsonArray& json)
     return cards;
 }
 
-QJsonObject GameSaver::cardToJson(const SimpleCard& card)
-{
-    QJsonObject cardObj;
-    cardObj["value"] = card.getValue();
-    cardObj["color"] = enumToString(card.getColor()).c_str();
-    return cardObj;
-}
 
 SimpleCard GameSaver::jsonToCard(const QJsonObject& json)
 {
@@ -339,33 +365,16 @@ SimpleCard GameSaver::jsonToCard(const QJsonObject& json)
     return SimpleCard(value, color);
 }
 
-QJsonObject GameSaver::explosionToJson(const Explosion& explosion)
-{
-	QJsonObject explosionObj;
-	QJsonArray posArray;
-
-    for(const auto& [x,y,action]:explosion.getPositions())
-    {
-        QJsonObject positionObj;
-        positionObj["x"] = x;
-        positionObj["y"] = y;
-        positionObj["action"] = enumToString(action).c_str();
-        posArray.append(positionObj);
-	}
-
-    explosionObj["positions"] = posArray;
-    return explosionObj;
-}
 
 std::unique_ptr<Explosion> GameSaver::jsonToExplosion(const QJsonObject& json)
 {
 
-	auto explosion = std::make_unique<Explosion>();
-	explosion->positions.clear();
+    auto explosion = std::make_unique<Explosion>();
+    explosion->positions.clear();
 
 
     QJsonArray positionsArray = json["positions"].toArray();
-    for (const auto& posValue : positionsArray) 
+    for (const auto& posValue : positionsArray)
     {
         QJsonObject pos = posValue.toObject();
         int16_t x = pos["x"].toInt();
@@ -376,5 +385,7 @@ std::unique_ptr<Explosion> GameSaver::jsonToExplosion(const QJsonObject& json)
     }
 
     return explosion;
-    
+
 }
+
+#pragma endregion

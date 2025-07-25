@@ -17,7 +17,7 @@ public:
 	std::string_view getDescription() const;
 
 	bool checkGustPower(Board& board, int16_t x, int16_t y);
-	void playGustPower(Board& board);
+	void playGustPower(Board& board, int16_t sourceX, int16_t sourceY, int16_t targetX, int16_t targetY);
 };
 
 

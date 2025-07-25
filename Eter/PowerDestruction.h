@@ -2,6 +2,7 @@
 #include<iostream>
 #include"Player.h"
 #include<string_view>
+#include "Game.h"
 
 
 class PowerDestruction
@@ -15,7 +16,7 @@ public:
 	std::string_view getName()const;
 	std::string_view getDescription()const;
 
-	bool checkDestructionPower(Player& player);
-	void playDestructionPower(Player& player);
+	bool checkDestructionPower(Player& opponent);
+	bool playDestructionPower(Board& board, Player& opponent);
 };
 

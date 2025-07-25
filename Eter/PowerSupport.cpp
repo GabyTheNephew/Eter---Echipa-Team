@@ -18,26 +18,72 @@ std::string PowerSupport::getDescription() const
 	return m_description;
 }
 
-void PowerSupport::playSupportPower(Board& board, int16_t x, int16_t y)
+bool PowerSupport::playSupportPower(Board& board, Color playerColor, int16_t x, int16_t y)
 {
 
-	board[{x, y}].back().setValue(board[{x, y}].back().getValue()+1);
-	Color color = board[{x, y}].back().getColor();
-	if (ColorToString(color) == "Blue")
-	{
-		board[{x, y}].back().setColor(Color::increasedBlue);
-	}
-	if (ColorToString(color) == "Red")
-	{
-		board[{x, y}].back().setColor(Color::increasedRed);
-	}
-}
-
-bool PowerSupport::checkSupportPower(Board& board, int16_t x, int16_t y)
-{
-	if (board[{x, y}].back().getValue() == 4)
+	if (!checkSupportPower(board, playerColor, x, y))
 	{
 		return false;
 	}
+
+	SimpleCard& targetCard = board[{x, y}].back();
+	targetCard.setValue(targetCard.getValue() + 1);
+
+	if (playerColor == Color::Red)
+	{
+		targetCard.setColor(Color::increasedRed);
+	}
+	else if (playerColor == Color::Blue)
+	{
+		targetCard.setColor(Color::increasedBlue);
+	}
+
+	return true;
+}
+
+bool PowerSupport::checkSupportPower(Board& board, Color playerColor, int16_t x, int16_t y)
+{
+	if (x < 0 || x >= board.getRowSize() || y < 0 || y >= board.getColumnSize())
+	{
+		return false;
+	}
+
+	
+	if (board[{x, y}].empty())
+	{
+		return false;
+	}
+
+	SimpleCard& targetCard = board[{x, y}].back();
+
+
+	if (targetCard.getValue() == 4)
+	{
+		return false;
+	}
+
+	
+	Color cardColor = targetCard.getColor();
+	if (playerColor == Color::Red)
+	{
+		if (cardColor != Color::Red && cardColor != Color::increasedRed)
+		{
+			return false;
+		}
+	}
+	else if (playerColor == Color::Blue)
+	{
+		if (cardColor != Color::Blue && cardColor != Color::increasedBlue)
+		{
+			return false;
+		}
+	}
+
+	
+	if (cardColor == Color::increasedRed || cardColor == Color::increasedBlue)
+	{
+		return false;
+	}
+
 	return true;
 }

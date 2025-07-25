@@ -34,26 +34,34 @@ void PowerGale::playGalePower(Board& board, Player& player1, Player& player2)
 
             while (stack.size() > 1) 
             {
-                SimpleCard card = stack.back();
-                stack.pop_back();
+				SimpleCard coveredCard = stack.front();
+				stack.pop_front();
 
-                auto& pastCards = player1.getPastVector();
-                auto it = std::find(pastCards.begin(), pastCards.end(), card);
-				if (card.getColor() == Color::Red)
-				{
-					card.setColor(Color::usedRed);
-					if (it != pastCards.end())
-						player1.makeCardValid(card);
-				}
-				else if (card.getColor() == Color::Blue)
-				{
-					card.setColor(Color::usedBlue);
-					if (it != pastCards.end())
-						player1.makeCardValid(card);
-				}
-               }
+                Color originalColor;
+                if (coveredCard.getColor() == Color::Red || coveredCard.getColor() == Color::usedRed) {
+                    originalColor = Color::Red;
+                }
+                else if (coveredCard.getColor() == Color::Blue || coveredCard.getColor() == Color::usedBlue) {
+                    originalColor = Color::Blue;
+                }
+                else {
+                    continue;
+                }
+
+                SimpleCard returnCard(coveredCard.getValue(), originalColor);
+
+
+                if (originalColor == Color::Red) 
+                {
+                    player1.makeCardValid(returnCard);
+                }
+                else 
+                {
+                    player2.makeCardValid(returnCard);
+                }
             }
         }
     }
+}
 
 

@@ -20,45 +20,59 @@ std::string PowerFire::getDescription() const
 
 
 
-void PowerFire::playFirePower(Board& board, Player& player1, Player& player2, int16_t value)
+bool PowerFire::playFirePower(Board& board, Player& player1, Player& player2, int16_t value)
 {
-	for (int16_t i = 0; i < board.getSize(); i++)
-		for (int16_t j = 0; j < board.getSize(); j++)
+	if (!checkFirePower(board, value))
+	{
+		return false;
+	}
+
+	for (int16_t i = 0; i < board.getRowSize(); i++)
+		for (int16_t j = 0; j < board.getColumnSize(); j++)
 		{
 			if (!board[{i, j}].empty())
 			{
-				if (board[{i, j}].back().getValue() == value) {
-					if (board[{i, j}].back().getColor() == Color::Red) {
-						auto card = SimpleCard(value, Color::Red);
-						player1.makeCardValid(card);
-						board.popCard({ i, j });
+				SimpleCard& topCard = board[{i, j}].back();
+				if (topCard.getValue() == value)
+				{
+					if (topCard.getColor() == Color::Red ||topCard.getColor() == Color::increasedRed ||topCard.getColor() == Color::decreasedRed)
+					{
+						SimpleCard returnCard(value, Color::Red);
+						player1.makeCardValid(returnCard);
 					}
-					else if (board[{i, j}].back().getColor() == Color::Blue){
-						auto card = SimpleCard(value, Color::Blue);
-						player1.makeCardValid(card);
-						board.popCard({ i, j });
+					else if (topCard.getColor() == Color::Blue ||topCard.getColor() == Color::increasedBlue ||topCard.getColor() == Color::decreasedBlue)
+					{
+						SimpleCard returnCard(value, Color::Blue);
+						player2.makeCardValid(returnCard);
 					}
 
+					
+					board.popCard({ i, j });
 				}
 			}
 		}
+
+	return true;
 }
 
 bool PowerFire::checkFirePower(Board& board, int16_t value)
 {
+	
 	int16_t count = 0;
-	for (int16_t i = 0; i < board.getSize(); i++) {
-		if (count >= 2)
-		{
-			return true;
-		}
-		for (int16_t j = 0; j < board.getSize(); j++)
-		{
-			if (board[{i, j}].back().getValue() == value) {
-				count++;
-			}
 
+	for (int16_t i = 0; i < board.getRowSize(); i++)
+	{
+		for (int16_t j = 0; j < board.getColumnSize(); j++)
+		{
+			if (!board[{i, j}].empty())
+			{
+				if (board[{i, j}].back().getValue() == value)
+				{
+					count++;
+				}
+			}
 		}
 	}
-	return false;
+
+	return count >= 2;
 }

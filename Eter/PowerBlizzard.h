@@ -5,6 +5,8 @@
 #include "Player.h"
 #include "SimpleCard.h"
 
+class Game;
+
 class PowerBlizzard
 {
 private:
@@ -18,7 +20,7 @@ public:
 	std::string getName()const;
 	std::string getDescription()const;
 
-	void playBlizzardPower(Board& board, Player player1, Player player2, int16_t x, int16_t y, char position, std::vector<SimpleCard>& PastCards, std::optional<std::pair<bool, bool>>& canPlayIllusion);
-	bool checkBlizzardPower(Board& board, Player& player, int16_t x, int16_t y);
+	void playBlizzardPower(Game& game, bool isRow, int index);
+	bool checkBlizzardPower(Board& board);
 
 };

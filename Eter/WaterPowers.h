@@ -1,10 +1,8 @@
 #pragma once
 
-enum class WaterPowers {
-	PowerTide,
-	PowerMist,
-	PowerWave,
-	PowerWhirpool,
-	PowerBlizzard,
-	PowerWaterfall
-};
+#include "PowerTide.h"
+#include "PowerMist.h"
+#include "PowerWave.h"
+#include "PowerWhirlpool.h"
+#include "PowerBlizzard.h"
+#include "PowerWaterfall.h"

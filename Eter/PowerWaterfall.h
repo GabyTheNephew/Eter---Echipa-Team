@@ -20,9 +20,7 @@ public:
 
 	
 	bool checkWaterfallPower(Board& board);
-	void PrintColumns(Board& board);
-	void PrintRows(Board& board);
-	void playWaterfallPower(Board& board, Player& player);
+	void playWaterfallPower(Board& board, int16_t row,bool cascadeLeft);
 };
 
 

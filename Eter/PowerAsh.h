@@ -15,7 +15,8 @@ public:
 	std::string_view getName()const;
 	std::string_view getDescription()const;
 
-	bool checkAshPower(Player& player);
-	void playAshPower(Board& board,Player& player);
+	std::vector<int16_t> getEliminatedCardValues(Board& board, Player& player);
+	bool checkAshPower(Board& board, Player& player);
+	bool playAshPower(Board& board, Player& player, int16_t cardValue, int16_t x, int16_t y);
 };
 

@@ -16,7 +16,7 @@ public:
 	std::string getName() const;
 	std::string getDescription() const;
 
-	void playSupportPower(Board& board, int16_t x, int16_t y);
-	bool checkSupportPower(Board& board, int16_t x, int16_t y);
+	bool playSupportPower(Board& board, Color playerColor, int16_t x, int16_t y);
+	bool checkSupportPower(Board& board, Color playerColor, int16_t x, int16_t y);
 
 };

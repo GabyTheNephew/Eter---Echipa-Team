@@ -17,19 +17,40 @@ std::string PowerRock::getDescription() const
 	return m_description;
 }
 
-void PowerRock::playRockPower(Board& board, Player& player, int16_t x, int16_t y)
+bool PowerRock::playRockPower(Board& board, Player& player, const SimpleCard& selectedCard, int16_t x, int16_t y)
 {
-	SimpleCard chosenCard = player.chooseCard();
-	board[{x, y}].push_back(chosenCard);
-	player.makeCardInvalid(chosenCard);
-	player.getPastVector().push_back(chosenCard);
+	if (x < 0 || x >= board.getRowSize() || y < 0 || y >= board.getColumnSize()) 
+	{
+		return false;
+	}
+
+	if (!checkRockPower(board, x, y))
+	{
+		return false;
+	}
+
+	board[{x, y}].push_back(selectedCard);
+
+	player.makeCardInvalid(selectedCard);
+	player.getPastVector().push_back(selectedCard);
+
+	return true;
+
 }
 
 bool PowerRock::checkRockPower(Board& board, int16_t x, int16_t y)
 {
-	if ((board[{x, y}].back().getColor() == Color::IlusionRed) || (board[{x, y}].back().getColor() == Color::IlusionBlue))
+	if (x < 0 || x >= board.getRowSize() || y < 0 || y >= board.getColumnSize()) 
 	{
-		return true;
+		return false;
 	}
-	return false;
+
+	if (board[{x, y}].empty()) 
+	{
+		return false;
+	}
+
+	Color topCardColor = board[{x, y}].back().getColor();
+	return (topCardColor == Color::IlusionRed || topCardColor == Color::IlusionBlue);
+
 }

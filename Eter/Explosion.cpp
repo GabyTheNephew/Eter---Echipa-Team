@@ -1,15 +1,8 @@
 ﻿#include "Explosion.h"
-
-
-
 #include <random>
 #include <set>
 #include <ctime>
-
-#include <random>
-#include <set>
-#include <ctime>
-
+#pragma region Constructors and init
 Explosion::Explosion()
 {
 	this->vectorInstantiation(3);
@@ -25,24 +18,24 @@ Explosion::Explosion(bool empty)
 
 void Explosion::vectorInstantiation(int16_t size)
 {
-	
+
 	std::mt19937 generator(static_cast<unsigned>(std::time(nullptr)));
 
 	int16_t minEffects, maxEffects;
-	if (size == 3) 
+	if (size == 3)
 	{
 		minEffects = 2;
 		maxEffects = 4;
 	}
-	else 
+	else
 	{
 		minEffects = 3;
 		maxEffects = 6;
 	}
-	
+
 	std::uniform_int_distribution<int> numActionsDist(minEffects, maxEffects);
-	std::uniform_int_distribution<int> positionDist(0, size-1);    
-	
+	std::uniform_int_distribution<int> positionDist(0, size - 1);
+
 	std::discrete_distribution<int> actionDist({ 5, 47, 48 });
 
 	int16_t numActions = numActionsDist(generator);
@@ -61,9 +54,9 @@ void Explosion::vectorInstantiation(int16_t size)
 	}
 }
 
+#pragma endregion
 
-
-
+#pragma region Rotations
 void Explosion::rotationLeft(int16_t size)
 {
 	for (int16_t i = 0; i < positions.size(); i++)
@@ -97,6 +90,9 @@ const std::vector<std::tuple<int16_t, int16_t, ActionType>>& Explosion::getPosit
 {
 	return positions;
 }
+
+#pragma endregion
+
 
 std::string ActionTypeToString(const ActionType& actionType)
 {

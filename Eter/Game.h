@@ -24,6 +24,7 @@
 
 
 
+
 class Game:public QObject
 {
     Q_OBJECT
@@ -45,6 +46,9 @@ private:
     bool m_explosionActivated = false;
     bool m_explosionsEnabled = false;
     bool m_illusionsEnabled;
+
+    
+
 #pragma endregion
 
 #pragma region Player
@@ -65,6 +69,8 @@ private:
     int player1RemainingTime;
     int player2RemainingTime;
     bool timerActive;
+
+    
 #pragma endregion
 
     static bool s_forceStop;
@@ -89,7 +95,8 @@ private:
 
 public:
     bool m_timerEnabled = false;
-    
+    std::vector<std::pair<int16_t, int16_t>> m_restrictedPositions;
+    int m_restrictionRemainingTurns = 0;
 #pragma region Game Methods
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
@@ -125,6 +132,8 @@ public:
     void resetMageFlags();
 
     QString getExplosionPreviewGrid() const;
+
+   
 
 #pragma endregion
 

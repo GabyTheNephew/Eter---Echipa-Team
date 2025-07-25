@@ -16,6 +16,6 @@ public:
 	std::string_view getDescription()const;
 
 	bool checkWavePower(Board& board, Player& player,int16_t x,int16_t y);
-	void playWavePower(Board& board, Player& player, int16_t x, int16_t y);
-	void printEmptyAdjacentStacks(Board& board, int16_t x, int16_t y);
+	void playWavePower(Board& board, Player& player, int16_t sourceX, int16_t sourceY, int16_t targetX, int16_t targetY, const SimpleCard& cardToPlay);
+
 };

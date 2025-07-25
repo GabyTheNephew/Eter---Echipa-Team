@@ -8,7 +8,26 @@ enum class Power
     PowerTide,
     PowerStorm,
     PowerSquall,
+	PowerWave,
     PowerGale,
+	PowerWaterfall,
+    PowerGust,
+	PowerWhirlpool,
+    PowerAsh,
+	PowerBlizzard,
+    PowerMist,
+	PowerMirage,
+    PowerRock,
+	PowerSupport,
+	PowerCrumble,
+    PowerControlledExplosion,
+    PowerDestruction,
+    PowerFlame,
+    PowerFire,
+    PowerSpark,
+	PowerHurricane,
+    PowerAvalanche, 
+	PowerBorder
 };
 
 inline QString fromPowerToQString(Power power)

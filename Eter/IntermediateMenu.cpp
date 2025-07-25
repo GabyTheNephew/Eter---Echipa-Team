@@ -174,7 +174,7 @@ void IntermediateMenu::onStartClicked() {
     }
 }
 
-
+#pragma region Validators
 bool IntermediateMenu::validateInput() {
     QString email = emailLineEdit->text().trimmed();
     QString password = passwordLineEdit->text();
@@ -213,3 +213,5 @@ bool IntermediateMenu::isValidPassword(const std::string& password) {
     std::regex passwordPattern(R"(^(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{5,}$)");
     return std::regex_match(password, passwordPattern);
 }
+#pragma endregion
+
