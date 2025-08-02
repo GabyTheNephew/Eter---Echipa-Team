@@ -13,6 +13,18 @@
 #include <QMessageBox>
 #include <regex>   
 
+extern "C" {
+    __declspec(dllimport) bool ValidateEmail(const char* email);
+    __declspec(dllimport) bool ValidatePassword(const char* password);
+    __declspec(dllimport) const char* GetDLLVersion();
+}
+
+#ifdef _DEBUG
+#pragma comment(lib, "../x64/Debug/AuthDLL.lib")
+#else
+#pragma comment(lib, "../x64/Release/AuthDLL.lib")
+#endif
+
 class IntermediateMenu : public QWidget {
     Q_OBJECT
 

@@ -3,6 +3,7 @@
 #include<vector>
 #include<algorithm>
 #include <random>
+#include <ranges>
 #include "SimpleCard.h"
 #include "Mages.h"
 #include "Board.h"

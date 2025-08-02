@@ -1,0 +1,4 @@
+EXPORTS
+ValidateEmail
+ValidatePassword
+GetDLLVersion

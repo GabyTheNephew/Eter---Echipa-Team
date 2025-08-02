@@ -20,21 +20,35 @@ std::string_view PowerWaterfall::getDescription() const
 {
 	return m_description;
 }
-
 bool PowerWaterfall::checkWaterfallPower(Board& board)
 {
+	
 	for (int16_t i = 0; i < board.getRowSize(); i++)
 	{
 		int ocupiedPositions = 0;
-		for(int16_t j = 0; j < board.getColumnSize(); j++)
+		for (int16_t j = 0; j < board.getColumnSize(); j++)
 		{
-			if (!board[{j, i}].empty())
+			if (!board[{i, j}].empty())
 			{
 				ocupiedPositions++;
 			}
 		}
-
-		if(ocupiedPositions >= 3)
+		if (ocupiedPositions >= 3)
+		{
+			return true;
+		}
+	}
+	for (int16_t j = 0; j < board.getColumnSize(); j++)
+	{
+		int ocupiedPositions = 0;
+		for (int16_t i = 0; i < board.getRowSize(); i++)
+		{
+			if (!board[{i, j}].empty())
+			{
+				ocupiedPositions++;
+			}
+		}
+		if (ocupiedPositions >= 3)
 		{
 			return true;
 		}
@@ -42,35 +56,63 @@ bool PowerWaterfall::checkWaterfallPower(Board& board)
 	return false;
 }
 
-
-
-void PowerWaterfall::playWaterfallPower(Board& board, int16_t row, bool cascadeLeft)
+void PowerWaterfall::playWaterfallPower(Board& board, int16_t index, bool cascadeToFirst, bool isRow)
 {
 	std::deque<SimpleCard> mergedStack;
 
-	if (cascadeLeft)
+	if (isRow) 
 	{
-		for (int16_t col = board.getColumnSize() - 1; col >= 0; col--)
+		if (cascadeToFirst) 
 		{
-			for (auto& card : board[{row, col}])
+			for (int16_t col = board.getColumnSize() - 1; col >= 0; col--)
 			{
-				mergedStack.push_back(card);
+				for (auto& card : board[{index, col}])
+				{
+					mergedStack.push_back(card);
+				}
+				board[{index, col}].clear();
 			}
-			board[{row, col}].clear();
+			board[{index, 0}] = std::move(mergedStack);
 		}
-
-		board[{row, 0}] = std::move(mergedStack);
+		else 
+		{
+			for (int16_t col = 0; col < board.getColumnSize(); col++)
+			{
+				for (auto& card : board[{index, col}])
+				{
+					mergedStack.push_back(card);
+				}
+				board[{index, col}].clear();
+			}
+			board[{index, board.getColumnSize() - 1}] = std::move(mergedStack);
+		}
 	}
 	else
 	{
-		for (int16_t col = 0; col < board.getColumnSize(); col++)
+		
+		if (cascadeToFirst) 
 		{
-			for (auto& card : board[{row, col}])
+			for (int16_t row = board.getRowSize() - 1; row >= 0; row--)
 			{
-				mergedStack.push_back(card);
+				for (auto& card : board[{row, index}])
+				{
+					mergedStack.push_back(card);
+				}
+				board[{row, index}].clear();
 			}
-			board[{row, col}].clear();
+			board[{0, index}] = std::move(mergedStack);
 		}
-		board[{row, board.getColumnSize() - 1}] = std::move(mergedStack);
+		else 
+		{
+			for (int16_t row = 0; row < board.getRowSize(); row++)
+			{
+				for (auto& card : board[{row, index}])
+				{
+					mergedStack.push_back(card);
+				}
+				board[{row, index}].clear();
+			}
+			board[{board.getRowSize() - 1, index}] = std::move(mergedStack);
+		}
 	}
 }

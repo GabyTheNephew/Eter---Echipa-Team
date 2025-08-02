@@ -205,13 +205,11 @@ bool IntermediateMenu::validateInput() {
 
 
 bool IntermediateMenu::isValidEmail(const std::string& email) {
-    std::regex emailPattern(R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)");
-    return std::regex_match(email, emailPattern);
+    return ValidateEmail(email.c_str());
 }
 
 bool IntermediateMenu::isValidPassword(const std::string& password) {
-    std::regex passwordPattern(R"(^(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{5,}$)");
-    return std::regex_match(password, passwordPattern);
+    return ValidatePassword(password.c_str());
 }
 #pragma endregion
 

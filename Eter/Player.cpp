@@ -341,7 +341,7 @@ std::string Player::GetVectorColor()
 
 int Player::numberofValidCards()
 {
-	return std::count_if(m_simpleCardsVector.begin(), m_simpleCardsVector.end(),
+	return std::ranges::count_if(m_simpleCardsVector, 
 		[](const auto& card)
 		{
 			return card.getColor() == Color::Red || card.getColor() == Color::Blue;

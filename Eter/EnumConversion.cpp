@@ -118,6 +118,10 @@ Mages stringToEnum<Mages>(const std::string& str) {
 
 template<>
 std::string enumToString<Power>(Power power) {
+
+   
+
+
     switch (power) {
     case Power::PowerEarthquake:
         return "PowerEarthquake";

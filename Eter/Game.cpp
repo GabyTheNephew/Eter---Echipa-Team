@@ -200,40 +200,6 @@ bool Game::checkPlayExplosion(Board& m_board)const
 		}
 	}
 
-	bool mainDiagonalComplete = true;
-	bool secondaryDiagonalComplete = true;
-
-	if (m_board.getColumnSize() == m_board.getRowSize())
-	{
-		for (int16_t i = 0; i < m_board.getRowSize(); i++)
-		{
-			if (m_board[{i, i}].empty() || m_board[{i, i}].back().getColor() == Color::Hole)
-			{
-				mainDiagonalComplete = false;
-				break;
-			}
-		}
-
-		for (int16_t i = 0; i < m_board.getRowSize(); i++)
-		{
-			if (m_board[{i, m_board.getRowSize() - 1 - i}].empty() || m_board[{i, m_board.getRowSize() - 1 - i}].back().getColor() == Color::Hole)
-			{
-				secondaryDiagonalComplete = false;
-				break;
-			}
-		}
-
-		if (mainDiagonalComplete)
-		{
-			completedRowsColumnsOrDiagonals++;
-		}
-		if (secondaryDiagonalComplete)
-		{
-			completedRowsColumnsOrDiagonals++;
-		}
-	}
-
-
 	return completedRowsColumnsOrDiagonals >= 2;
 }
 
@@ -270,6 +236,9 @@ void Game::endCurrentRound() {
 
 
 	resetTimers();
+
+	m_player1PowerUsed = false;
+	m_player2PowerUsed = false;
 
 
 	int16_t winCondition;
@@ -402,6 +371,8 @@ void Game::showExplosionRotationDialog()
 		previewBox.setWindowTitle("Explosion Preview");
 		previewBox.setText("Current explosion effects:");
 		previewBox.setDetailedText(previewText);
+
+		previewBox.setStyleSheet("QMessageBox { min-width: 600px; min-height: 400px; }""QMessageBox QTextEdit { min-width: 500px; min-height: 300px; font-family: monospace; }");
 
 		QPushButton* rotateLeftBtn = previewBox.addButton("Rotate 90° Left", QMessageBox::ActionRole);
 		QPushButton* rotateRightBtn = previewBox.addButton("Rotate 90° Right", QMessageBox::ActionRole);
@@ -1507,6 +1478,9 @@ void Game::incrementRoundCounter()
 	m_explosion.reset();
 
 	resetTimers();
+
+	m_player1PowerUsed = false;
+	m_player2PowerUsed = false;
 }
 
 

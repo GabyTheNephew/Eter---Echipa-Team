@@ -973,8 +973,8 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 
     if (currentPlayer != color)
     {
-        QMessageBox::information(this, "Invalid Mage", QString("Only the current player (%1) can use their mage!")
-            .arg(currentPlayer == Color::Red ? "Player 1 (Red)" : "Player 2 (Blue)"));
+        QMessageBox::information(this, "Invalid Mage", QString("Only Player %1 can use their mage!")
+            .arg(currentPlayer == Color::Red ? " 2 (Blue)" : "1 (Red)"));
         return;
     }
     if (color == Color::Red && game->isPlayer1MageUsed()) {
@@ -993,6 +993,7 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
     }
 
     Mages mage = fromQStringToMages(mageName);
+    bool mageWasUsed = false;
 
     switch (mage) {
     case Mages::AirMageVelora: {
@@ -1041,6 +1042,7 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
                     game->setPlayer2MageUsed(true);
                     QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
                 }
+                mageWasUsed = true;
             }
         } while (returnedValue == false);
         break;
@@ -1078,6 +1080,7 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
             game->setPlayer2MageUsed(true);
             QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
         }
+        mageWasUsed = true;
         break;
     }
     case Mages::EarthMageBumbleroot: {
@@ -1116,6 +1119,7 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
             game->setPlayer2MageUsed(true);
             QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
         }
+        mageWasUsed = true;
 
         break;
     }
@@ -1181,6 +1185,8 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
                 game->setPlayer2MageUsed(true);
                 QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
             }
+
+            mageWasUsed = true;
         }
         else
         {
@@ -1232,6 +1238,7 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
                 game->setPlayer2MageUsed(true);
                 QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
             }
+            mageWasUsed = true;
 
         }
         else
@@ -1337,6 +1344,7 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
                 game->setPlayer2MageUsed(true);
                 QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
             }
+            mageWasUsed = true;
         }
         else
         {
@@ -1380,6 +1388,8 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
                 game->setPlayer2MageUsed(true);
                 QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
             }
+
+            mageWasUsed = true;
         }
         else {
             QMessageBox::warning(this, "Invalid Move", "Cannot move this row/column! Make sure it's at the edge and fully occupied.");
@@ -1426,6 +1436,7 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
             game->setPlayer2MageUsed(true);
             QMessageBox::information(this, "Mage Used", "Player 2 mage power has been used!");
         }
+        mageWasUsed = true;
 
         break;
     }
@@ -1434,11 +1445,19 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
     }
 
     updateMageButtons();
+
     m_boardView->updateView();
 
     Game& gameInstance = Game::get_Instance();
     setPlayer1Cards(gameInstance.getPlayer1().getVector());
     setPlayer2Cards(gameInstance.getPlayer2().getVector());
+    game->setPlayerMoveCompleted(true);
+
+    if (mageWasUsed) 
+    {
+   
+        game->setPlayerMoveCompleted(true);
+    }
 }
 
 void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& color)
@@ -1446,11 +1465,7 @@ void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& colo
     bool powerUsed = false;
     qDebug() << "Power clicked:" << powerName;
 
-    if (currentPlayer != color)
-    {
-        QMessageBox::information(this, "Invalid Power", QString("Only player (%1) can use their power!").arg(currentPlayer == Color::Blue ? "Player 1 (Red)" : "Player 2 (Blue)"));
-        return;
-    }
+    
 
     if (color == Color::Red && game->isPlayer1PowerUsed())
     {
@@ -1475,41 +1490,67 @@ void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& colo
     case Power::PowerWaterfall:
     {
         PowerWaterfall waterfallPower;
-
         if (!waterfallPower.checkWaterfallPower(m_boardView->getBoard()))
         {
-            QMessageBox::information(this, "Power Failed", "No rows have at least 3 occupied positions!");
+            QMessageBox::information(this, "Power Failed", "No rows or columns have at least 3 occupied positions!");
             break;
         }
 
         bool ok;
-        int row = QInputDialog::getInt(this, "Select Row", "Enter row index:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
+        QStringList options;
+        options << "Row" << "Column";
+        QString choice = QInputDialog::getItem(this, "Select Type", "Choose row or column:", options, 0, false, &ok);
+        if (!ok) break;
+
+        bool isRow = (choice == "Row");
+        int maxIndex = isRow ? m_boardView->getBoard().getRowSize() - 1 : m_boardView->getBoard().getColumnSize() - 1;
+
+        int index = QInputDialog::getInt(this, QString("Select %1").arg(choice), QString("Enter %1 index:").arg(choice.toLower()), 0, 0, maxIndex, 1, &ok);
         if (!ok) break;
 
         int ocupiedPositions = 0;
-        for (int col = 0; col < m_boardView->getBoard().getColumnSize(); col++)
+        if (isRow) 
         {
-            if (!m_boardView->getBoard()[{row, col}].empty())
+            for (int col = 0; col < m_boardView->getBoard().getColumnSize(); col++)
             {
-                ocupiedPositions++;
+                if (!m_boardView->getBoard()[{index, col}].empty())
+                {
+                    ocupiedPositions++;
+                }
+            }
+        }
+        else {
+            for (int row = 0; row < m_boardView->getBoard().getRowSize(); row++)
+            {
+                if (!m_boardView->getBoard()[{row, index}].empty())
+                {
+                    ocupiedPositions++;
+                }
             }
         }
 
         if (ocupiedPositions < 3)
         {
-            QMessageBox::warning(this, "Invalid Row", "Selected row does not have at least 3 occupied positions!");
+            QMessageBox::warning(this, "Invalid Selection", QString("Selected %1 does not have at least 3 occupied positions!").arg(choice.toLower()));
             break;
         }
 
         QStringList directions;
-        directions << "Left" << "Right";
+        if (isRow)
+        {
+            directions << "Left" << "Right";
+        }
+        else 
+        {
+            directions << "Up" << "Down";
+        }
         QString direction = QInputDialog::getItem(this, "Cascade Direction", "Choose cascade direction:", directions, 0, false, &ok);
         if (!ok) break;
 
-        bool cascadeLeft = (direction == "Left");
+        bool cascadeToFirst = (direction == "Left" || direction == "Up");
 
         Board testBoard = m_boardView->getBoard();
-        waterfallPower.playWaterfallPower(testBoard, row, cascadeLeft);
+        waterfallPower.playWaterfallPower(testBoard, index, cascadeToFirst, isRow);
 
         if (game->wouldMageCreateIsolatedCards(testBoard))
         {
@@ -1517,19 +1558,18 @@ void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& colo
             break;
         }
 
-        waterfallPower.playWaterfallPower(m_boardView->getBoard(), row, cascadeLeft);
-        QMessageBox::information(this, "Power Activated", QString("Waterfall cascaded row %1 to the %2!").arg(row).arg(direction.toLower()));
-
+        waterfallPower.playWaterfallPower(m_boardView->getBoard(), index, cascadeToFirst, isRow);
+        QMessageBox::information(this, "Power Activated", QString("Waterfall cascaded %1 %2 to the %3!").arg(choice.toLower()).arg(index).arg(direction.toLower()));
 
         if (color == Color::Red)
         {
             game->setPlayer1PowerUsed(true);
-            QMessageBox::information(this, "Power Used", "Player 1 power has been used and cannot be used again this game!");
+            QMessageBox::information(this, "Power Used", "Player 1 power has been used and cannot be used again this round!");
         }
         else
         {
             game->setPlayer2PowerUsed(true);
-            QMessageBox::information(this, "Power Used", "Player 2 power has been used and cannot be used again this game!");
+            QMessageBox::information(this, "Power Used", "Player 2 power has been used and cannot be used again this round!");
         }
         powerUsed = true;
         break;
