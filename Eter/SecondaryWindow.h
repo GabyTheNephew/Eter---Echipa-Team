@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QTimer>
 
 class Game;
 class SecondaryWindow : public QWidget {
@@ -66,6 +67,7 @@ private:
     SimpleCard selectedCard;
     Color currentPlayer;
     Game* game;
+    void cleanupEmptyBorders();
 
 private slots:
     void onCardSelected(const SimpleCard& card); 

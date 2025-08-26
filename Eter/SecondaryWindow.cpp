@@ -1,38 +1,184 @@
 ﻿#include "SecondaryWindow.h"
 
+void SecondaryWindow::onBoardClicked(int row, int col) {
+    if (!selectedCard.getValue()) {
+        qDebug() << "No card selected!";
+        return;
+    }
 
-SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name, bool checkMage,bool checkPower, QWidget* parent)
+    qDebug() << "Attempting to place card at (" << row << ", " << col << "):"
+        << "Color =" << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
+        << ", Value =" << selectedCard.getValue();
+
+    // Verificăm dacă carta selectată aparține jucătorului curent
+    if (selectedCard.getColor() != currentPlayer) {
+        qDebug() << "Card doesn't belong to current player!";
+        return;
+    }
+
+    Board::Position pos = { row, col };
+
+    // Verificăm adiacența (sau prima carte)
+    if (!m_boardView->getBoard().canBePlaced(row, col)) {
+        qDebug() << "Position is not adjacent to existing cards.";
+        QMessageBox::information(this, "Invalid Move",
+            "You can only place cards adjacent to existing cards!");
+        return;
+    }
+
+    // Verificăm dacă carta poate fi pusă deasupra (pentru poziții ocupate)
+    if (!m_boardView->getBoard().canBePushed(selectedCard, pos)) {
+        qDebug() << "Card value is too small to be placed on top.";
+        QMessageBox::information(this, "Invalid Move",
+            "You can only place cards with higher values on top of existing cards!");
+        return;
+    }
+
+    qDebug() << "Board size before placement: "
+        << m_boardView->getBoard().getRowSize() << "x"
+        << m_boardView->getBoard().getColumnSize();
+
+    // Plasăm cartea
+    m_boardView->getBoard().pushCard(selectedCard, pos);
+
+    qDebug() << "Card placed, now auto-expanding for adjacency...";
+
+    // IMEDIAT după plasarea cărții, extindem tabla pentru a permite adiacența completă
+    m_boardView->getBoard().autoExpandForAdiacency(m_boardView->getMaxSize());
+
+    qDebug() << "Board size after auto-expansion: "
+        << m_boardView->getBoard().getRowSize() << "x"
+        << m_boardView->getBoard().getColumnSize();
+
+    // Marcăm cartea ca fiind utilizată
+    game->getCurrentPlayer().makeCardInvalid(selectedCard);
+    game->getCurrentPlayer().getPastVector().push_back(selectedCard);
+
+    // Actualizăm afișarea cărților jucătorului
+    if (currentPlayer == Color::Red) {
+        setPlayer1Cards(game->getCurrentPlayer().getVector());
+    }
+    else {
+        setPlayer2Cards(game->getCurrentPlayer().getVector());
+    }
+
+    // Resetăm cartea selectată
+    selectedCard = SimpleCard();
+
+    // Marcăm că jucătorul și-a terminat mutarea
+    game->setPlayerMoveCompleted(true);
+
+    // Verificăm dacă tabla s-a "fixat" (a atins dimensiunea maximă)
+    if (m_boardView->getBoard().getRowSize() >= m_boardView->getMaxSize() &&
+        m_boardView->getBoard().getColumnSize() >= m_boardView->getMaxSize()) {
+        m_boardView->setIsMaxSize(true);
+        qDebug() << "Board is now fixed at maximum size!";
+
+        // Curățăm marginile goale pentru a ajusta la dimensiunea exactă
+        cleanupEmptyBorders();
+    }
+
+    // Actualizăm vizualizarea
+    m_boardView->updateView();
+
+    // Debug info
+    m_boardView->getBoard().print();
+
+    auto [finalRows, finalCols] = m_boardView->getBoard().getActualBoardBounds();
+    qDebug() << "Move completed successfully. Board size: "
+        << m_boardView->getBoard().getRowSize() << "x"
+        << m_boardView->getBoard().getColumnSize()
+        << " (actual occupied: " << finalRows << "x" << finalCols << ")";
+}
+
+// Modifică și setBoard pentru a inițializa corect tabla dinamică
+void SecondaryWindow::setBoard(Board& board, int setMaxSize) {
+    if (!m_boardView) {
+        // Inițializează tabla pentru jocul dinamic
+        board.initializeForDynamicPlay(setMaxSize);
+
+        m_boardView = new BoardView(board, this, setMaxSize);
+        m_boardView->setFixedSize(350, 350);
+
+        mainLayout->insertWidget(1, m_boardView, 0, Qt::AlignHCenter | Qt::AlignVCenter);
+        connect(m_boardView, &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
+
+        m_boardView->updateView();
+
+        qDebug() << "Board initialized for dynamic Eter gameplay";
+    }
+}
+
+void SecondaryWindow::cleanupEmptyBorders() {
+    Board& board = m_boardView->getBoard();
+
+    qDebug() << "Cleaning up borders...";
+
+    // Eliminăm rândurile goale de la margini
+    while (board.getRowSize() > m_boardView->getMaxSize()) {
+        if (board.isFirstRowEmpty() && !board.isLastRowEmpty()) {
+            board.removeRow(0);
+            qDebug() << "Removed first row";
+        }
+        else if (board.isLastRowEmpty() && !board.isFirstRowEmpty()) {
+            board.removeRow(board.getRowSize() - 1);
+            qDebug() << "Removed last row";
+        }
+        else {
+            break; // Nu putem elimina mai multe rânduri
+        }
+    }
+
+    // Eliminăm coloanele goale de la margini
+    while (board.getColumnSize() > m_boardView->getMaxSize()) {
+        if (board.isFirstColumnEmpty() && !board.isLastColumnEmpty()) {
+            board.removeColumn(0);
+            qDebug() << "Removed first column";
+        }
+        else if (board.isLastColumnEmpty() && !board.isFirstColumnEmpty()) {
+            board.removeColumn(board.getColumnSize() - 1);
+            qDebug() << "Removed last column";
+        }
+        else {
+            break; // Nu putem elimina mai multe coloane
+        }
+    }
+
+    qDebug() << "Cleanup finished. Final size: "
+        << board.getRowSize() << "x" << board.getColumnSize();
+}
+SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance, const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name, bool checkMage, bool checkPower, QWidget* parent)
     : QWidget(parent), imagePath(imagePath), game(gameInstance) {
     setWindowTitle(title);
 
-    
+
     mainLayout = new QVBoxLayout(this);
 
-    
+
     player2CardsLayout = new QHBoxLayout();
     mainLayout->addLayout(player2CardsLayout);
 
-    
+
     mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
 
-    
+
     m_boardView = nullptr;
 
-    
+
     mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
 
-    
+
     player1CardsLayout = new QHBoxLayout();
     mainLayout->addLayout(player1CardsLayout);
 
-    
+
     QPalette palette = this->palette();
     palette.setBrush(QPalette::Window,
         QBrush(QPixmap(imagePath).scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
     this->setPalette(palette);
     this->setAutoFillBackground(true);
 
-    
+
     if (checkMage && checkPower) {
         setMagesAndPowers(mage1Name, mage2Name, power1Name, power2Name);
     }
@@ -51,6 +197,7 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
 
 void SecondaryWindow::closeEvent(QCloseEvent* event) {
     emit closed();
+    event->accept();
     QWidget::closeEvent(event);
 }
 
@@ -78,11 +225,23 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
                 emit closed();
                 });
 
-            connect(menu, &MenuWindow::exitApp, []() {
+            connect(menu, &MenuWindow::exitApp, [this]() {
+                // Închide toate ferestrele
+                QApplication::closeAllWindows();
+
+                // Așteaptă să se proceseze evenimentele
+                QApplication::processEvents();
+
+                // Oprește explicit bucla de evenimente
                 QApplication::quit();
+
+                // Forțează ieșirea dacă quit() nu funcționează
+                QTimer::singleShot(1000, []() {
+                    exit(0);
+                    });
                 });
 
-            menu->hide(); 
+            menu->hide();
         }
 
         if (menu->isVisible()) {
@@ -99,21 +258,21 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
     }
 }
 
-void SecondaryWindow::setBoard(Board& board, int setMaxSize) {
-    if (!m_boardView) { 
-        m_boardView = new BoardView(board, this, setMaxSize);
-        m_boardView->setFixedSize(350, 350);
-
-        
-        mainLayout->insertWidget(1, m_boardView, 0, Qt::AlignHCenter | Qt::AlignVCenter);
-
-        
-        connect(m_boardView, &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
-
-        
-        m_boardView->updateView();
-    }
-}
+//void SecondaryWindow::setBoard(Board& board, int setMaxSize) {
+//    if (!m_boardView) {
+//        m_boardView = new BoardView(board, this, setMaxSize);
+//        m_boardView->setFixedSize(350, 350);
+//
+//
+//        mainLayout->insertWidget(1, m_boardView, 0, Qt::AlignHCenter | Qt::AlignVCenter);
+//
+//
+//        connect(m_boardView, &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
+//
+//
+//        m_boardView->updateView();
+//    }
+//}
 
 void SecondaryWindow::showWinner(const QString& winnerName) {
     QMessageBox msgBox(this);
@@ -137,7 +296,7 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
 
     for (const auto& card : cards) {
         if (card.getColor() == Color::usedRed) {
-            continue; 
+            continue;
         }
         auto cardButton = new QPushButton(this);
 
@@ -157,7 +316,7 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
         cardButton->setStyleSheet("border: none;");
         player1CardsLayout->addWidget(cardButton);
 
-        
+
         connect(cardButton, &QPushButton::clicked, this, [this, card]() {
             onCardSelected(card);
             });
@@ -168,12 +327,12 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
 void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
     QLayoutItem* child;
     while ((child = player2CardsLayout->takeAt(0)) != nullptr) {
-        delete child->widget(); 
+        delete child->widget();
         delete child;
     }
 
-    int imageWidth = 150;  
-    int imageHeight = 200; 
+    int imageWidth = 150;
+    int imageHeight = 200;
     int spacing = 20;
     player2CardsLayout->setSpacing(spacing);
 
@@ -208,7 +367,7 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
 }
 
 void SecondaryWindow::setCurrentPlayer(Color player) {
-    currentPlayer = player; 
+    currentPlayer = player;
 }
 
 
@@ -217,168 +376,168 @@ void SecondaryWindow::setCurrentPlayer(Color player) {
 
 
 
-void SecondaryWindow::onBoardClicked(int row, int col) {
-    if (!selectedCard.getValue()) {
-        qDebug() << "No card selected!";
-        return;
-    }
-
-    qDebug() << "Attempting to place card at (" << row << ", " << col << "):"
-        << "Color =" << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
-        << ", Value =" << selectedCard.getValue();
-
-
-
-    Board::Position pos = { row, col };
-
-
-
-    if (selectedCard.getColor() == currentPlayer) {
-
-        if (!m_boardView->canPlaceCard(selectedCard, row, col)) {
-            qDebug() << "Position is not valid for placement.";
-            return;
-        }
-
-
-        m_boardView->placeCard(selectedCard, row, col);
-
-
-        game->getCurrentPlayer().makeCardInvalid(selectedCard);
-        game->getCurrentPlayer().getPastVector().push_back(selectedCard);
-
-
-
-        if (currentPlayer == Color::Red) {
-            setPlayer1Cards(game->getCurrentPlayer().getVector());
-        }
-        else {
-            setPlayer2Cards(game->getCurrentPlayer().getVector());
-        }
-
-        selectedCard = SimpleCard(); 
-        qDebug() << "Card placed successfully.";
-
-        game->setPlayerMoveCompleted(true); 
-
-        int rowSizeBeforeChange = m_boardView->getBoard().getRowSize() - 1;
-        int colSizeBeforeChange = m_boardView->getBoard().getColumnSize() - 1;
-
-        if(m_boardView->getMaxSize() > m_boardView->getBoard().getRowSize() - 1)
-        {
-            if (m_boardView->getIsMaxSize() == false)
-            {
-                if (row == 0)
-                {
-                    m_boardView->getBoard().expandRow(Board::RowExpandDirection::Up);
-                }
-                if (row == rowSizeBeforeChange)
-                {
-                    m_boardView->getBoard().expandRow(Board::RowExpandDirection::Down);
-                }
-            }
-        }
-        if (m_boardView->getMaxSize() > m_boardView->getBoard().getColumnSize() - 1)
-        {
-            if(m_boardView->getIsMaxSize() == false)
-            {
-                if (col == 0)
-                {
-                    m_boardView->getBoard().expandColumn(Board::ColumnExpandDirection::Left);
-                }
-                if (col == colSizeBeforeChange)
-                {
-                    m_boardView->getBoard().expandColumn(Board::ColumnExpandDirection::Right);
-                }
-            }
-        }
-
-     
-
-        if (m_boardView->getBoard().getNumberOfRowsWithCards() == m_boardView->getMaxSize())
-        {
-            if (m_boardView->getBoard().isFirstRowEmpty())
-            {
-                if (!m_boardView->getBoard().isLastRowEmpty())
-                {
-                    m_boardView->getBoard().removeRow(0);
-                    m_boardView->getBoard().print();
-                }
-            }
-            if (m_boardView->getBoard().isLastRowEmpty())
-            {
-                if (!m_boardView->getBoard().isFirstRowEmpty())
-                {
-                    m_boardView->getBoard().removeRow(m_boardView->getBoard().getRowSize() - 1);
-                    m_boardView->getBoard().print();
-                }
-            }
-        }
-
-        if (m_boardView->getBoard().getNumberOfColumnsWithCards() == m_boardView->getMaxSize())
-        {
-            if (m_boardView->getBoard().isFirstColumnEmpty())
-            {
-                if (!m_boardView->getBoard().isLastColumnEmpty())
-                {
-                    m_boardView->getBoard().removeColumn(0);
-                    m_boardView->getBoard().print();
-                }
-            }
-            if (m_boardView->getBoard().isLastColumnEmpty())
-            {
-                if (!m_boardView->getBoard().isFirstColumnEmpty())
-                {
-                    m_boardView->getBoard().removeColumn(m_boardView->getBoard().getColumnSize() - 1);
-                    m_boardView->getBoard().print();
-                }
-            }
-        }
-
-        if (m_boardView->getBoard().getNumberOfRowsWithCards() >= m_boardView->getMaxSize() && 
-            m_boardView->getBoard().getNumberOfColumnsWithCards() >= m_boardView->getMaxSize() && m_boardView->getIsMaxSize() == false)
-        {
-            m_boardView->setIsMaxSize(true);
-            m_boardView->getBoard().print();
-
-            if (m_boardView->getBoard().isFirstRowEmpty())
-            {
-                if(!m_boardView->getBoard().isLastRowEmpty())
-                {
-                    m_boardView->getBoard().removeRow(0);
-                    m_boardView->getBoard().print();
-                }
-            }
-            if (m_boardView->getBoard().isLastRowEmpty())
-            {
-                if(!m_boardView->getBoard().isFirstRowEmpty())
-                {
-                    m_boardView->getBoard().removeRow(m_boardView->getBoard().getRowSize() - 1);
-                    m_boardView->getBoard().print();
-                }
-            }
-            if (m_boardView->getBoard().isFirstColumnEmpty())
-            {
-                if(!m_boardView->getBoard().isLastColumnEmpty())
-                {
-                    m_boardView->getBoard().removeColumn(0);
-                    m_boardView->getBoard().print();
-                }
-            }
-            if (m_boardView->getBoard().isLastColumnEmpty())
-            {
-                if(!m_boardView->getBoard().isFirstColumnEmpty())
-                {
-                    m_boardView->getBoard().removeColumn(m_boardView->getBoard().getColumnSize() - 1);
-                    m_boardView->getBoard().print();
-                }
-            }
-
-        }
-    }
-    m_boardView->getBoard().print();
-    m_boardView->updateView();
-}
+//void SecondaryWindow::onBoardClicked(int row, int col) {
+//    if (!selectedCard.getValue()) {
+//        qDebug() << "No card selected!";
+//        return;
+//    }
+//
+//    qDebug() << "Attempting to place card at (" << row << ", " << col << "):"
+//        << "Color =" << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
+//        << ", Value =" << selectedCard.getValue();
+//
+//
+//
+//    Board::Position pos = { row, col };
+//
+//
+//
+//    if (selectedCard.getColor() == currentPlayer) {
+//
+//        if (!m_boardView->canPlaceCard(selectedCard, row, col)) {
+//            qDebug() << "Position is not valid for placement.";
+//            return;
+//        }
+//
+//
+//        m_boardView->placeCard(selectedCard, row, col);
+//
+//
+//        game->getCurrentPlayer().makeCardInvalid(selectedCard);
+//        game->getCurrentPlayer().getPastVector().push_back(selectedCard);
+//
+//
+//
+//        if (currentPlayer == Color::Red) {
+//            setPlayer1Cards(game->getCurrentPlayer().getVector());
+//        }
+//        else {
+//            setPlayer2Cards(game->getCurrentPlayer().getVector());
+//        }
+//
+//        selectedCard = SimpleCard();
+//        qDebug() << "Card placed successfully.";
+//
+//        game->setPlayerMoveCompleted(true);
+//
+//        int rowSizeBeforeChange = m_boardView->getBoard().getRowSize() - 1;
+//        int colSizeBeforeChange = m_boardView->getBoard().getColumnSize() - 1;
+//
+//        if (m_boardView->getMaxSize() > m_boardView->getBoard().getRowSize() - 1)
+//        {
+//            if (m_boardView->getIsMaxSize() == false)
+//            {
+//                if (row == 0)
+//                {
+//                    m_boardView->getBoard().expandRow(Board::RowExpandDirection::Up);
+//                }
+//                if (row == rowSizeBeforeChange)
+//                {
+//                    m_boardView->getBoard().expandRow(Board::RowExpandDirection::Down);
+//                }
+//            }
+//        }
+//        if (m_boardView->getMaxSize() > m_boardView->getBoard().getColumnSize() - 1)
+//        {
+//            if (m_boardView->getIsMaxSize() == false)
+//            {
+//                if (col == 0)
+//                {
+//                    m_boardView->getBoard().expandColumn(Board::ColumnExpandDirection::Left);
+//                }
+//                if (col == colSizeBeforeChange)
+//                {
+//                    m_boardView->getBoard().expandColumn(Board::ColumnExpandDirection::Right);
+//                }
+//            }
+//        }
+//
+//
+//
+//        if (m_boardView->getBoard().getNumberOfRowsWithCards() == m_boardView->getMaxSize())
+//        {
+//            if (m_boardView->getBoard().isFirstRowEmpty())
+//            {
+//                if (!m_boardView->getBoard().isLastRowEmpty())
+//                {
+//                    m_boardView->getBoard().removeRow(0);
+//                    m_boardView->getBoard().print();
+//                }
+//            }
+//            if (m_boardView->getBoard().isLastRowEmpty())
+//            {
+//                if (!m_boardView->getBoard().isFirstRowEmpty())
+//                {
+//                    m_boardView->getBoard().removeRow(m_boardView->getBoard().getRowSize() - 1);
+//                    m_boardView->getBoard().print();
+//                }
+//            }
+//        }
+//
+//        if (m_boardView->getBoard().getNumberOfColumnsWithCards() == m_boardView->getMaxSize())
+//        {
+//            if (m_boardView->getBoard().isFirstColumnEmpty())
+//            {
+//                if (!m_boardView->getBoard().isLastColumnEmpty())
+//                {
+//                    m_boardView->getBoard().removeColumn(0);
+//                    m_boardView->getBoard().print();
+//                }
+//            }
+//            if (m_boardView->getBoard().isLastColumnEmpty())
+//            {
+//                if (!m_boardView->getBoard().isFirstColumnEmpty())
+//                {
+//                    m_boardView->getBoard().removeColumn(m_boardView->getBoard().getColumnSize() - 1);
+//                    m_boardView->getBoard().print();
+//                }
+//            }
+//        }
+//
+//        if (m_boardView->getBoard().getNumberOfRowsWithCards() >= m_boardView->getMaxSize() &&
+//            m_boardView->getBoard().getNumberOfColumnsWithCards() >= m_boardView->getMaxSize() && m_boardView->getIsMaxSize() == false)
+//        {
+//            m_boardView->setIsMaxSize(true);
+//            m_boardView->getBoard().print();
+//
+//            if (m_boardView->getBoard().isFirstRowEmpty())
+//            {
+//                if (!m_boardView->getBoard().isLastRowEmpty())
+//                {
+//                    m_boardView->getBoard().removeRow(0);
+//                    m_boardView->getBoard().print();
+//                }
+//            }
+//            if (m_boardView->getBoard().isLastRowEmpty())
+//            {
+//                if (!m_boardView->getBoard().isFirstRowEmpty())
+//                {
+//                    m_boardView->getBoard().removeRow(m_boardView->getBoard().getRowSize() - 1);
+//                    m_boardView->getBoard().print();
+//                }
+//            }
+//            if (m_boardView->getBoard().isFirstColumnEmpty())
+//            {
+//                if (!m_boardView->getBoard().isLastColumnEmpty())
+//                {
+//                    m_boardView->getBoard().removeColumn(0);
+//                    m_boardView->getBoard().print();
+//                }
+//            }
+//            if (m_boardView->getBoard().isLastColumnEmpty())
+//            {
+//                if (!m_boardView->getBoard().isFirstColumnEmpty())
+//                {
+//                    m_boardView->getBoard().removeColumn(m_boardView->getBoard().getColumnSize() - 1);
+//                    m_boardView->getBoard().print();
+//                }
+//            }
+//
+//        }
+//    }
+//    m_boardView->getBoard().print();
+//    m_boardView->updateView();
+//}
 
 void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 {
@@ -399,19 +558,19 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
         {
             bool ok;
 
-         
+
             int startRow = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-            if (!ok) break; 
+            if (!ok) break;
 
             int startCol = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-            if (!ok) break; 
+            if (!ok) break;
 
 
             int endRow = QInputDialog::getInt(this, "Input End Row", "Enter end row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-            if (!ok) break; 
+            if (!ok) break;
 
             int endCol = QInputDialog::getInt(this, "Input End Column", "Enter end column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-            if (!ok) break; 
+            if (!ok) break;
 
 
             AirMageVelora AirMageVelora;
@@ -423,10 +582,10 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
         bool ok;
 
         int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         AirMageZephyraCrow AirMageZephyraCrow;
         AirMageZephyraCrow.playMageZephyraCrow(m_boardView->getBoard(), color, row, col);
@@ -439,10 +598,10 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 
 
         int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         EarthMageBumbleroot.playMageBumbleroot(m_boardView->getBoard(), row, col);
         break;
@@ -458,10 +617,10 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 
 
         int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         FireMageIgnara FireMageIgnara;
         FireMageIgnara.playMageIgnara(m_boardView->getBoard(), color, row, col);
@@ -473,10 +632,10 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 
 
         int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         bool rowOrColumn = QInputDialog::getInt(this, "Input Row Or Column", "Enter 0 for column or 1 for row:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
 
         FireMagePyrofang FireMagePyrofang;
@@ -489,13 +648,13 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
 
 
         int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         bool rowOrColumn = QInputDialog::getInt(this, "Input Row Or Column", "Enter 0 for column or 1 for row:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         WaterMageAqualon WaterMageAqualon;
-        WaterMageAqualon.playMageAqualon(m_boardView->getBoard(),rowOrColumn, row);
+        WaterMageAqualon.playMageAqualon(m_boardView->getBoard(), rowOrColumn, row);
         break;
     }
     case Mages::WaterMageChillThoughts: {
@@ -503,16 +662,16 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
         bool ok;
 
         int startRow = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         int startCol = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         int endRow = QInputDialog::getInt(this, "Input End Row", "Enter end row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         int endCol = QInputDialog::getInt(this, "Input End Column", "Enter end column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break; 
+        if (!ok) break;
 
         WaterMageChillThoughts WaterMageChillThoughts;
         WaterMageChillThoughts.playMageChillThoughts(m_boardView->getBoard(), color, startRow, startCol, endRow, endCol);
@@ -650,7 +809,7 @@ void SecondaryWindow::onCardSelected(const SimpleCard& card) {
 }
 
 void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Name) {
-    
+
 
     QString mage1ImagePath = mage1Name + ".jpg";
     QPixmap mage1Pixmap(mage1ImagePath);
@@ -665,11 +824,11 @@ void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Nam
         onMageClicked(mage1Name, Color::Red);
         });
 
-    
 
-   
+
+
     QVBoxLayout* player1MageLayout = new QVBoxLayout();
-    player1MageLayout->addSpacerItem(new QSpacerItem(0, 420, QSizePolicy::Minimum, QSizePolicy::Fixed)); 
+    player1MageLayout->addSpacerItem(new QSpacerItem(0, 420, QSizePolicy::Minimum, QSizePolicy::Fixed));
     player1MageLayout->addWidget(mage1Button, 0, Qt::AlignLeft);
     player1CardsLayout->addLayout(player1MageLayout);
 
@@ -679,44 +838,44 @@ void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Nam
 
     QIcon mage2Icon(mage2Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
 
-   
+
     QPushButton* mage2Button = new QPushButton(this);
-   
+
     mage2Button->setFixedSize(150, 150);
     mage2Button->setIcon(mage2Icon);
     mage2Button->setIconSize(QSize(150, 150));
-    
+
     connect(mage2Button, &QPushButton::clicked, this, [this, mage2Name]() {
         onMageClicked(mage2Name, Color::Blue);
         });
-    
+
     mage2Button->setStyleSheet("background-color: rgba(0, 255, 0, 0.3); border: 10px;");
 
-    
 
-   
+
+
     QVBoxLayout* player2MageLayout = new QVBoxLayout();
 
-    
-    player2MageLayout->setContentsMargins(0, 170, 0, 0); 
 
-    
+    player2MageLayout->setContentsMargins(0, 170, 0, 0);
+
+
     player2MageLayout->addWidget(mage2Button);
-    
+
     player2MageLayout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
 
-   
+
     player1CardsLayout->addLayout(player2MageLayout);
 }
 
 void SecondaryWindow::setPowers(const QString& mage1Name, const QString& mage2Name) {
-   
+
 
     QString mage1ImagePath = mage1Name + ".jpg";
     QPixmap mage1Pixmap(mage1ImagePath);
     QIcon mage1Icon(mage1Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
 
-    
+
     QPushButton* mage1Button = new QPushButton(this);
     mage1Button->setStyleSheet("background-color: transparent; border: none;");
     mage1Button->setFixedSize(150, 150);
@@ -726,11 +885,11 @@ void SecondaryWindow::setPowers(const QString& mage1Name, const QString& mage2Na
         onPowerClicked(mage1Name, Color::Red);
         });
 
-    
 
-    
+
+
     QVBoxLayout* player1MageLayout = new QVBoxLayout();
-    player1MageLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Fixed)); 
+    player1MageLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Fixed));
     player1MageLayout->addWidget(mage1Button, 0, Qt::AlignLeft);
     player1CardsLayout->addLayout(player1MageLayout);
 
@@ -740,31 +899,31 @@ void SecondaryWindow::setPowers(const QString& mage1Name, const QString& mage2Na
 
     QIcon mage2Icon(mage2Pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
 
-   
+
     QPushButton* mage2Button = new QPushButton(this);
-   
+
     mage2Button->setFixedSize(150, 150);
     mage2Button->setIcon(mage2Icon);
     mage2Button->setIconSize(QSize(150, 150));
-   
+
     connect(mage2Button, &QPushButton::clicked, this, [this, mage2Name]() {
         onPowerClicked(mage2Name, Color::Blue);
         });
 
     mage2Button->setStyleSheet("background-color: rgba(0, 255, 0, 0.3); border: 10px;");
 
-   
+
     QVBoxLayout* player2MageLayout = new QVBoxLayout();
 
-    
-    player2MageLayout->setContentsMargins(0, 400, 0, 0); 
 
-    
+    player2MageLayout->setContentsMargins(0, 400, 0, 0);
+
+
     player2MageLayout->addWidget(mage2Button);
-    
+
     player2MageLayout->addSpacerItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
 
-    
+
     player1CardsLayout->addLayout(player2MageLayout);
 }
 
@@ -772,7 +931,7 @@ void SecondaryWindow::setMagesAndPowers(const QString& mage1Name, const QString&
     const QString& power1Name, const QString& power2Name) {
     QVBoxLayout* player1CombinedLayout = new QVBoxLayout();
 
-    
+
     QString mage1ImagePath = mage1Name + ".jpg";
     QPixmap mage1Pixmap(mage1ImagePath);
     QIcon mage1Icon(mage1Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
@@ -784,7 +943,7 @@ void SecondaryWindow::setMagesAndPowers(const QString& mage1Name, const QString&
         onMageClicked(mage1Name, Color::Red);
         });
 
-    
+
     QString power1ImagePath = power1Name + ".jpg";
     QPixmap power1Pixmap(power1ImagePath);
     QIcon power1Icon(power1Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
@@ -796,16 +955,16 @@ void SecondaryWindow::setMagesAndPowers(const QString& mage1Name, const QString&
         onPowerClicked(power1Name, Color::Red);
         });
 
-    
+
     player1CombinedLayout->addWidget(mage1Button, 0, Qt::AlignLeft);
     player1CombinedLayout->addWidget(power1Button, 0, Qt::AlignLeft);
 
     player1CardsLayout->addLayout(player1CombinedLayout);
 
-    
+
     QVBoxLayout* player2CombinedLayout = new QVBoxLayout();
 
-    
+
     QString mage2ImagePath = mage2Name + ".jpg";
     QPixmap mage2Pixmap(mage2ImagePath);
     QIcon mage2Icon(mage2Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
@@ -817,7 +976,7 @@ void SecondaryWindow::setMagesAndPowers(const QString& mage1Name, const QString&
         onMageClicked(mage2Name, Color::Blue);
         });
 
-    
+
     QString power2ImagePath = power2Name + ".jpg";
     QPixmap power2Pixmap(power2ImagePath);
     QIcon power2Icon(power2Pixmap.scaled(100, 100, Qt::KeepAspectRatio));
