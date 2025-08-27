@@ -22,14 +22,21 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QTimer>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QSpacerItem>
+#include <QSizePolicy>
 
+// Also make sure you have the QTimer include in SecondaryWindow.cpp:
+#include <QTimer>
+#include <QEventLoop>
 class Game;
 class SecondaryWindow : public QWidget {
     Q_OBJECT
 
 public:
     explicit SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,
-        const QString& mage1Name, const QString& mage2Name,  const QString& power1Name, const QString& power2Name ,bool checkMage, bool checkPower, QWidget* parent = nullptr);
+        const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name, bool checkMage, bool checkPower, QWidget* parent = nullptr);
     void setBoard(Board& board, int boardMaxSize);
     void setPlayer1Cards(const std::vector<SimpleCard>& cards);
     void setPlayer2Cards(const std::vector<SimpleCard>& cards);
@@ -40,14 +47,13 @@ public:
     void updateBoardView();
     void resetView();
 
+    // Round and match management
+    void updateMatchInfo(int currentRound, int player1Score, int player2Score, int roundsToWin);
+    void showRoundWinner(const QString& winnerName, int currentRound);
+
     void setMages(const QString& mage1Name, const QString& mage2Name);
-
     void setPowers(const QString& power1Name, const QString& power2Name);
-
     void setMagesAndPowers(const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name);
-
-
-
 
 signals:
     void closed();
@@ -64,18 +70,23 @@ private:
     QVBoxLayout* mainLayout;
     QHBoxLayout* player1CardsLayout;
     QHBoxLayout* player2CardsLayout;
+
+    // UI elements for match info
+    QLabel* matchInfoLabel;
+    QLabel* roundInfoLabel;
+    QHBoxLayout* matchInfoLayout;
+
     SimpleCard selectedCard;
     Color currentPlayer;
     Game* game;
     void cleanupEmptyBorders();
+    void setupMatchInfoUI();
 
 private slots:
-    void onCardSelected(const SimpleCard& card); 
+    void onCardSelected(const SimpleCard& card);
     void onBoardClicked(int row, int col);
     void onMageClicked(const QString& mageName, const Color& color);
     void onPowerClicked(const QString& powerName, const Color& color);
-
-
 
 signals:
     void boardClicked(int row, int col, int player);

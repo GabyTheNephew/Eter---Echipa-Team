@@ -1,5 +1,86 @@
 ﻿#include "SecondaryWindow.h"
 
+// Add this to the SecondaryWindow constructor after setting up mainLayout:
+void SecondaryWindow::setupMatchInfoUI() {
+    // Create match info layout at the top
+    matchInfoLayout = new QHBoxLayout();
+
+    // Round info label (left side)
+    roundInfoLabel = new QLabel("Round 1", this);
+    roundInfoLabel->setStyleSheet(
+        "QLabel { "
+        "   color: white; "
+        "   font-size: 18px; "
+        "   font-weight: bold; "
+        "   background-color: rgba(0, 0, 0, 150); "
+        "   padding: 10px; "
+        "   border-radius: 10px; "
+        "}"
+    );
+    roundInfoLabel->setAlignment(Qt::AlignCenter);
+
+    // Match score label (right side)
+    matchInfoLabel = new QLabel("Player 1: 0 - Player 2: 0", this);
+    matchInfoLabel->setStyleSheet(
+        "QLabel { "
+        "   color: white; "
+        "   font-size: 18px; "
+        "   font-weight: bold; "
+        "   background-color: rgba(0, 0, 0, 150); "
+        "   padding: 10px; "
+        "   border-radius: 10px; "
+        "}"
+    );
+    matchInfoLabel->setAlignment(Qt::AlignCenter);
+
+    matchInfoLayout->addWidget(roundInfoLabel);
+    matchInfoLayout->addStretch(); // Push labels to sides
+    matchInfoLayout->addWidget(matchInfoLabel);
+
+    // Insert at the top of main layout
+    mainLayout->insertLayout(0, matchInfoLayout);
+}
+
+// Add this method to update the match info display
+void SecondaryWindow::updateMatchInfo(int currentRound, int player1Score, int player2Score, int roundsToWin) {
+    if (!roundInfoLabel || !matchInfoLabel) {
+        return; // Safety check
+    }
+
+    roundInfoLabel->setText(QString("Round %1").arg(currentRound));
+    matchInfoLabel->setText(QString("Player 1: %1 - Player 2: %2 (First to %3)")
+        .arg(player1Score)
+        .arg(player2Score)
+        .arg(roundsToWin));
+}
+
+// Add this method to show round winner with a temporary message
+void SecondaryWindow::showRoundWinner(const QString& winnerName, int currentRound) {
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle("Round Complete");
+    msgBox.setText(QString("%1 wins Round %2!").arg(winnerName).arg(currentRound));
+    msgBox.setInformativeText("Starting next round...");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+
+    // Make the message box more visible
+    msgBox.setStyleSheet(
+        "QMessageBox { "
+        "   background-color: #2b2b2b; "
+        "   color: white; "
+        "}"
+        "QMessageBox QPushButton { "
+        "   background-color: #4CAF50; "
+        "   color: white; "
+        "   border: none; "
+        "   padding: 10px 20px; "
+        "   font-size: 14px; "
+        "   border-radius: 5px; "
+        "}"
+    );
+
+    msgBox.exec();
+}
+
 void SecondaryWindow::onBoardClicked(int row, int col) {
     if (!selectedCard.getValue()) {
         qDebug() << "No card selected!";
@@ -147,37 +228,35 @@ void SecondaryWindow::cleanupEmptyBorders() {
     qDebug() << "Cleanup finished. Final size: "
         << board.getRowSize() << "x" << board.getColumnSize();
 }
-SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance, const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name, bool checkMage, bool checkPower, QWidget* parent)
+SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,
+    const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name,
+    bool checkMage, bool checkPower, QWidget* parent)
     : QWidget(parent), imagePath(imagePath), game(gameInstance) {
     setWindowTitle(title);
 
-
     mainLayout = new QVBoxLayout(this);
 
+    // Setup match info UI first
+    setupMatchInfoUI();
 
     player2CardsLayout = new QHBoxLayout();
     mainLayout->addLayout(player2CardsLayout);
 
-
     mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
-
 
     m_boardView = nullptr;
 
-
     mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
-
 
     player1CardsLayout = new QHBoxLayout();
     mainLayout->addLayout(player1CardsLayout);
 
-
+    // Set background and other initialization...
     QPalette palette = this->palette();
     palette.setBrush(QPalette::Window,
         QBrush(QPixmap(imagePath).scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
     this->setPalette(palette);
     this->setAutoFillBackground(true);
-
 
     if (checkMage && checkPower) {
         setMagesAndPowers(mage1Name, mage2Name, power1Name, power2Name);
@@ -191,8 +270,6 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
 
     this->showFullScreen();
 }
-
-
 
 
 void SecondaryWindow::closeEvent(QCloseEvent* event) {
