@@ -21,6 +21,7 @@ public:
     enum class State
     {
         None,
+        InProgress,
         Win,
         RedWin,
         BlueWin,

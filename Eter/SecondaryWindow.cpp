@@ -1,5 +1,40 @@
 ﻿#include "SecondaryWindow.h"
 
+// Asigură-te că metoda showWinner din SecondaryWindow.cpp arată astfel:
+
+void SecondaryWindow::showWinner(const QString& winnerName) {
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle("Meci Terminat");
+    msgBox.setText("Câștigătorul este: " + winnerName);
+    msgBox.setInformativeText("Felicitări!");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+
+    msgBox.setStyleSheet(
+        "QMessageBox { "
+        "   background-color: #2b2b2b; "
+        "   color: white; "
+        "   font-size: 16px; "
+        "}"
+        "QMessageBox QPushButton { "
+        "   background-color: #4CAF50; "
+        "   color: white; "
+        "   border: none; "
+        "   padding: 15px 30px; "
+        "   font-size: 14px; "
+        "   border-radius: 5px; "
+        "   min-width: 80px; "
+        "}"
+        "QMessageBox QPushButton:hover { "
+        "   background-color: #45a049; "
+        "}"
+    );
+
+    msgBox.exec();
+
+    qDebug() << "Game completed, emitting returnToMainMenu";
+    emit returnToMainMenu();
+}
+
 // Add this to the SecondaryWindow constructor after setting up mainLayout:
 void SecondaryWindow::setupMatchInfoUI() {
     // Create match info layout at the top
@@ -82,94 +117,19 @@ void SecondaryWindow::showRoundWinner(const QString& winnerName, int currentRoun
 }
 
 void SecondaryWindow::onBoardClicked(int row, int col) {
-    if (!selectedCard.getValue()) {
-        qDebug() << "No card selected!";
+    qDebug() << "Board clicked at (" << row << ", " << col << ")";
+
+    if (!game) {
+        qDebug() << "No game instance!";
         return;
     }
 
-    qDebug() << "Attempting to place card at (" << row << ", " << col << "):"
-        << "Color =" << (selectedCard.getColor() == Color::Red ? "Red" : "Blue")
-        << ", Value =" << selectedCard.getValue();
+    // Simply emit the signal to let Game handle the logic
+    // Determine which player should be playing based on currentPlayer
+    int playerNumber = (currentPlayer == Color::Red) ? 1 : 2;
 
-    // Verificăm dacă carta selectată aparține jucătorului curent
-    if (selectedCard.getColor() != currentPlayer) {
-        qDebug() << "Card doesn't belong to current player!";
-        return;
-    }
-
-    Board::Position pos = { row, col };
-
-    // Verificăm adiacența (sau prima carte)
-    if (!m_boardView->getBoard().canBePlaced(row, col)) {
-        qDebug() << "Position is not adjacent to existing cards.";
-        QMessageBox::information(this, "Invalid Move",
-            "You can only place cards adjacent to existing cards!");
-        return;
-    }
-
-    // Verificăm dacă carta poate fi pusă deasupra (pentru poziții ocupate)
-    if (!m_boardView->getBoard().canBePushed(selectedCard, pos)) {
-        qDebug() << "Card value is too small to be placed on top.";
-        QMessageBox::information(this, "Invalid Move",
-            "You can only place cards with higher values on top of existing cards!");
-        return;
-    }
-
-    qDebug() << "Board size before placement: "
-        << m_boardView->getBoard().getRowSize() << "x"
-        << m_boardView->getBoard().getColumnSize();
-
-    // Plasăm cartea
-    m_boardView->getBoard().pushCard(selectedCard, pos);
-
-    qDebug() << "Card placed, now auto-expanding for adjacency...";
-
-    // IMEDIAT după plasarea cărții, extindem tabla pentru a permite adiacența completă
-    m_boardView->getBoard().autoExpandForAdiacency(m_boardView->getMaxSize());
-
-    qDebug() << "Board size after auto-expansion: "
-        << m_boardView->getBoard().getRowSize() << "x"
-        << m_boardView->getBoard().getColumnSize();
-
-    // Marcăm cartea ca fiind utilizată
-    game->getCurrentPlayer().makeCardInvalid(selectedCard);
-    game->getCurrentPlayer().getPastVector().push_back(selectedCard);
-
-    // Actualizăm afișarea cărților jucătorului
-    if (currentPlayer == Color::Red) {
-        setPlayer1Cards(game->getCurrentPlayer().getVector());
-    }
-    else {
-        setPlayer2Cards(game->getCurrentPlayer().getVector());
-    }
-
-    // Resetăm cartea selectată
-    selectedCard = SimpleCard();
-
-    // Marcăm că jucătorul și-a terminat mutarea
-    game->setPlayerMoveCompleted(true);
-
-    // Verificăm dacă tabla s-a "fixat" (a atins dimensiunea maximă)
-    if (m_boardView->getBoard().getRowSize() >= m_boardView->getMaxSize() &&
-        m_boardView->getBoard().getColumnSize() >= m_boardView->getMaxSize()) {
-        m_boardView->setIsMaxSize(true);
-        qDebug() << "Board is now fixed at maximum size!";
-
-        // Curățăm marginile goale pentru a ajusta la dimensiunea exactă
-        cleanupEmptyBorders();
-    }
-
-    // Actualizăm vizualizarea
-    m_boardView->updateView();
-
-    // Debug info
-    m_boardView->getBoard().print();
-
-    auto [finalRows, finalCols] = m_boardView->getBoard().getActualBoardBounds();
-    qDebug() << "Move completed successfully. Board size: "
-        << m_boardView->getBoard().getRowSize() << "x"
-        << m_boardView->getBoard().getColumnSize()
-        << " (actual occupied: " << finalRows << "x" << finalCols << ")";
+    qDebug() << "Emitting boardClicked signal for player " << playerNumber;
+    emit boardClicked(row, col, playerNumber);
 }
 
 // Modifică și setBoard pentru a inițializa corect tabla dinamică
@@ -351,15 +311,15 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 //    }
 //}
 
-void SecondaryWindow::showWinner(const QString& winnerName) {
-    QMessageBox msgBox(this);
-    msgBox.setWindowTitle("Game Over");
-    msgBox.setText("The winner is: " + winnerName);
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.exec();
-
-    emit closed();
-}
+//void SecondaryWindow::showWinner(const QString& winnerName) {
+//    QMessageBox msgBox(this);
+//    msgBox.setWindowTitle("Game Over");
+//    msgBox.setText("The winner is: " + winnerName);
+//    msgBox.setStandardButtons(QMessageBox::Ok);
+//    msgBox.exec();
+//
+//    emit closed();
+//}
 
 
 

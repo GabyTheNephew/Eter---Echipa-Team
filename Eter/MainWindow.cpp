@@ -74,8 +74,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                 auto* intermediateMenu = new IntermediateMenu(backgroundWindow);
                 mainLayout->addWidget(intermediateMenu);
 
-           
-                this->hide();
+                this->setWindowState(Qt::WindowMinimized);
 
                
                 connect(intermediateMenu, &IntermediateMenu::startSelected, this, [this, backgroundWindow](bool illusions, bool explosions, bool timer) {
@@ -126,7 +125,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                 auto* intermediateMenu = new IntermediateMenu(backgroundWindow);
                 mainLayout->addWidget(intermediateMenu);
 
-                this->hide();
+                this->setWindowState(Qt::WindowMinimized);
 
       
                 connect(intermediateMenu, &IntermediateMenu::startSelected, this, [this, backgroundWindow](bool illusions, bool explosions, bool timer) {
@@ -179,7 +178,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                 mainLayout->addWidget(intermediateMenu);
 
 
-                this->hide();
+                this->setWindowState(Qt::WindowMinimized);
 
                 connect(intermediateMenu, &IntermediateMenu::startSelected, this, [this, backgroundWindow](bool illusions, bool explosions, bool timer) {
                     backgroundWindow->close();
@@ -228,7 +227,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                 mainLayout->addWidget(intermediateMenu);
 
 
-                this->hide();
+                this->setWindowState(Qt::WindowMinimized);
 
          
                 connect(intermediateMenu, &IntermediateMenu::startSelected, this, [this, backgroundWindow](bool illusions, bool explosions, bool timer) {

@@ -22,7 +22,11 @@ SimpleCard& SimpleCard::operator=(const SimpleCard& other)
 	
 	return *this;
 }
-
+SimpleCard::SimpleCard(const SimpleCard& other) :
+	m_value{ other.m_value },
+	m_color{ other.m_color }
+{
+}
 int16_t SimpleCard::getValue()const
 {
 	return static_cast<int>(m_value);

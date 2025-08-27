@@ -10,19 +10,25 @@
 #include <QObject>
 #include <QWidget>
 #include <QDir>
-#include "SecondaryWindow.h"
+//#include "SecondaryWindow.h"
 #include "IntermediateMenu.h"
 #include "BoardView.h"
 #include <cstdlib>
 #include <ctime>
+#include "MainWindow.h"
 
-
-
+class SecondaryWindow;
 class Game:public QObject
 {
     Q_OBJECT
 
 private:
+    SecondaryWindow* currentGameWindow = nullptr;
+    int16_t player1RoundsWon = 0;
+    int16_t player2RoundsWon = 0;
+    int16_t roundsToWin = 2;
+    int16_t maxRounds = 3;
+
     int16_t m_round_Counter;
     Board m_gameBoard;
     static Game m_current_Instance;
@@ -33,7 +39,9 @@ private:
     Color currentPlayer;
 
 
-    Game() : m_round_Counter{ 0 }, m_gameBoard{} {}
+    Game() : m_round_Counter{ 0 }, m_gameBoard{}, playerMoveCompleted{ false },
+        currentPlayer{ Color::Red }, m_illusionsEnabled{ false } {
+    }
 
     void startTraining();
     void startMageDuel();
@@ -45,6 +53,7 @@ private:
     bool playerMoveCompleted;
 
 public:
+    ~Game();
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
 
@@ -79,10 +88,13 @@ public:
 
     Board& getBoard();
     const Board& getBoard() const;
+    void showMainMenu();
 
-
+    void startNewRound();
+    void checkRoundEnd();
+    void cleanupEmptyBorders();
 public slots:
-    void handleBoardClick(int row, int col);
+    void handleBoardClick(int row, int col, int player);
 signals:
     void playerActionComplete();
 };

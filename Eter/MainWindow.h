@@ -7,11 +7,11 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <unordered_map>
-#include "SecondaryWindow.h"
+//#include "SecondaryWindow.h"
 #include "IntermediateMenu.h"
 #include "LoadGameMenu.h"
 #include "Game.h"
-
+class SecondaryWindow;
 class MainWindow : public QWidget {
     Q_OBJECT
 

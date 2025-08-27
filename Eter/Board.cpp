@@ -66,9 +66,6 @@ void Board::dynamicExpand(int16_t placementRow, int16_t placementCol, int16_t ma
 }
 
 void Board::autoExpandForAdiacency(int16_t maxSize) {
-    // Această metodă extinde tabla pentru a asigura că toate pozițiile cu cărți
-    // au toate cele 8 poziții adiacente disponibile
-
     if (getRowSize() >= maxSize && getColumnSize() >= maxSize) {
         return; // Deja la dimensiunea maximă
     }
@@ -130,12 +127,10 @@ void Board::autoExpandForAdiacency(int16_t maxSize) {
     }
 }
 
-void Board::initializeForDynamicPlay(int16_t maxSize) {
-    // Inițializează tabla pentru jocul dinamic Eter
-    // Începe cu o tablă 2x2 în centru conceptual
 
+void Board::initializeForDynamicPlay(int16_t maxSize) {
     m_size = maxSize;
-    int16_t initialSize = 2; // Începe întotdeauna cu 2x2
+    int16_t initialSize = (2 < maxSize) ? 2 : maxSize; // Începe cu 2x2 sau mai mic
 
     m_board.clear();
     m_board.resize(initialSize, std::vector<std::deque<SimpleCard>>(initialSize));
@@ -144,8 +139,6 @@ void Board::initializeForDynamicPlay(int16_t maxSize) {
         << " (max: " << maxSize << "x" << maxSize << ")";
 }
 std::pair<int16_t, int16_t> Board::getActualBoardBounds() const {
-    // Returnează granițele reale ale tablei (unde sunt cărțile)
-
     int16_t minRow = getRowSize(), maxRow = -1;
     int16_t minCol = getColumnSize(), maxCol = -1;
 
@@ -154,10 +147,10 @@ std::pair<int16_t, int16_t> Board::getActualBoardBounds() const {
         for (int16_t j = 0; j < getColumnSize(); ++j) {
             if (!m_board[i][j].empty()) {
                 hasCards = true;
-                minRow = std::min(minRow, i);
-                maxRow = std::max(maxRow, i);
-                minCol = std::min(minCol, j);
-                maxCol = std::max(maxCol, j);
+                minRow = (i < minRow) ? i : minRow;
+                maxRow = (i > maxRow) ? i : maxRow;
+                minCol = (j < minCol) ? j : minCol;
+                maxCol = (j > maxCol) ? j : maxCol;
             }
         }
     }
@@ -168,6 +161,7 @@ std::pair<int16_t, int16_t> Board::getActualBoardBounds() const {
 
     return { maxRow - minRow + 1, maxCol - minCol + 1 }; // rows, cols
 }
+
 
 
 
@@ -326,12 +320,15 @@ int Board::getTotalCardsOnBoard() const {
 
 Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
 {
-    const int16_t kResults = 8;
-    std::array<int16_t, kResults> results{};
-    int16_t chessmanCount = 0;
-
     int16_t kRows = m_board.size();
     int16_t kColumns = m_board[0].size();
+
+    // Pentru tablă dinamică, creăm array-uri pentru fiecare rând, coloană și diagonale
+    std::vector<int16_t> rowResults(kRows, 0);
+    std::vector<int16_t> colResults(kColumns, 0);
+    int16_t diag1 = 0, diag2 = 0; // diagonalele
+
+    int16_t chessmanCount = 0;
 
     // Calculăm score-urile pentru fiecare rând, coloană și diagonală
     for (int16_t i = 0; i < kRows; ++i)
@@ -357,43 +354,70 @@ Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
                     value = 0;
                 }
 
-                // Rând
-                results[i] += value;
+                // Rând i
+                rowResults[i] += value;
 
-                // Coloană
-                results[3 + j] += value;
+                // Coloană j
+                colResults[j] += value;
 
-                // Diagonala principală
-                if (i == j)
-                    results[6] += value;
+                // Diagonala principală (doar pentru pătrate)
+                if (i == j && kRows == kColumns)
+                    diag1 += value;
 
-                // Diagonala secundară
-                if (i == kColumns - 1 - j)
-                    results[7] += value;
+                // Diagonala secundară (doar pentru pătrate)
+                if (i == kColumns - 1 - j && kRows == kColumns)
+                    diag2 += value;
 
                 ++chessmanCount;
             }
         }
     }
 
-    // Verificăm câștigul prin linie/coloană/diagonală
-    for (auto result : results)
+    // Verificăm câștigul prin rânduri
+    for (auto result : rowResults)
     {
-        if (result == boardMaxSize)
-        {
+        if (result == boardMaxSize) {
+            qDebug() << "Red wins with row!";
             return State::RedWin;
         }
-        else if (result == -boardMaxSize)
-        {
+        else if (result == -boardMaxSize) {
+            qDebug() << "Blue wins with row!";
             return State::BlueWin;
         }
     }
 
-    // Verificăm dacă tabla este plină sau alte condiții de final
-    if (chessmanCount == kRows * kColumns && canCountPoints)
+    // Verificăm câștigul prin coloane
+    for (auto result : colResults)
+    {
+        if (result == boardMaxSize) {
+            qDebug() << "Red wins with column!";
+            return State::RedWin;
+        }
+        else if (result == -boardMaxSize) {
+            qDebug() << "Blue wins with column!";
+            return State::BlueWin;
+        }
+    }
+
+    // Verificăm câștigul prin diagonale (doar pentru table pătrate)
+    if (kRows == kColumns) {
+        if (diag1 == boardMaxSize || diag2 == boardMaxSize) {
+            qDebug() << "Red wins with diagonal!";
+            return State::RedWin;
+        }
+        else if (diag1 == -boardMaxSize || diag2 == -boardMaxSize) {
+            qDebug() << "Blue wins with diagonal!";
+            return State::BlueWin;
+        }
+    }
+
+    // Verificăm dacă tabla este plină sau jucătorii au rămas fără cărți
+    if (canCountPoints)
     {
         int16_t redSum = sumPoints(Color::Red);
         int16_t blueSum = sumPoints(Color::Blue);
+
+        qDebug() << "Counting points - Red:" << redSum << ", Blue:" << blueSum;
 
         if (redSum > blueSum)
         {

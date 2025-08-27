@@ -46,6 +46,7 @@ public:
     void showWinner(const QString& winnerName);
     void updateBoardView();
     void resetView();
+ 
 
     // Round and match management
     void updateMatchInfo(int currentRound, int player1Score, int player2Score, int roundsToWin);
@@ -54,9 +55,9 @@ public:
     void setMages(const QString& mage1Name, const QString& mage2Name);
     void setPowers(const QString& power1Name, const QString& power2Name);
     void setMagesAndPowers(const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name);
-
 signals:
     void closed();
+    void returnToMainMenu();
 
 protected:
     void closeEvent(QCloseEvent* event) override;

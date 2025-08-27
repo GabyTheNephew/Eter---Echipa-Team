@@ -14,6 +14,7 @@ public:
 	SimpleCard();
 	SimpleCard(int16_t value, const Color& color);
 	virtual ~SimpleCard();
+	SimpleCard(const SimpleCard& other);
 	SimpleCard& operator=(const SimpleCard& other);
 
 	Color getColor()const;

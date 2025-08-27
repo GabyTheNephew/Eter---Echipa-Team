@@ -200,21 +200,39 @@ int Player::asignMage()
 
 SimpleCard Player::chooseCard()
 {
-	int16_t chosen_card;
-	std::cout << getName() << " select a card\n";
-	printSimpleCards();
-	std::cout << "\nPick a card\n";
-	std::cin >> chosen_card;
+	// Pentru GUI, returnăm prima carte disponibilă
+	// Aceasta va fi apoi selectată prin click în interfața grafică
 
 	for (int16_t i = 0; i < m_simpleCardsVector.size(); i++)
 	{
-		if (m_simpleCardsVector[i].getValue() == chosen_card && (ColorToString(m_simpleCardsVector[i].getColor()) == "Red" || ColorToString(m_simpleCardsVector[i].getColor()) == "Blue"))
+		if (m_simpleCardsVector[i].getColor() == Color::Red ||
+			m_simpleCardsVector[i].getColor() == Color::Blue)
 		{
 			return m_simpleCardsVector[i];
 		}
 	}
 
+	// Dacă nu găsim nicio carte validă, returnăm o carte invalidă
+	return SimpleCard(0, Color::Red); // Valoare 0 indică că nu mai sunt cărți
 }
+
+//SimpleCard Player::chooseCard()
+//{
+//	int16_t chosen_card;
+//	std::cout << getName() << " select a card\n";
+//	printSimpleCards();
+//	std::cout << "\nPick a card\n";
+//	std::cin >> chosen_card;
+//
+//	for (int16_t i = 0; i < m_simpleCardsVector.size(); i++)
+//	{
+//		if (m_simpleCardsVector[i].getValue() == chosen_card && (ColorToString(m_simpleCardsVector[i].getColor()) == "Red" || ColorToString(m_simpleCardsVector[i].getColor()) == "Blue"))
+//		{
+//			return m_simpleCardsVector[i];
+//		}
+//	}
+//
+//}
 
 int Player::numberofValidCards()
 {
