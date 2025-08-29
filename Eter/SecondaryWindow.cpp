@@ -1,6 +1,19 @@
 ﻿#include "SecondaryWindow.h"
 
 // Asigură-te că metoda showWinner din SecondaryWindow.cpp arată astfel:
+// În SecondaryWindow.cpp - modifică clearCardSelection:
+void SecondaryWindow::clearCardSelection() {
+    selectedCardIndex = -1;
+    selectedCard = SimpleCard();
+    selectedCardPlayer = Color::Red; // Resetează la valoarea implicită
+
+    // IMPORTANT: Resetează și în Game
+    if (game) {
+        game->clearSelectedCard();
+    }
+
+    qDebug() << "Card selection cleared in SecondaryWindow AND Game";
+}
 
 void SecondaryWindow::showWinner(const QString& winnerName) {
     QMessageBox msgBox(this);
@@ -833,13 +846,16 @@ void SecondaryWindow::resetView()
 
 
 void SecondaryWindow::setCurrentPlayer(Color player) {
-    currentPlayer = player;
     // Resetează selecția când se schimbă jucătorul
-    selectedCardIndex = -1;
-    selectedCard = SimpleCard();
+    clearCardSelection();
+
+    currentPlayer = player;
+
     if (game) {
         game->clearSelectedCard();
     }
+
+    qDebug() << "Current player changed to " << (player == Color::Red ? "Red" : "Blue");
 }
 
 // În SecondaryWindow.cpp - modifică onCardSelected pentru a folosi indexul:

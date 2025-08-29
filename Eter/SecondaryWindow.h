@@ -35,6 +35,7 @@ class SecondaryWindow : public QWidget {
     Q_OBJECT
 
 public:
+    void clearCardSelection();
     explicit SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,
         const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name, bool checkMage, bool checkPower, QWidget* parent = nullptr);
     void setBoard(Board& board, int boardMaxSize);

@@ -507,9 +507,11 @@ void Game::handleBoardClick(int row, int col, int player) {
     qDebug() << "Card placed: Player" << (currentPlayer == Color::Red ? "1" : "2")
         << " Value:" << cardToPlay.getValue();
 
-    // Curăță selecția
+    // Curăță selecția IMEDIAT după plasarea cărții
     clearSelectedCard();
-    //currentGameWindow->selectedCardIndex = -1; // Resetează și în SecondaryWindow
+    if (currentGameWindow) {
+        currentGameWindow->clearCardSelection();
+    }
 
     // EXTINDEREA TABLEI - logica din SecondaryWindow originală
     qDebug() << "Card placed, now auto-expanding for adjacency...";
@@ -528,7 +530,7 @@ void Game::handleBoardClick(int row, int col, int player) {
         cleanupEmptyBorders();
     }
 
-    // Actualizează interfața
+    // Actualizează interfața - ACUM cu selecția deja resetată
     currentGameWindow->setPlayer1Cards(player1.getVector());
     currentGameWindow->setPlayer2Cards(player2.getVector());
     currentGameWindow->updateBoardView();
