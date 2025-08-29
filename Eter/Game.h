@@ -23,6 +23,7 @@ class Game:public QObject
     Q_OBJECT
 
 private:
+    SimpleCard selectedCard;
     SecondaryWindow* currentGameWindow = nullptr;
     int16_t player1RoundsWon = 0;
     int16_t player2RoundsWon = 0;
@@ -53,6 +54,9 @@ private:
     bool playerMoveCompleted;
 
 public:
+    void setSelectedCard(const SimpleCard& card) { selectedCard = card; }
+    bool hasSelectedCard() const { return selectedCard.getValue() > 0; }
+    void clearSelectedCard() { selectedCard = SimpleCard(); }
     ~Game();
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;

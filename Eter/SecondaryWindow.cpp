@@ -324,88 +324,85 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 
 
 
-void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
-    QLayoutItem* child;
-    while ((child = player1CardsLayout->takeAt(0)) != nullptr) {
-        delete child->widget();
-        delete child;
-    }
+//void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
+//    QLayoutItem* child;
+//    while ((child = player1CardsLayout->takeAt(0)) != nullptr) {
+//        delete child->widget();
+//        delete child;
+//    }
+//
+//    for (const auto& card : cards) {
+//        if (card.getColor() == Color::usedRed) {
+//            continue;
+//        }
+//        auto cardButton = new QPushButton(this);
+//
+//        QString imagePath = "red";
+//        imagePath += QString::number(card.getValue()) + ".jpg";
+//
+//        QPixmap pixmap(imagePath);
+//        if (!pixmap.isNull()) {
+//            QIcon buttonIcon(pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
+//            cardButton->setIcon(buttonIcon);
+//            cardButton->setIconSize(QSize(150, 150));
+//        }
+//        else {
+//            cardButton->setText("Card not found");
+//        }
+//
+//        cardButton->setStyleSheet("border: none;");
+//        player1CardsLayout->addWidget(cardButton);
+//
+//
+//        connect(cardButton, &QPushButton::clicked, this, [this, card]() {
+//            onCardSelected(card);
+//            });
+//    }
+//}
+//
+//
+//void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
+//    QLayoutItem* child;
+//    while ((child = player2CardsLayout->takeAt(0)) != nullptr) {
+//        delete child->widget();
+//        delete child;
+//    }
+//
+//    int imageWidth = 150;
+//    int imageHeight = 200;
+//    int spacing = 20;
+//    player2CardsLayout->setSpacing(spacing);
+//
+//    for (const auto& card : cards) {
+//        if (card.getColor() == Color::usedBlue) {
+//            continue;
+//        }
+//        auto cardButton = new QPushButton(this);
+//
+//        QString imagePath = "blue";
+//        imagePath += QString::number(card.getValue()) + ".jpg";
+//
+//        QPixmap pixmap(imagePath);
+//        if (!pixmap.isNull()) {
+//            QIcon buttonIcon(pixmap.scaled(imageWidth, imageHeight, Qt::KeepAspectRatio));
+//            cardButton->setIcon(buttonIcon);
+//            cardButton->setIconSize(QSize(imageWidth, imageHeight));
+//        }
+//        else {
+//            cardButton->setText("Card not found");
+//            cardButton->setStyleSheet("border: 1px solid black; background-color: white;");
+//        }
+//
+//        cardButton->setStyleSheet("border: none;");
+//        player2CardsLayout->addWidget(cardButton);
+//
+//        connect(cardButton, &QPushButton::clicked, this, [this, card]() {
+//            onCardSelected(card);
+//            });
+//
+//    }
+//}
 
-    for (const auto& card : cards) {
-        if (card.getColor() == Color::usedRed) {
-            continue;
-        }
-        auto cardButton = new QPushButton(this);
-
-        QString imagePath = "red";
-        imagePath += QString::number(card.getValue()) + ".jpg";
-
-        QPixmap pixmap(imagePath);
-        if (!pixmap.isNull()) {
-            QIcon buttonIcon(pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
-            cardButton->setIcon(buttonIcon);
-            cardButton->setIconSize(QSize(150, 150));
-        }
-        else {
-            cardButton->setText("Card not found");
-        }
-
-        cardButton->setStyleSheet("border: none;");
-        player1CardsLayout->addWidget(cardButton);
-
-
-        connect(cardButton, &QPushButton::clicked, this, [this, card]() {
-            onCardSelected(card);
-            });
-    }
-}
-
-
-void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
-    QLayoutItem* child;
-    while ((child = player2CardsLayout->takeAt(0)) != nullptr) {
-        delete child->widget();
-        delete child;
-    }
-
-    int imageWidth = 150;
-    int imageHeight = 200;
-    int spacing = 20;
-    player2CardsLayout->setSpacing(spacing);
-
-    for (const auto& card : cards) {
-        if (card.getColor() == Color::usedBlue) {
-            continue;
-        }
-        auto cardButton = new QPushButton(this);
-
-        QString imagePath = "blue";
-        imagePath += QString::number(card.getValue()) + ".jpg";
-
-        QPixmap pixmap(imagePath);
-        if (!pixmap.isNull()) {
-            QIcon buttonIcon(pixmap.scaled(imageWidth, imageHeight, Qt::KeepAspectRatio));
-            cardButton->setIcon(buttonIcon);
-            cardButton->setIconSize(QSize(imageWidth, imageHeight));
-        }
-        else {
-            cardButton->setText("Card not found");
-            cardButton->setStyleSheet("border: 1px solid black; background-color: white;");
-        }
-
-        cardButton->setStyleSheet("border: none;");
-        player2CardsLayout->addWidget(cardButton);
-
-        connect(cardButton, &QPushButton::clicked, this, [this, card]() {
-            onCardSelected(card);
-            });
-
-    }
-}
-
-void SecondaryWindow::setCurrentPlayer(Color player) {
-    currentPlayer = player;
-}
 
 
 
@@ -835,14 +832,146 @@ void SecondaryWindow::resetView()
 }
 
 
+void SecondaryWindow::setCurrentPlayer(Color player) {
+    currentPlayer = player;
+    // Resetează selecția când se schimbă jucătorul
+    selectedCardIndex = -1;
+    selectedCard = SimpleCard();
+    if (game) {
+        game->clearSelectedCard();
+    }
+}
 
+// În SecondaryWindow.cpp - modifică onCardSelected pentru a folosi indexul:
 
+void SecondaryWindow::onCardSelected(const SimpleCard& card, int cardIndex) {
+    // Verifică dacă cartea selectată aparține jucătorului curent
+    if (card.getColor() != currentPlayer) {
+        qDebug() << "Cannot select opponent's card!";
+        return;
+    }
 
-void SecondaryWindow::onCardSelected(const SimpleCard& card) {
     selectedCard = card;
+    selectedCardIndex = cardIndex;        // Salvează indexul exact al cărții
+    selectedCardPlayer = currentPlayer;   // Salvează jucătorul care a selectat
+    game->setSelectedCard(card);          // Comunică selecția către Game
+
     qDebug() << "Card selected: Color ="
         << (card.getColor() == Color::Red ? "Red" : "Blue")
-        << ", Value =" << card.getValue();
+        << ", Value =" << card.getValue()
+        << ", Index =" << cardIndex;
+}
+
+// În SecondaryWindow.cpp - modifică setPlayer1Cards pentru a evidenția cartea selectată:
+
+void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
+    QLayoutItem* child;
+    while ((child = player1CardsLayout->takeAt(0)) != nullptr) {
+        delete child->widget();
+        delete child;
+    }
+
+    for (size_t cardIndex = 0; cardIndex < cards.size(); ++cardIndex) {
+        const auto& card = cards[cardIndex];
+        if (card.getColor() == Color::usedRed) {
+            continue;
+        }
+        auto cardButton = new QPushButton(this);
+
+        QString imagePath = "red";
+        imagePath += QString::number(card.getValue()) + ".jpg";
+
+        QPixmap pixmap(imagePath);
+        if (!pixmap.isNull()) {
+            QIcon buttonIcon(pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
+            cardButton->setIcon(buttonIcon);
+            cardButton->setIconSize(QSize(150, 150));
+        }
+        else {
+            cardButton->setText("Card not found");
+        }
+
+        // Evidențiere pentru cartea selectată - folosim indexul pentru identificare unică
+        if (selectedCardIndex == static_cast<int>(cardIndex) && selectedCardPlayer == Color::Red) {
+            cardButton->setStyleSheet(
+                "border: 3px solid yellow; "
+                "background-color: rgba(255, 255, 0, 50);"
+            );
+        }
+        else {
+            cardButton->setStyleSheet("border: none;");
+        }
+
+        player1CardsLayout->addWidget(cardButton);
+
+        connect(cardButton, &QPushButton::clicked, this, [this, card, cardIndex]() {
+            onCardSelected(card, cardIndex);
+            // Reîmprospătează afișajul cărților pentru a reflecta selecția
+            if (currentPlayer == Color::Red) {
+                setPlayer1Cards(game->getCurrentPlayer().getVector());
+            }
+            });
+    }
+}
+
+// În SecondaryWindow.cpp - modifică setPlayer2Cards similar:
+
+void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
+    QLayoutItem* child;
+    while ((child = player2CardsLayout->takeAt(0)) != nullptr) {
+        delete child->widget();
+        delete child;
+    }
+
+    int imageWidth = 150;
+    int imageHeight = 200;
+    int spacing = 20;
+    player2CardsLayout->setSpacing(spacing);
+
+    // SCHIMBAREA: Folosește bucla cu index în loc de range-based for
+    for (size_t cardIndex = 0; cardIndex < cards.size(); ++cardIndex) {
+        const auto& card = cards[cardIndex];
+        if (card.getColor() == Color::usedBlue) {
+            continue;
+        }
+        auto cardButton = new QPushButton(this);
+
+        QString imagePath = "blue";
+        imagePath += QString::number(card.getValue()) + ".jpg";
+
+        QPixmap pixmap(imagePath);
+        if (!pixmap.isNull()) {
+            QIcon buttonIcon(pixmap.scaled(imageWidth, imageHeight, Qt::KeepAspectRatio));
+            cardButton->setIcon(buttonIcon);
+            cardButton->setIconSize(QSize(imageWidth, imageHeight));
+        }
+        else {
+            cardButton->setText("Card not found");
+            cardButton->setStyleSheet("border: 1px solid black; background-color: white;");
+        }
+
+        // SCHIMBAREA: Evidențiere folosind indexul pentru identificare unică
+        if (selectedCardIndex == static_cast<int>(cardIndex) && selectedCardPlayer == Color::Blue) {
+            cardButton->setStyleSheet(
+                "border: 3px solid yellow; "
+                "background-color: rgba(255, 255, 0, 50);"
+            );
+        }
+        else {
+            cardButton->setStyleSheet("border: none;");
+        }
+
+        player2CardsLayout->addWidget(cardButton);
+
+        // SCHIMBAREA: Lambda cu cardIndex în loc de doar card
+        connect(cardButton, &QPushButton::clicked, this, [this, card, cardIndex]() {
+            onCardSelected(card, cardIndex);
+            // Reîmprospătează afișajul cărților pentru a reflecta selecția
+            if (currentPlayer == Color::Blue) {
+                setPlayer2Cards(game->getCurrentPlayer().getVector());
+            }
+            });
+    }
 }
 
 void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Name) {

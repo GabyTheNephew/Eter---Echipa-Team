@@ -465,26 +465,36 @@ void Game::handleBoardClick(int row, int col, int player) {
         return;
     }
 
-    // Găsește prima carte disponibilă
-    SimpleCard selectedCard;
+    // SCHIMBAREA PRINCIPALĂ: Verifică dacă există o carte selectată
+    SimpleCard cardToPlay;
     bool foundCard = false;
 
-    for (const auto& card : currentPlayerRef.getVector()) {
-        if (card.getColor() == Color::Red || card.getColor() == Color::Blue) {
-            selectedCard = card;
-            foundCard = true;
-            break;
+    if (hasSelectedCard()) {
+        // Verifică dacă cartea selectată este validă pentru jucătorul curent
+        for (const auto& card : currentPlayerRef.getVector()) {
+            if (card.getValue() == selectedCard.getValue() &&
+                card.getColor() == selectedCard.getColor() &&
+                (card.getColor() == Color::Red || card.getColor() == Color::Blue)) {
+                cardToPlay = card;
+                foundCard = true;
+                qDebug() << "Using selected card: Value=" << cardToPlay.getValue()
+                    << ", Color=" << (cardToPlay.getColor() == Color::Red ? "Red" : "Blue");
+                break;
+            }
+        }
+
+        if (!foundCard) {
+            qDebug() << "Selected card is not valid for current player!";
+            return;
         }
     }
-
-    if (!foundCard) {
-        qDebug() << "No valid cards found for current player";
-        checkRoundEnd();
+    else {
+        qDebug() << "No card selected! Player must select a card first.";
         return;
     }
 
     // Verificăm că cartea poate fi plasată
-    if (!m_gameBoard.canBePushed(selectedCard, { row, col })) {
+    if (!m_gameBoard.canBePushed(cardToPlay, { row, col })) {
         qDebug() << "Card cannot be pushed to this position - value too low";
         return;
     }
@@ -493,9 +503,13 @@ void Game::handleBoardClick(int row, int col, int player) {
         << m_gameBoard.getRowSize() << "x" << m_gameBoard.getColumnSize();
 
     // Plasează cartea
-    m_gameBoard.pushCard(selectedCard, { row, col });
+    m_gameBoard.pushCard(cardToPlay, { row, col });
     qDebug() << "Card placed: Player" << (currentPlayer == Color::Red ? "1" : "2")
-        << " Value:" << selectedCard.getValue();
+        << " Value:" << cardToPlay.getValue();
+
+    // Curăță selecția
+    clearSelectedCard();
+    //currentGameWindow->selectedCardIndex = -1; // Resetează și în SecondaryWindow
 
     // EXTINDEREA TABLEI - logica din SecondaryWindow originală
     qDebug() << "Card placed, now auto-expanding for adjacency...";
@@ -505,12 +519,11 @@ void Game::handleBoardClick(int row, int col, int player) {
         << m_gameBoard.getRowSize() << "x" << m_gameBoard.getColumnSize();
 
     // Marchează cartea ca folosită
-    currentPlayerRef.makeCardInvalid(selectedCard);
-    currentPlayerRef.getPastVector().push_back(selectedCard);
+    currentPlayerRef.makeCardInvalid(cardToPlay);
+    currentPlayerRef.getPastVector().push_back(cardToPlay);
 
     // Verifică dacă tabla s-a "fixat" (a atins dimensiunea maximă)
     if (m_gameBoard.getRowSize() >= 3 && m_gameBoard.getColumnSize() >= 3) {
-        // Pentru Training mode, dimensiunea maximă este 3x3
         qDebug() << "Board reached maximum size, cleaning up borders";
         cleanupEmptyBorders();
     }

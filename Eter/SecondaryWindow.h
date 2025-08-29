@@ -65,6 +65,8 @@ protected:
     void keyPressEvent(QKeyEvent* event) override;
 
 private:
+    int selectedCardIndex = -1;      // Indexul exact al cărții selectate
+    Color selectedCardPlayer = Color::Red;
     QString imagePath;
     MenuWindow* menu = nullptr;
     BoardView* m_boardView;
@@ -84,7 +86,7 @@ private:
     void setupMatchInfoUI();
 
 private slots:
-    void onCardSelected(const SimpleCard& card);
+    void onCardSelected(const SimpleCard& card, int cardIndex);
     void onBoardClicked(int row, int col);
     void onMageClicked(const QString& mageName, const Color& color);
     void onPowerClicked(const QString& powerName, const Color& color);
