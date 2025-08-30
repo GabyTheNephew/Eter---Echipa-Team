@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <vector>
 #include <deque>
 #include <iostream>
@@ -8,7 +8,7 @@
 #include <tuple>
 #include "CardColor.h"
 #include <QDebug>
-
+#include <queue>
 using matrix = std::vector<std::vector<std::deque<SimpleCard>>>;
 
 class Board
@@ -43,6 +43,46 @@ public:
     using Position = std::tuple<int16_t, int16_t>;
 
 public:
+    std::vector<int> countCardsPerColumn() const;
+    std::vector<int> countCardsPerRow() const;
+
+    // Check if board should be fixed horizontally or vertically
+    bool shouldFixHorizontally() const;
+    bool shouldFixVertically() const;
+
+    // Fix the board by removing empty borders when conditions are met
+    void fixBoardHorizontally();
+    void fixBoardVertically();
+
+    // Updated board management
+    void smartBoardManagement(int16_t maxSize);
+
+    void ensureAllCardsHaveAdjacency(int16_t maxSize = 4);
+    bool canExpandHorizontally(int16_t maxSize) const;
+    bool canExpandVertically(int16_t maxSize) const;
+
+    void asymmetricExpansion(int16_t maxSize = 3);
+    bool shouldFixBoard() const;
+    void fixBoardBoundaries();
+    bool hasThreeInLineColumnDiagonal() const;
+    bool hasTwoCardsAtDistance() const;
+    void removeIsolatedPositions();
+    std::vector<std::pair<int16_t, int16_t>> findConnectedComponent(int16_t startRow, int16_t startCol,
+        std::vector<std::vector<bool>>& visited) const;
+
+    /*void ensureAllCardsHaveAdjacency(int16_t maxSize = 4);
+    bool canExpandHorizontally() const;
+    bool canExpandVertically() const;*/
+    int16_t getMinRowWithCards() const;
+    int16_t getMaxRowWithCards() const;
+    int16_t getMinColWithCards() const;
+    int16_t getMaxColWithCards() const;
+
+    bool hasAdjacentCards(int16_t row, int16_t col) const;
+    void cleanupIsolatedPositions();
+    void cleanupFirstIsolatedPosition();
+    int countIsolatedPositions() const;
+
     Board(const Board& board);
     Board();
     Board(int16_t size);

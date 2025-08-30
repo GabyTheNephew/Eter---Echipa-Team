@@ -443,6 +443,10 @@ void Game::checkRoundEnd() {
 // Fixed handleBoardClick - simplified version
 // În Game.cpp - Versiunea corectată a handleBoardClick:
 
+// În Game.cpp - modifică funcția handleBoardClick pentru extinderea asimetrică:
+
+// În Game.cpp - modifică funcția handleBoardClick pentru extinderea asimetrică:
+
 void Game::handleBoardClick(int row, int col, int player) {
     qDebug() << "Processing move at (" << row << ", " << col << ") for player "
         << (currentPlayer == Color::Red ? "1 (Red)" : "2 (Blue)");
@@ -465,12 +469,11 @@ void Game::handleBoardClick(int row, int col, int player) {
         return;
     }
 
-    // SCHIMBAREA PRINCIPALĂ: Verifică dacă există o carte selectată
+    // Check if there's a selected card
     SimpleCard cardToPlay;
     bool foundCard = false;
 
     if (hasSelectedCard()) {
-        // Verifică dacă cartea selectată este validă pentru jucătorul curent
         for (const auto& card : currentPlayerRef.getVector()) {
             if (card.getValue() == selectedCard.getValue() &&
                 card.getColor() == selectedCard.getColor() &&
@@ -493,7 +496,7 @@ void Game::handleBoardClick(int row, int col, int player) {
         return;
     }
 
-    // Verificăm că cartea poate fi plasată
+    // Check that the card can be placed
     if (!m_gameBoard.canBePushed(cardToPlay, { row, col })) {
         qDebug() << "Card cannot be pushed to this position - value too low";
         return;
@@ -502,35 +505,29 @@ void Game::handleBoardClick(int row, int col, int player) {
     qDebug() << "Board size before placement: "
         << m_gameBoard.getRowSize() << "x" << m_gameBoard.getColumnSize();
 
-    // Plasează cartea
+    // Place the card
     m_gameBoard.pushCard(cardToPlay, { row, col });
     qDebug() << "Card placed: Player" << (currentPlayer == Color::Red ? "1" : "2")
         << " Value:" << cardToPlay.getValue();
 
-    // Curăță selecția IMEDIAT după plasarea cărții
+    // Clear selection IMMEDIATELY after placing the card
     clearSelectedCard();
     if (currentGameWindow) {
         currentGameWindow->clearCardSelection();
     }
 
-    // EXTINDEREA TABLEI - logica din SecondaryWindow originală
-    qDebug() << "Card placed, now auto-expanding for adjacency...";
-    m_gameBoard.autoExpandForAdiacency(3); // Pentru Training mode, max size = 3
+    // NEW SMART BOARD MANAGEMENT LOGIC
+    qDebug() << "Applying smart board management...";
+    m_gameBoard.smartBoardManagement(4); // Maximum 4x4 for training
 
-    qDebug() << "Board size after auto-expansion: "
+    qDebug() << "Board size after smart management: "
         << m_gameBoard.getRowSize() << "x" << m_gameBoard.getColumnSize();
 
-    // Marchează cartea ca folosită
+    // Mark card as used
     currentPlayerRef.makeCardInvalid(cardToPlay);
     currentPlayerRef.getPastVector().push_back(cardToPlay);
 
-    // Verifică dacă tabla s-a "fixat" (a atins dimensiunea maximă)
-    if (m_gameBoard.getRowSize() >= 3 && m_gameBoard.getColumnSize() >= 3) {
-        qDebug() << "Board reached maximum size, cleaning up borders";
-        cleanupEmptyBorders();
-    }
-
-    // Actualizează interfața - ACUM cu selecția deja resetată
+    // Update interface - NOW with selection already reset
     currentGameWindow->setPlayer1Cards(player1.getVector());
     currentGameWindow->setPlayer2Cards(player2.getVector());
     currentGameWindow->updateBoardView();
@@ -542,25 +539,29 @@ void Game::handleBoardClick(int row, int col, int player) {
         << m_gameBoard.getRowSize() << "x" << m_gameBoard.getColumnSize()
         << " (actual occupied: " << finalRows << "x" << finalCols << ")";
 
-    // Verifică sfârșitul rundei
+    // Check end of round
     Board::State winState = m_gameBoard.checkWin(false, 3);
     if (winState != Board::State::None) {
         checkRoundEnd();
         return;
     }
 
-    // Verifică dacă ambii jucători mai au cărți
+    // Check if both players have cards left
     if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
         checkRoundEnd();
         return;
     }
 
-    // Schimbă jucătorul
+    // Switch player
     currentPlayer = (currentPlayer == Color::Red) ? Color::Blue : Color::Red;
     currentGameWindow->setCurrentPlayer(currentPlayer);
 
     qDebug() << "Switched to player " << (currentPlayer == Color::Red ? "1 (Red)" : "2 (Blue)");
 }
+
+// Elimină funcția cleanupEmptyBorders veche, deoarece acum este integrată în asymmetricExpansion
+
+// Elimină funcția cleanupEmptyBorders veche, deoarece acum este integrată în asymmetricExpansion
 
 void Game::cleanupEmptyBorders() {
     qDebug() << "Cleaning up borders...";

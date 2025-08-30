@@ -1,5 +1,729 @@
 ﻿#include "Board.h"
 
+std::vector<int> Board::countCardsPerColumn() const {
+    std::vector<int> columnCounts(getColumnSize(), 0);
+
+    for (int16_t j = 0; j < getColumnSize(); ++j) {
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            if (!m_board[i][j].empty()) {
+                columnCounts[j]++;
+            }
+        }
+    }
+
+    qDebug() << "Cards per column:";
+    for (int j = 0; j < columnCounts.size(); ++j) {
+        qDebug() << "Column" << j << ":" << columnCounts[j] << "cards";
+    }
+
+    return columnCounts;
+}
+
+std::vector<int> Board::countCardsPerRow() const {
+    std::vector<int> rowCounts(getRowSize(), 0);
+
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            if (!m_board[i][j].empty()) {
+                rowCounts[i]++;
+            }
+        }
+    }
+
+    qDebug() << "Cards per row:";
+    for (int i = 0; i < rowCounts.size(); ++i) {
+        qDebug() << "Row" << i << ":" << rowCounts[i] << "cards";
+    }
+
+    return rowCounts;
+}
+
+bool Board::shouldFixHorizontally() const {
+    std::vector<int> columnCounts = countCardsPerColumn();
+
+    // Look for 3 consecutive columns with cards
+    for (int i = 0; i <= static_cast<int>(columnCounts.size()) - 3; ++i) {
+        if (columnCounts[i] > 0 &&
+            columnCounts[i + 1] > 0 &&
+            columnCounts[i + 2] > 0) {
+            qDebug() << "Found 3 consecutive columns with cards: columns"
+                << i << "," << (i + 1) << "," << (i + 2);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Board::shouldFixVertically() const {
+    std::vector<int> rowCounts = countCardsPerRow();
+
+    // Look for 3 consecutive rows with cards
+    for (int i = 0; i <= static_cast<int>(rowCounts.size()) - 3; ++i) {
+        if (rowCounts[i] > 0 &&
+            rowCounts[i + 1] > 0 &&
+            rowCounts[i + 2] > 0) {
+            qDebug() << "Found 3 consecutive rows with cards: rows"
+                << i << "," << (i + 1) << "," << (i + 2);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Board::fixBoardHorizontally() {
+    qDebug() << "Fixing board horizontally...";
+
+    // Find the leftmost and rightmost columns with cards
+    int16_t minCol = getColumnSize();
+    int16_t maxCol = -1;
+
+    for (int16_t j = 0; j < getColumnSize(); ++j) {
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            if (!m_board[i][j].empty()) {
+                minCol = std::min(minCol, j);
+                maxCol = std::max(maxCol, j);
+                break; // Found a card in this column
+            }
+        }
+    }
+
+    if (minCol <= maxCol) {
+        qDebug() << "Cards span from column" << minCol << "to column" << maxCol;
+
+        // Remove empty columns from the right
+        while (getColumnSize() > maxCol + 1) {
+            qDebug() << "Removing rightmost empty column";
+            removeColumn(getColumnSize() - 1);
+        }
+
+        // Remove empty columns from the left
+        while (minCol > 0) {
+            qDebug() << "Removing leftmost empty column";
+            removeColumn(0);
+            minCol--; // Adjust index after removal
+            maxCol--; // Adjust index after removal
+        }
+
+        qDebug() << "Horizontal fixing complete. Columns now:" << getColumnSize();
+    }
+}
+
+void Board::fixBoardVertically() {
+    qDebug() << "Fixing board vertically...";
+
+    // Find the topmost and bottommost rows with cards
+    int16_t minRow = getRowSize();
+    int16_t maxRow = -1;
+
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            if (!m_board[i][j].empty()) {
+                minRow = std::min(minRow, i);
+                maxRow = std::max(maxRow, i);
+                break; // Found a card in this row
+            }
+        }
+    }
+
+    if (minRow <= maxRow) {
+        qDebug() << "Cards span from row" << minRow << "to row" << maxRow;
+
+        // Remove empty rows from the bottom
+        while (getRowSize() > maxRow + 1) {
+            qDebug() << "Removing bottommost empty row";
+            removeRow(getRowSize() - 1);
+        }
+
+        // Remove empty rows from the top
+        while (minRow > 0) {
+            qDebug() << "Removing topmost empty row";
+            removeRow(0);
+            minRow--; // Adjust index after removal
+            maxRow--; // Adjust index after removal
+        }
+
+        qDebug() << "Vertical fixing complete. Rows now:" << getRowSize();
+    }
+}
+
+void Board::smartBoardManagement(int16_t maxSize) {
+    qDebug() << "Starting smart board management (maxSize:" << maxSize << ")...";
+
+    // First, ensure adjacency for all existing cards
+    ensureAllCardsHaveAdjacency(maxSize);
+
+    // Check if we should fix horizontally (3 consecutive columns with cards)
+    bool shouldFixHoriz = shouldFixHorizontally();
+
+    // Check if we should fix vertically (3 consecutive rows with cards)  
+    bool shouldFixVert = shouldFixVertically();
+
+    if (shouldFixHoriz) {
+        qDebug() << "Board should be fixed horizontally";
+        fixBoardHorizontally();
+    }
+
+    if (shouldFixVert) {
+        qDebug() << "Board should be fixed vertically";
+        fixBoardVertically();
+    }
+
+    // Clean up any isolated positions
+    removeIsolatedPositions();
+
+    qDebug() << "Smart board management complete. Final size:"
+        << getRowSize() << "x" << getColumnSize();
+}
+
+
+void Board::ensureAllCardsHaveAdjacency(int16_t maxSize) {
+    qDebug() << "Ensuring all cards have complete adjacency...";
+    qDebug() << "Current board size: " << getRowSize() << "x" << getColumnSize()
+        << " (max allowed: " << maxSize << "x" << maxSize << ")";
+
+    bool expandedInThisIteration = false;
+
+    do {
+        expandedInThisIteration = false;
+
+        // Găsim toate pozițiile cu cărți
+        std::vector<std::pair<int16_t, int16_t>> cardPositions;
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            for (int16_t j = 0; j < getColumnSize(); ++j) {
+                if (!m_board[i][j].empty()) {
+                    cardPositions.push_back({ i, j });
+                }
+            }
+        }
+
+        if (cardPositions.empty()) return;
+
+        qDebug() << "Found " << cardPositions.size() << " cards on board";
+
+        // Pentru fiecare carte, verificăm dacă toate pozițiile adiacente sunt în tabla
+        for (const auto& [row, col] : cardPositions) {
+            // Verificăm cele 8 poziții adiacente
+            std::vector<std::pair<int16_t, int16_t>> neighbors = {
+                {row + 1, col}, {row - 1, col},
+                {row, col + 1}, {row, col - 1},
+                {row + 1, col + 1}, {row - 1, col + 1},
+                {row - 1, col - 1}, {row + 1, col - 1}
+            };
+
+            for (const auto& [nx, ny] : neighbors) {
+                // Dacă o poziție adiacentă este în afara tablei, extindem
+                if (nx < 0 && canExpandVertically(maxSize)) {
+                    qDebug() << "Expanding UP for card at (" << row << "," << col << ")";
+                    qDebug() << "Before expansion: " << getRowSize() << " rows";
+                    expandRow(RowExpandDirection::Up);
+                    qDebug() << "After expansion: " << getRowSize() << " rows";
+                    expandedInThisIteration = true;
+                    break;
+                }
+                if (nx >= getRowSize() && canExpandVertically(maxSize)) {
+                    qDebug() << "Expanding DOWN for card at (" << row << "," << col << ")";
+                    qDebug() << "Before expansion: " << getRowSize() << " rows";
+                    expandRow(RowExpandDirection::Down);
+                    qDebug() << "After expansion: " << getRowSize() << " rows";
+                    expandedInThisIteration = true;
+                    break;
+                }
+                if (ny < 0 && canExpandHorizontally(maxSize)) {
+                    qDebug() << "Expanding LEFT for card at (" << row << "," << col << ")";
+                    qDebug() << "Before expansion: " << getColumnSize() << " columns";
+                    expandColumn(ColumnExpandDirection::Left);
+                    qDebug() << "After expansion: " << getColumnSize() << " columns";
+                    expandedInThisIteration = true;
+                    break;
+                }
+                if (ny >= getColumnSize() && canExpandHorizontally(maxSize)) {
+                    qDebug() << "Expanding RIGHT for card at (" << row << "," << col << ")";
+                    qDebug() << "Before expansion: " << getColumnSize() << " columns";
+                    expandColumn(ColumnExpandDirection::Right);
+                    qDebug() << "After expansion: " << getColumnSize() << " columns";
+                    expandedInThisIteration = true;
+                    break;
+                }
+            }
+
+            if (expandedInThisIteration) break; // Extindem una câte una și reîncepem
+        }
+
+    } while (expandedInThisIteration);
+
+    qDebug() << "Adjacency ensured. Final board size: "
+        << getRowSize() << "x" << getColumnSize();
+}
+
+// Verifică dacă tabla poate fi extinsă pe orizontală
+bool Board::canExpandHorizontally(int16_t maxSize) const {
+    // Nu se mai poate extinde dacă tabla deja are dimensiunea maximă pe orizontală
+    bool canExpand = getColumnSize() < maxSize;
+
+    qDebug() << "Horizontal expansion check: current columns=" << getColumnSize()
+        << ", maxSize=" << maxSize
+        << ", canExpand=" << canExpand;
+
+    return canExpand;
+}
+
+// Verifică dacă tabla poate fi extinsă pe verticală  
+bool Board::canExpandVertically(int16_t maxSize) const {
+    // Nu se mai poate extinde dacă tabla deja are dimensiunea maximă pe verticală
+    bool canExpand = getRowSize() < maxSize;
+
+    qDebug() << "Vertical expansion check: current rows=" << getRowSize()
+        << ", maxSize=" << maxSize
+        << ", canExpand=" << canExpand;
+
+    return canExpand;
+}
+
+
+// Găsește cel mai mic rând care conține cărți
+int16_t Board::getMinRowWithCards() const {
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            if (!m_board[i][j].empty()) {
+                return i;
+            }
+        }
+    }
+    return -1; // Nicio carte găsită
+}
+
+// Găsește cel mai mare rând care conține cărți
+int16_t Board::getMaxRowWithCards() const {
+    for (int16_t i = getRowSize() - 1; i >= 0; --i) {
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            if (!m_board[i][j].empty()) {
+                return i;
+            }
+        }
+    }
+    return -1; // Nicio carte găsită
+}
+
+// Găsește cea mai mică coloană care conține cărți
+int16_t Board::getMinColWithCards() const {
+    for (int16_t j = 0; j < getColumnSize(); ++j) {
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            if (!m_board[i][j].empty()) {
+                return j;
+            }
+        }
+    }
+    return -1; // Nicio carte găsită
+}
+
+// Găsește cea mai mare coloană care conține cărți
+int16_t Board::getMaxColWithCards() const {
+    for (int16_t j = getColumnSize() - 1; j >= 0; --j) {
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            if (!m_board[i][j].empty()) {
+                return j;
+            }
+        }
+    }
+    return -1; // Nicio carte găsită
+}
+
+void Board::asymmetricExpansion(int16_t maxSize) {
+    qDebug() << "Starting asymmetric expansion...";
+
+    // Găsim toate pozițiile cu cărți
+    std::vector<std::pair<int16_t, int16_t>> cardPositions;
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            if (!m_board[i][j].empty()) {
+                cardPositions.push_back({ i, j });
+            }
+        }
+    }
+
+    if (cardPositions.empty()) return;
+
+    // Verificăm dacă tabla trebuie fixată
+    if (shouldFixBoard()) {
+        qDebug() << "Board should be fixed - no more expansion";
+        fixBoardBoundaries();
+        return;
+    }
+
+    // Verificăm extinderea necesară pentru fiecare carte existentă
+    bool needsExpansion = false;
+
+    for (const auto& [row, col] : cardPositions) {
+        // Verificăm toate pozițiile adiacente
+        std::vector<std::pair<int16_t, int16_t>> neighbors = {
+            {row + 1, col}, {row - 1, col},
+            {row, col + 1}, {row, col - 1},
+            {row + 1, col + 1}, {row - 1, col + 1},
+            {row - 1, col - 1}, {row + 1, col - 1}
+        };
+
+        for (const auto& [nx, ny] : neighbors) {
+            // Dacă o poziție adiacentă este în afara tablei, extindem
+            if (nx < 0 && getRowSize() < maxSize) {
+                qDebug() << "Expanding UP for adjacency to card at (" << row << "," << col << ")";
+                expandRow(RowExpandDirection::Up);
+                needsExpansion = true;
+                break;
+            }
+            if (nx >= getRowSize() && getRowSize() < maxSize) {
+                qDebug() << "Expanding DOWN for adjacency to card at (" << row << "," << col << ")";
+                expandRow(RowExpandDirection::Down);
+                needsExpansion = true;
+                break;
+            }
+            if (ny < 0 && getColumnSize() < maxSize) {
+                qDebug() << "Expanding LEFT for adjacency to card at (" << row << "," << col << ")";
+                expandColumn(ColumnExpandDirection::Left);
+                needsExpansion = true;
+                break;
+            }
+            if (ny >= getColumnSize() && getColumnSize() < maxSize) {
+                qDebug() << "Expanding RIGHT for adjacency to card at (" << row << "," << col << ")";
+                expandColumn(ColumnExpandDirection::Right);
+                needsExpansion = true;
+                break;
+            }
+        }
+
+        if (needsExpansion) break; // Extindem una câte una
+    }
+
+    // După extindere, verificăm și eliminăm pozițiile izolate
+    removeIsolatedPositions();
+
+    qDebug() << "Asymmetric expansion completed. Board size: "
+        << getRowSize() << "x" << getColumnSize();
+}
+
+// Verifică dacă tabla trebuie fixată
+bool Board::shouldFixBoard() const {
+    return hasThreeInLineColumnDiagonal() || hasTwoCardsAtDistance();
+}
+
+// Verifică dacă avem 3 cărți pe linie/coloană/diagonală
+bool Board::hasThreeInLineColumnDiagonal() const {
+    // Verificăm rândurile
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        int16_t consecutiveCards = 0;
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            if (!m_board[i][j].empty()) {
+                consecutiveCards++;
+                if (consecutiveCards >= 3) {
+                    qDebug() << "Found 3 consecutive cards on row " << i;
+                    return true;
+                }
+            }
+            else {
+                consecutiveCards = 0;
+            }
+        }
+    }
+
+    // Verificăm coloanele
+    for (int16_t j = 0; j < getColumnSize(); ++j) {
+        int16_t consecutiveCards = 0;
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            if (!m_board[i][j].empty()) {
+                consecutiveCards++;
+                if (consecutiveCards >= 3) {
+                    qDebug() << "Found 3 consecutive cards on column " << j;
+                    return true;
+                }
+            }
+            else {
+                consecutiveCards = 0;
+            }
+        }
+    }
+
+    // Verificăm diagonalele (doar pentru table pătrate)
+    if (getRowSize() == getColumnSize()) {
+        // Diagonala principală
+        int16_t consecutiveCards = 0;
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            if (!m_board[i][i].empty()) {
+                consecutiveCards++;
+                if (consecutiveCards >= 3) {
+                    qDebug() << "Found 3 consecutive cards on main diagonal";
+                    return true;
+                }
+            }
+            else {
+                consecutiveCards = 0;
+            }
+        }
+
+        // Diagonala secundară
+        consecutiveCards = 0;
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            if (!m_board[i][getColumnSize() - 1 - i].empty()) {
+                consecutiveCards++;
+                if (consecutiveCards >= 3) {
+                    qDebug() << "Found 3 consecutive cards on secondary diagonal";
+                    return true;
+                }
+            }
+            else {
+                consecutiveCards = 0;
+            }
+        }
+    }
+
+    return false;
+}
+
+// Verifică dacă avem 2 cărți la distanță de o căsuță care sunt adiacente cu alte cărți
+bool Board::hasTwoCardsAtDistance() const {
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        for (int16_t j = 0; j < getColumnSize() - 2; ++j) {
+            // Verificăm pe orizontală: carte - gol - carte
+            if (!m_board[i][j].empty() && m_board[i][j + 1].empty() && !m_board[i][j + 2].empty()) {
+                // Verificăm dacă ambele cărți sunt adiacente cu alte cărți
+                bool firstHasAdjacent = hasAdjacentCards(i, j);
+                bool secondHasAdjacent = hasAdjacentCards(i, j + 2);
+
+                if (firstHasAdjacent && secondHasAdjacent) {
+                    qDebug() << "Found two cards at distance on row " << i << " positions " << j << " and " << (j + 2);
+                    return true;
+                }
+            }
+        }
+    }
+
+    for (int16_t j = 0; j < getColumnSize(); ++j) {
+        for (int16_t i = 0; i < getRowSize() - 2; ++i) {
+            // Verificăm pe verticală: carte - gol - carte
+            if (!m_board[i][j].empty() && m_board[i + 1][j].empty() && !m_board[i + 2][j].empty()) {
+                // Verificăm dacă ambele cărți sunt adiacente cu alte cărți
+                bool firstHasAdjacent = hasAdjacentCards(i, j);
+                bool secondHasAdjacent = hasAdjacentCards(i + 2, j);
+
+                if (firstHasAdjacent && secondHasAdjacent) {
+                    qDebug() << "Found two cards at distance on column " << j << " positions " << i << " and " << (i + 2);
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+// Fixează granițele tablei eliminând rândurile și coloanele goale de la margini
+void Board::fixBoardBoundaries() {
+    qDebug() << "Fixing board boundaries...";
+
+    // Eliminăm rândurile goale de la margini
+    while (getRowSize() > 3) {
+        if (isRowEmpty(0) && !isRowEmpty(getRowSize() - 1)) {
+            removeRow(0);
+            qDebug() << "Removed first empty row";
+        }
+        else if (isRowEmpty(getRowSize() - 1) && !isRowEmpty(0)) {
+            removeRow(getRowSize() - 1);
+            qDebug() << "Removed last empty row";
+        }
+        else {
+            break;
+        }
+    }
+
+    // Eliminăm coloanele goale de la margini
+    while (getColumnSize() > 3) {
+        if (isColumnEmpty(0) && !isColumnEmpty(getColumnSize() - 1)) {
+            removeColumn(0);
+            qDebug() << "Removed first empty column";
+        }
+        else if (isColumnEmpty(getColumnSize() - 1) && !isColumnEmpty(0)) {
+            removeColumn(getColumnSize() - 1);
+            qDebug() << "Removed last empty column";
+        }
+        else {
+            break;
+        }
+    }
+
+    qDebug() << "Board boundaries fixed. Final size: "
+        << getRowSize() << "x" << getColumnSize();
+}
+
+// Elimină pozițiile izolate și verifică conectivitatea
+void Board::removeIsolatedPositions() {
+    if (getTotalCardsOnBoard() <= 1) return; // Nu se aplică pentru o singură carte
+
+    std::vector<std::vector<bool>> visited(getRowSize(), std::vector<bool>(getColumnSize(), false));
+    std::vector<std::pair<int16_t, int16_t>> allCardPositions;
+
+    // Găsim toate pozițiile cu cărți
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            if (!m_board[i][j].empty()) {
+                allCardPositions.push_back({ i, j });
+            }
+        }
+    }
+
+    if (allCardPositions.empty()) return;
+
+    // Găsim componenta conexă cea mai mare
+    std::vector<std::pair<int16_t, int16_t>> largestComponent;
+
+    for (const auto& [row, col] : allCardPositions) {
+        if (!visited[row][col]) {
+            auto component = findConnectedComponent(row, col, visited);
+            if (component.size() > largestComponent.size()) {
+                largestComponent = component;
+            }
+        }
+    }
+
+    // Eliminăm cărțile care nu fac parte din componenta cea mai mare
+    for (const auto& [row, col] : allCardPositions) {
+        bool inLargestComponent = false;
+        for (const auto& [compRow, compCol] : largestComponent) {
+            if (row == compRow && col == compCol) {
+                inLargestComponent = true;
+                break;
+            }
+        }
+
+        if (!inLargestComponent) {
+            qDebug() << "Removing isolated card at (" << row << "," << col << ")";
+            m_board[row][col].clear();
+        }
+    }
+}
+
+// Găsește componenta conexă pornind de la o poziție
+std::vector<std::pair<int16_t, int16_t>> Board::findConnectedComponent(
+    int16_t startRow, int16_t startCol, std::vector<std::vector<bool>>& visited) const {
+
+    std::vector<std::pair<int16_t, int16_t>> component;
+    std::queue<std::pair<int16_t, int16_t>> toProcess;
+
+    toProcess.push({ startRow, startCol });
+    visited[startRow][startCol] = true;
+
+    while (!toProcess.empty()) {
+        auto [row, col] = toProcess.front();
+        toProcess.pop();
+        component.push_back({ row, col });
+
+        // Verificăm toate pozițiile adiacente (8 direcții)
+        std::vector<std::pair<int16_t, int16_t>> neighbors = {
+            {row + 1, col}, {row - 1, col},
+            {row, col + 1}, {row, col - 1},
+            {row + 1, col + 1}, {row - 1, col + 1},
+            {row - 1, col - 1}, {row + 1, col - 1}
+        };
+
+        for (const auto& [nx, ny] : neighbors) {
+            if (nx >= 0 && nx < getRowSize() && ny >= 0 && ny < getColumnSize() &&
+                !visited[nx][ny] && !m_board[nx][ny].empty()) {
+                visited[nx][ny] = true;
+                toProcess.push({ nx, ny });
+            }
+        }
+    }
+
+    return component;
+}
+
+// Funcție pentru a verifica dacă o poziție are cărți adiacente
+bool Board::hasAdjacentCards(int16_t row, int16_t col) const {
+    // Verificăm cele 8 poziții adiacente
+    std::vector<std::pair<int16_t, int16_t>> neighbors = {
+        {row + 1, col}, {row - 1, col},
+        {row, col + 1}, {row, col - 1},
+        {row + 1, col + 1}, {row - 1, col + 1},
+        {row - 1, col - 1}, {row + 1, col - 1}
+    };
+
+    for (const auto& [nx, ny] : neighbors) {
+        // Verificăm dacă poziția este în limitele tablei
+        if (nx >= 0 && nx < getRowSize() && ny >= 0 && ny < getColumnSize()) {
+            // Dacă găsim o carte adiacentă, returnăm true
+            if (!m_board[nx][ny].empty()) {
+                return true;
+            }
+        }
+    }
+
+    return false; // Nu are nicio carte adiacentă
+}
+
+// Funcție pentru a curăța pozițiile izolate (fără cărți adiacente)
+void Board::cleanupIsolatedPositions() {
+    qDebug() << "Starting cleanup of isolated positions...";
+
+    std::vector<std::pair<int16_t, int16_t>> positionsToRemove;
+
+    // Găsim toate pozițiile cu cărți care sunt izolate
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            // Dacă poziția are carte dar nu are cărți adiacente
+            if (!m_board[i][j].empty() && !hasAdjacentCards(i, j)) {
+                positionsToRemove.push_back({ i, j });
+                qDebug() << "Found isolated position with card at (" << i << "," << j << ")";
+            }
+        }
+    }
+
+    // Eliminăm cărțile de pe pozițiile izolate
+    for (const auto& [row, col] : positionsToRemove) {
+        qDebug() << "Removing isolated card at (" << row << "," << col << ")";
+        m_board[row][col].clear();
+    }
+
+    if (positionsToRemove.empty()) {
+        qDebug() << "No isolated positions found.";
+    }
+    else {
+        qDebug() << "Removed" << positionsToRemove.size() << "isolated positions.";
+    }
+}
+
+// Versiune alternativă - elimină doar prima carte izolată găsită
+void Board::cleanupFirstIsolatedPosition() {
+    qDebug() << "Looking for first isolated position to cleanup...";
+
+    // Căutăm prima poziție izolată
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            // Dacă poziția are carte dar nu are cărți adiacente
+            if (!m_board[i][j].empty() && !hasAdjacentCards(i, j)) {
+                qDebug() << "Removing isolated card at (" << i << "," << j << ")";
+                m_board[i][j].clear();
+                return; // Eliminăm doar prima găsită
+            }
+        }
+    }
+
+    qDebug() << "No isolated positions found.";
+}
+
+// Funcție pentru a număra câte poziții izolate există
+int Board::countIsolatedPositions() const {
+    int count = 0;
+
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            if (!m_board[i][j].empty() && !hasAdjacentCards(i, j)) {
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+
 bool Board::needsDynamicExpansion(int16_t placementRow, int16_t placementCol, int16_t maxSize) const {
     // Pentru o tablă 2x2 inițială, trebuie să extindem dacă jucătorul încearcă să plaseze
     // pe o poziție care ar cere adiacență în afara tablei actuale
