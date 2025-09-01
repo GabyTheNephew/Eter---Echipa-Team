@@ -35,6 +35,8 @@ class SecondaryWindow : public QWidget {
     Q_OBJECT
 
 public:
+    void setMagesCompact(const QString& mage1Name, const QString& mage2Name);
+
     void clearCardSelection();
     explicit SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,
         const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name, bool checkMage, bool checkPower, QWidget* parent = nullptr);
@@ -66,6 +68,10 @@ protected:
     void keyPressEvent(QKeyEvent* event) override;
 
 private:
+    // In SecondaryWindow.h, add these declarations to the private section:
+    void setPowersCompact(const QString& power1Name, const QString& power2Name);
+    void setMagesAndPowersCompact(const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name);
+
     int selectedCardIndex = -1;      // Indexul exact al cărții selectate
     Color selectedCardPlayer = Color::Red;
     QString imagePath;

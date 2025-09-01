@@ -38,33 +38,43 @@ std::vector<int> Board::countCardsPerRow() const {
     return rowCounts;
 }
 
-bool Board::shouldFixHorizontally() const {
+// Updated method to check for fixing with configurable target size
+bool Board::shouldFixHorizontally(int16_t targetSize) const {
     std::vector<int> columnCounts = countCardsPerColumn();
 
-    // Look for 3 consecutive columns with cards
-    for (int i = 0; i <= static_cast<int>(columnCounts.size()) - 3; ++i) {
-        if (columnCounts[i] > 0 &&
-            columnCounts[i + 1] > 0 &&
-            columnCounts[i + 2] > 0) {
-            qDebug() << "Found 3 consecutive columns with cards: columns"
-                << i << "," << (i + 1) << "," << (i + 2);
+    // Look for targetSize consecutive columns with cards
+    for (int i = 0; i <= static_cast<int>(columnCounts.size()) - targetSize; ++i) {
+        bool allHaveCards = true;
+        for (int j = 0; j < targetSize; ++j) {
+            if (columnCounts[i + j] <= 0) {
+                allHaveCards = false;
+                break;
+            }
+        }
+
+        if (allHaveCards) {
+            qDebug() << "Found" << targetSize << "consecutive columns with cards starting at column" << i;
             return true;
         }
     }
 
     return false;
 }
-
-bool Board::shouldFixVertically() const {
+bool Board::shouldFixVertically(int16_t targetSize) const {
     std::vector<int> rowCounts = countCardsPerRow();
 
-    // Look for 3 consecutive rows with cards
-    for (int i = 0; i <= static_cast<int>(rowCounts.size()) - 3; ++i) {
-        if (rowCounts[i] > 0 &&
-            rowCounts[i + 1] > 0 &&
-            rowCounts[i + 2] > 0) {
-            qDebug() << "Found 3 consecutive rows with cards: rows"
-                << i << "," << (i + 1) << "," << (i + 2);
+    // Look for targetSize consecutive rows with cards
+    for (int i = 0; i <= static_cast<int>(rowCounts.size()) - targetSize; ++i) {
+        bool allHaveCards = true;
+        for (int j = 0; j < targetSize; ++j) {
+            if (rowCounts[i + j] <= 0) {
+                allHaveCards = false;
+                break;
+            }
+        }
+
+        if (allHaveCards) {
+            qDebug() << "Found" << targetSize << "consecutive rows with cards starting at row" << i;
             return true;
         }
     }
@@ -72,8 +82,8 @@ bool Board::shouldFixVertically() const {
     return false;
 }
 
-void Board::fixBoardHorizontally() {
-    qDebug() << "Fixing board horizontally...";
+void Board::fixBoardHorizontally(int16_t targetSize) {
+    qDebug() << "Fixing board horizontally to target size" << targetSize << "...";
 
     // Find the leftmost and rightmost columns with cards
     int16_t minCol = getColumnSize();
@@ -92,26 +102,35 @@ void Board::fixBoardHorizontally() {
     if (minCol <= maxCol) {
         qDebug() << "Cards span from column" << minCol << "to column" << maxCol;
 
-        // Remove empty columns from the right
-        while (getColumnSize() > maxCol + 1) {
-            qDebug() << "Removing rightmost empty column";
-            removeColumn(getColumnSize() - 1);
-        }
+        // Calculate how many columns we want to keep
+        int16_t desiredColumns = targetSize;
+        int16_t currentSpan = maxCol - minCol + 1;
 
-        // Remove empty columns from the left
-        while (minCol > 0) {
-            qDebug() << "Removing leftmost empty column";
-            removeColumn(0);
-            minCol--; // Adjust index after removal
-            maxCol--; // Adjust index after removal
+        // If we have more columns than target, remove empty ones from edges
+        while (getColumnSize() > desiredColumns && getColumnSize() > currentSpan) {
+            // Remove empty columns from the right
+            if (getColumnSize() > maxCol + 1) {
+                qDebug() << "Removing rightmost empty column";
+                removeColumn(getColumnSize() - 1);
+            }
+            // Remove empty columns from the left
+            else if (minCol > 0) {
+                qDebug() << "Removing leftmost empty column";
+                removeColumn(0);
+                minCol--; // Adjust index after removal
+                maxCol--; // Adjust index after removal
+            }
+            else {
+                break;
+            }
         }
 
         qDebug() << "Horizontal fixing complete. Columns now:" << getColumnSize();
     }
 }
 
-void Board::fixBoardVertically() {
-    qDebug() << "Fixing board vertically...";
+void Board::fixBoardVertically(int16_t targetSize) {
+    qDebug() << "Fixing board vertically to target size" << targetSize << "...";
 
     // Find the topmost and bottommost rows with cards
     int16_t minRow = getRowSize();
@@ -130,18 +149,27 @@ void Board::fixBoardVertically() {
     if (minRow <= maxRow) {
         qDebug() << "Cards span from row" << minRow << "to row" << maxRow;
 
-        // Remove empty rows from the bottom
-        while (getRowSize() > maxRow + 1) {
-            qDebug() << "Removing bottommost empty row";
-            removeRow(getRowSize() - 1);
-        }
+        // Calculate how many rows we want to keep
+        int16_t desiredRows = targetSize;
+        int16_t currentSpan = maxRow - minRow + 1;
 
-        // Remove empty rows from the top
-        while (minRow > 0) {
-            qDebug() << "Removing topmost empty row";
-            removeRow(0);
-            minRow--; // Adjust index after removal
-            maxRow--; // Adjust index after removal
+        // If we have more rows than target, remove empty ones from edges
+        while (getRowSize() > desiredRows && getRowSize() > currentSpan) {
+            // Remove empty rows from the bottom
+            if (getRowSize() > maxRow + 1) {
+                qDebug() << "Removing bottommost empty row";
+                removeRow(getRowSize() - 1);
+            }
+            // Remove empty rows from the top
+            else if (minRow > 0) {
+                qDebug() << "Removing topmost empty row";
+                removeRow(0);
+                minRow--; // Adjust index after removal
+                maxRow--; // Adjust index after removal
+            }
+            else {
+                break;
+            }
         }
 
         qDebug() << "Vertical fixing complete. Rows now:" << getRowSize();
@@ -151,23 +179,28 @@ void Board::fixBoardVertically() {
 void Board::smartBoardManagement(int16_t maxSize) {
     qDebug() << "Starting smart board management (maxSize:" << maxSize << ")...";
 
+    // Determine the target final size based on maxSize
+    int16_t targetSize = (maxSize == 4) ? 3 : (maxSize == 5) ? 4 : maxSize - 1;
+
+    qDebug() << "Target final size determined as:" << targetSize << " (maxSize was " << maxSize << ")";
+
     // First, ensure adjacency for all existing cards
     ensureAllCardsHaveAdjacency(maxSize);
 
-    // Check if we should fix horizontally (3 consecutive columns with cards)
-    bool shouldFixHoriz = shouldFixHorizontally();
+    // Check if we should fix horizontally (target consecutive columns with cards)
+    bool shouldFixHoriz = shouldFixHorizontally(targetSize);
 
-    // Check if we should fix vertically (3 consecutive rows with cards)  
-    bool shouldFixVert = shouldFixVertically();
+    // Check if we should fix vertically (target consecutive rows with cards)  
+    bool shouldFixVert = shouldFixVertically(targetSize);
 
     if (shouldFixHoriz) {
-        qDebug() << "Board should be fixed horizontally";
-        fixBoardHorizontally();
+        qDebug() << "Board should be fixed horizontally to target size" << targetSize;
+        fixBoardHorizontally(targetSize);
     }
 
     if (shouldFixVert) {
-        qDebug() << "Board should be fixed vertically";
-        fixBoardVertically();
+        qDebug() << "Board should be fixed vertically to target size" << targetSize;
+        fixBoardVertically(targetSize);
     }
 
     // Clean up any isolated positions
@@ -176,6 +209,7 @@ void Board::smartBoardManagement(int16_t maxSize) {
     qDebug() << "Smart board management complete. Final size:"
         << getRowSize() << "x" << getColumnSize();
 }
+
 
 
 void Board::ensureAllCardsHaveAdjacency(int16_t maxSize) {

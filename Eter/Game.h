@@ -54,6 +54,9 @@ private:
     bool playerMoveCompleted;
 
 public:
+    void startNewMageDuelRound();
+    void checkMageDuelRoundEnd();
+
     void setSelectedCard(const SimpleCard& card) { selectedCard = card; }
     bool hasSelectedCard() const { return selectedCard.getValue() > 0; }
     void clearSelectedCard() { selectedCard = SimpleCard(); }

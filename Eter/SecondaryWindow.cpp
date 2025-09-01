@@ -207,21 +207,31 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
     : QWidget(parent), imagePath(imagePath), game(gameInstance) {
     setWindowTitle(title);
 
-    mainLayout = new QVBoxLayout(this);
+    // Get screen geometry for better scaling
+    QScreen* screen = QApplication::primaryScreen();
+    QRect screenGeometry = screen->geometry();
+    qDebug() << "Screen resolution:" << screenGeometry.size();
 
-    // Setup match info UI first
+    mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(20, 20, 20, 20); // Add margins for better scaling
+    mainLayout->setSpacing(10);
+
+    // Setup match info UI first - make it more compact for scaling
     setupMatchInfoUI();
 
     player2CardsLayout = new QHBoxLayout();
+    player2CardsLayout->setAlignment(Qt::AlignCenter);
     mainLayout->addLayout(player2CardsLayout);
 
-    mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
+    // Reduce spacer size for better scaling
+    mainLayout->addSpacerItem(new QSpacerItem(0, 15, QSizePolicy::Minimum, QSizePolicy::Fixed));
 
     m_boardView = nullptr;
 
-    mainLayout->addSpacerItem(new QSpacerItem(0, 30, QSizePolicy::Minimum, QSizePolicy::Fixed));
+    mainLayout->addSpacerItem(new QSpacerItem(0, 15, QSizePolicy::Minimum, QSizePolicy::Fixed));
 
     player1CardsLayout = new QHBoxLayout();
+    player1CardsLayout->setAlignment(Qt::AlignCenter);
     mainLayout->addLayout(player1CardsLayout);
 
     // Set background and other initialization...
@@ -231,19 +241,289 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
     this->setPalette(palette);
     this->setAutoFillBackground(true);
 
+    // Setup mages and powers with smaller sizes for better scaling
     if (checkMage && checkPower) {
-        setMagesAndPowers(mage1Name, mage2Name, power1Name, power2Name);
+        setMagesAndPowersCompact(mage1Name, mage2Name, power1Name, power2Name);
     }
     else if (checkMage) {
-        setMages(mage1Name, mage2Name);
+        setMagesCompact(mage1Name, mage2Name);
     }
     else if (checkPower) {
-        setPowers(power1Name, power2Name);
+        setPowersCompact(power1Name, power2Name);
     }
 
     this->showFullScreen();
 }
 
+
+// In SecondaryWindow.cpp - Replace the setMagesCompact method with this fixed version:
+
+// In SecondaryWindow.cpp - Replace the setMagesCompact method with this corrected version:
+
+void SecondaryWindow::setMagesCompact(const QString& mage1Name, const QString& mage2Name) {
+    // Create a horizontal layout that spans the full width of the window
+    QHBoxLayout* mageContainerLayout = new QHBoxLayout();
+    mageContainerLayout->setContentsMargins(50, 10, 50, 10);
+
+    // Player 2 Mage (Blue) - LEFT side with BLUE border
+    QString mage2ImagePath = mage2Name + ".jpg";
+    QPixmap mage2Pixmap(mage2ImagePath);
+
+    if (!mage2Pixmap.isNull()) {
+        QIcon mage2Icon(mage2Pixmap.scaled(120, 120, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+        QPushButton* mage2Button = new QPushButton(this);
+        mage2Button->setFixedSize(120, 120);
+        mage2Button->setIcon(mage2Icon);
+        mage2Button->setIconSize(QSize(120, 120));
+        // Enhanced styling with BLUE border for Player 2 (Blue)
+        mage2Button->setStyleSheet(
+            "QPushButton {"
+            "    background-color: rgba(255, 255, 255, 50); "
+            "    border: 5px solid #0000FF; "  // BLUE border for blue player
+            "    border-radius: 15px; "
+            "    padding: 5px;"
+            "}"
+            "QPushButton:hover {"
+            "    border: 6px solid #0000FF; "
+            "    background-color: rgba(0, 0, 255, 70);"
+            "    transform: scale(1.05);"
+            "}"
+            "QPushButton:pressed {"
+            "    background-color: rgba(0, 0, 255, 90);"
+            "}"
+        );
+
+        connect(mage2Button, &QPushButton::clicked, this, [this, mage2Name]() {
+            onMageClicked(mage2Name, Color::Blue);
+            });
+
+        // Add mage2 to the LEFT side
+        mageContainerLayout->addWidget(mage2Button, 0, Qt::AlignLeft | Qt::AlignVCenter);
+
+        qDebug() << "Added Player 2 mage:" << mage2Name << "with blue border on LEFT";
+    }
+    else {
+        qDebug() << "Failed to load mage2 image:" << mage2ImagePath;
+    }
+
+    // Add stretch to push mages to opposite sides
+    mageContainerLayout->addStretch(1);
+
+    // Player 1 Mage (Red) - RIGHT side with RED border
+    QString mage1ImagePath = mage1Name + ".jpg";
+    QPixmap mage1Pixmap(mage1ImagePath);
+
+    if (!mage1Pixmap.isNull()) {
+        QIcon mage1Icon(mage1Pixmap.scaled(120, 120, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+        QPushButton* mage1Button = new QPushButton(this);
+        mage1Button->setFixedSize(120, 120);
+        mage1Button->setIcon(mage1Icon);
+        mage1Button->setIconSize(QSize(120, 120));
+        // Enhanced styling with RED border for Player 1 (Red)
+        mage1Button->setStyleSheet(
+            "QPushButton {"
+            "    background-color: rgba(255, 255, 255, 50); "
+            "    border: 5px solid #FF0000; "  // RED border for red player
+            "    border-radius: 15px; "
+            "    padding: 5px;"
+            "}"
+            "QPushButton:hover {"
+            "    border: 6px solid #FF0000; "
+            "    background-color: rgba(255, 0, 0, 70);"
+            "    transform: scale(1.05);"
+            "}"
+            "QPushButton:pressed {"
+            "    background-color: rgba(255, 0, 0, 90);"
+            "}"
+        );
+
+        connect(mage1Button, &QPushButton::clicked, this, [this, mage1Name]() {
+            onMageClicked(mage1Name, Color::Red);
+            });
+
+        // Add mage1 to the RIGHT side
+        mageContainerLayout->addWidget(mage1Button, 0, Qt::AlignRight | Qt::AlignVCenter);
+
+        qDebug() << "Added Player 1 mage:" << mage1Name << "with red border on RIGHT";
+    }
+    else {
+        qDebug() << "Failed to load mage1 image:" << mage1ImagePath;
+    }
+
+    // Insert the mage container layout between player2 cards and board
+    mainLayout->insertLayout(2, mageContainerLayout);
+
+    qDebug() << "Mages positioned: " << mage2Name << " (LEFT, blue border) and " << mage1Name << " (RIGHT, red border)";
+}
+// Also update setPowersCompact method:
+void SecondaryWindow::setPowersCompact(const QString& power1Name, const QString& power2Name) {
+    QHBoxLayout* powerContainerLayout = new QHBoxLayout();
+    powerContainerLayout->setContentsMargins(50, 0, 50, 0);
+
+    // Player 1 Power (Red) - Left side
+    QString power1ImagePath = power1Name + ".jpg";
+    QPixmap power1Pixmap(power1ImagePath);
+
+    if (!power1Pixmap.isNull()) {
+        QIcon power1Icon(power1Pixmap.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+        QPushButton* power1Button = new QPushButton(this);
+        power1Button->setFixedSize(100, 100);
+        power1Button->setIcon(power1Icon);
+        power1Button->setIconSize(QSize(100, 100));
+        power1Button->setStyleSheet(
+            "QPushButton {"
+            "    background-color: transparent; "
+            "    border: 3px solid red; "
+            "    border-radius: 8px; "
+            "    padding: 2px;"
+            "}"
+            "QPushButton:hover {"
+            "    border: 4px solid red; "
+            "    background-color: rgba(255, 0, 0, 30);"
+            "}"
+        );
+
+        connect(power1Button, &QPushButton::clicked, this, [this, power1Name]() {
+            onPowerClicked(power1Name, Color::Red);
+            });
+
+        powerContainerLayout->addWidget(power1Button, 0, Qt::AlignLeft | Qt::AlignVCenter);
+    }
+
+    powerContainerLayout->addStretch(1);
+
+    // Player 2 Power (Blue) - Right side
+    QString power2ImagePath = power2Name + ".jpg";
+    QPixmap power2Pixmap(power2ImagePath);
+
+    if (!power2Pixmap.isNull()) {
+        QIcon power2Icon(power2Pixmap.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+        QPushButton* power2Button = new QPushButton(this);
+        power2Button->setFixedSize(100, 100);
+        power2Button->setIcon(power2Icon);
+        power2Button->setIconSize(QSize(100, 100));
+        power2Button->setStyleSheet(
+            "QPushButton {"
+            "    background-color: transparent; "
+            "    border: 3px solid blue; "
+            "    border-radius: 8px; "
+            "    padding: 2px;"
+            "}"
+            "QPushButton:hover {"
+            "    border: 4px solid blue; "
+            "    background-color: rgba(0, 0, 255, 30);"
+            "}"
+        );
+
+        connect(power2Button, &QPushButton::clicked, this, [this, power2Name]() {
+            onPowerClicked(power2Name, Color::Blue);
+            });
+
+        powerContainerLayout->addWidget(power2Button, 0, Qt::AlignRight | Qt::AlignVCenter);
+    }
+
+    mainLayout->insertLayout(1, powerContainerLayout);
+    qDebug() << "Powers positioned: " << power1Name << " (left) and " << power2Name << " (right)";
+}
+// Update setMagesAndPowersCompact method:
+void SecondaryWindow::setMagesAndPowersCompact(const QString& mage1Name, const QString& mage2Name,
+    const QString& power1Name, const QString& power2Name) {
+
+    // Left side - Player 1 (Red) mage and power
+    QVBoxLayout* leftSideLayout = new QVBoxLayout();
+
+    // Player 1 Mage
+    QString mage1ImagePath = mage1Name + ".jpg";
+    QPixmap mage1Pixmap(mage1ImagePath);
+    QIcon mage1Icon(mage1Pixmap.scaled(80, 80, Qt::KeepAspectRatio));
+    QPushButton* mage1Button = new QPushButton(this);
+    mage1Button->setIcon(mage1Icon);
+    mage1Button->setIconSize(QSize(80, 80));
+    mage1Button->setFixedSize(80, 80);
+    mage1Button->setStyleSheet(
+        "background-color: transparent; "
+        "border: 2px solid red; "
+        "border-radius: 5px;"
+    );
+    connect(mage1Button, &QPushButton::clicked, this, [this, mage1Name]() {
+        onMageClicked(mage1Name, Color::Red);
+        });
+
+    // Player 1 Power
+    QString power1ImagePath = power1Name + ".jpg";
+    QPixmap power1Pixmap(power1ImagePath);
+    QIcon power1Icon(power1Pixmap.scaled(80, 80, Qt::KeepAspectRatio));
+    QPushButton* power1Button = new QPushButton(this);
+    power1Button->setIcon(power1Icon);
+    power1Button->setIconSize(QSize(80, 80));
+    power1Button->setFixedSize(80, 80);
+    power1Button->setStyleSheet(
+        "background-color: transparent; "
+        "border: 2px solid red; "
+        "border-radius: 5px;"
+    );
+    connect(power1Button, &QPushButton::clicked, this, [this, power1Name]() {
+        onPowerClicked(power1Name, Color::Red);
+        });
+
+    leftSideLayout->addWidget(mage1Button, 0, Qt::AlignLeft);
+    leftSideLayout->addSpacing(10);
+    leftSideLayout->addWidget(power1Button, 0, Qt::AlignLeft);
+
+    // Right side - Player 2 (Blue) mage and power
+    QVBoxLayout* rightSideLayout = new QVBoxLayout();
+
+    // Player 2 Mage
+    QString mage2ImagePath = mage2Name + ".jpg";
+    QPixmap mage2Pixmap(mage2ImagePath);
+    QIcon mage2Icon(mage2Pixmap.scaled(80, 80, Qt::KeepAspectRatio));
+    QPushButton* mage2Button = new QPushButton(this);
+    mage2Button->setIcon(mage2Icon);
+    mage2Button->setIconSize(QSize(80, 80));
+    mage2Button->setFixedSize(80, 80);
+    mage2Button->setStyleSheet(
+        "background-color: transparent; "
+        "border: 2px solid blue; "
+        "border-radius: 5px;"
+    );
+    connect(mage2Button, &QPushButton::clicked, this, [this, mage2Name]() {
+        onMageClicked(mage2Name, Color::Blue);
+        });
+
+    // Player 2 Power
+    QString power2ImagePath = power2Name + ".jpg";
+    QPixmap power2Pixmap(power2ImagePath);
+    QIcon power2Icon(power2Pixmap.scaled(80, 80, Qt::KeepAspectRatio));
+    QPushButton* power2Button = new QPushButton(this);
+    power2Button->setIcon(power2Icon);
+    power2Button->setIconSize(QSize(80, 80));
+    power2Button->setFixedSize(80, 80);
+    power2Button->setStyleSheet(
+        "background-color: transparent; "
+        "border: 2px solid blue; "
+        "border-radius: 5px;"
+    );
+    connect(power2Button, &QPushButton::clicked, this, [this, power2Name]() {
+        onPowerClicked(power2Name, Color::Blue);
+        });
+
+    rightSideLayout->addWidget(mage2Button, 0, Qt::AlignRight);
+    rightSideLayout->addSpacing(10);
+    rightSideLayout->addWidget(power2Button, 0, Qt::AlignRight);
+
+    // Create horizontal container
+    QHBoxLayout* combinedContainerLayout = new QHBoxLayout();
+    combinedContainerLayout->addLayout(leftSideLayout);
+    combinedContainerLayout->addStretch(); // Push to sides
+    combinedContainerLayout->addLayout(rightSideLayout);
+
+    // Insert in the main layout
+    mainLayout->insertLayout(2, combinedContainerLayout);
+}
 
 void SecondaryWindow::closeEvent(QCloseEvent* event) {
     emit closed();
@@ -878,8 +1158,6 @@ void SecondaryWindow::onCardSelected(const SimpleCard& card, int cardIndex) {
         << ", Index =" << cardIndex;
 }
 
-// În SecondaryWindow.cpp - modifică setPlayer1Cards pentru a evidenția cartea selectată:
-
 void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
     QLayoutItem* child;
     while ((child = player1CardsLayout->takeAt(0)) != nullptr) {
@@ -887,42 +1165,66 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
         delete child;
     }
 
+    // Card sizes
+    const int cardWidth = 120;
+    const int cardHeight = 120;
+
     for (size_t cardIndex = 0; cardIndex < cards.size(); ++cardIndex) {
         const auto& card = cards[cardIndex];
         if (card.getColor() == Color::usedRed) {
             continue;
         }
         auto cardButton = new QPushButton(this);
+        cardButton->setFixedSize(cardWidth, cardHeight);
 
         QString imagePath = "red";
         imagePath += QString::number(card.getValue()) + ".jpg";
 
         QPixmap pixmap(imagePath);
         if (!pixmap.isNull()) {
-            QIcon buttonIcon(pixmap.scaled(150, 150, Qt::KeepAspectRatioByExpanding));
+            QIcon buttonIcon(pixmap.scaled(cardWidth, cardHeight, Qt::KeepAspectRatio));
             cardButton->setIcon(buttonIcon);
-            cardButton->setIconSize(QSize(150, 150));
+            cardButton->setIconSize(QSize(cardWidth, cardHeight));
         }
         else {
             cardButton->setText("Card not found");
         }
 
-        // Evidențiere pentru cartea selectată - folosim indexul pentru identificare unică
-        if (selectedCardIndex == static_cast<int>(cardIndex) && selectedCardPlayer == Color::Red) {
+        // RESTORE the yellow selection border logic
+        if (selectedCardIndex == static_cast<int>(cardIndex) &&
+            selectedCardPlayer == Color::Red &&
+            currentPlayer == Color::Red) {
             cardButton->setStyleSheet(
-                "border: 3px solid yellow; "
-                "background-color: rgba(255, 255, 0, 50);"
+                "QPushButton {"
+                "    border: 4px solid #FFFF00; "  // Yellow border for selection
+                "    background-color: rgba(255, 255, 0, 60); "
+                "    border-radius: 8px;"
+                "}"
+                "QPushButton:hover {"
+                "    background-color: rgba(255, 255, 0, 80);"
+                "}"
             );
+            qDebug() << "Applied yellow selection border to Player 1 card at index" << cardIndex;
         }
         else {
-            cardButton->setStyleSheet("border: none;");
+            cardButton->setStyleSheet(
+                "QPushButton {"
+                "    border: 2px solid rgba(255, 255, 255, 100); "
+                "    background-color: rgba(255, 255, 255, 30); "
+                "    border-radius: 5px;"
+                "}"
+                "QPushButton:hover {"
+                "    border: 3px solid rgba(255, 255, 255, 150); "
+                "    background-color: rgba(255, 255, 255, 50);"
+                "}"
+            );
         }
 
         player1CardsLayout->addWidget(cardButton);
 
         connect(cardButton, &QPushButton::clicked, this, [this, card, cardIndex]() {
             onCardSelected(card, cardIndex);
-            // Reîmprospătează afișajul cărților pentru a reflecta selecția
+            // Refresh the cards display to show selection
             if (currentPlayer == Color::Red) {
                 setPlayer1Cards(game->getCurrentPlayer().getVector());
             }
@@ -930,8 +1232,7 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
     }
 }
 
-// În SecondaryWindow.cpp - modifică setPlayer2Cards similar:
-
+// Fix for setPlayer2Cards - restore yellow selection border
 void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
     QLayoutItem* child;
     while ((child = player2CardsLayout->takeAt(0)) != nullptr) {
@@ -939,50 +1240,68 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
         delete child;
     }
 
-    int imageWidth = 150;
-    int imageHeight = 200;
-    int spacing = 20;
+    // Card sizes
+    const int cardWidth = 120;
+    const int cardHeight = 120;
+    const int spacing = 15;
     player2CardsLayout->setSpacing(spacing);
 
-    // SCHIMBAREA: Folosește bucla cu index în loc de range-based for
     for (size_t cardIndex = 0; cardIndex < cards.size(); ++cardIndex) {
         const auto& card = cards[cardIndex];
         if (card.getColor() == Color::usedBlue) {
             continue;
         }
         auto cardButton = new QPushButton(this);
+        cardButton->setFixedSize(cardWidth, cardHeight);
 
         QString imagePath = "blue";
         imagePath += QString::number(card.getValue()) + ".jpg";
 
         QPixmap pixmap(imagePath);
         if (!pixmap.isNull()) {
-            QIcon buttonIcon(pixmap.scaled(imageWidth, imageHeight, Qt::KeepAspectRatio));
+            QIcon buttonIcon(pixmap.scaled(cardWidth, cardHeight, Qt::KeepAspectRatio));
             cardButton->setIcon(buttonIcon);
-            cardButton->setIconSize(QSize(imageWidth, imageHeight));
+            cardButton->setIconSize(QSize(cardWidth, cardHeight));
         }
         else {
             cardButton->setText("Card not found");
-            cardButton->setStyleSheet("border: 1px solid black; background-color: white;");
         }
 
-        // SCHIMBAREA: Evidențiere folosind indexul pentru identificare unică
-        if (selectedCardIndex == static_cast<int>(cardIndex) && selectedCardPlayer == Color::Blue) {
+        // RESTORE the yellow selection border logic
+        if (selectedCardIndex == static_cast<int>(cardIndex) &&
+            selectedCardPlayer == Color::Blue &&
+            currentPlayer == Color::Blue) {
             cardButton->setStyleSheet(
-                "border: 3px solid yellow; "
-                "background-color: rgba(255, 255, 0, 50);"
+                "QPushButton {"
+                "    border: 4px solid #FFFF00; "  // Yellow border for selection
+                "    background-color: rgba(255, 255, 0, 60); "
+                "    border-radius: 8px;"
+                "}"
+                "QPushButton:hover {"
+                "    background-color: rgba(255, 255, 0, 80);"
+                "}"
             );
+            qDebug() << "Applied yellow selection border to Player 2 card at index" << cardIndex;
         }
         else {
-            cardButton->setStyleSheet("border: none;");
+            cardButton->setStyleSheet(
+                "QPushButton {"
+                "    border: 2px solid rgba(255, 255, 255, 100); "
+                "    background-color: rgba(255, 255, 255, 30); "
+                "    border-radius: 5px;"
+                "}"
+                "QPushButton:hover {"
+                "    border: 3px solid rgba(255, 255, 255, 150); "
+                "    background-color: rgba(255, 255, 255, 50);"
+                "}"
+            );
         }
 
         player2CardsLayout->addWidget(cardButton);
 
-        // SCHIMBAREA: Lambda cu cardIndex în loc de doar card
         connect(cardButton, &QPushButton::clicked, this, [this, card, cardIndex]() {
             onCardSelected(card, cardIndex);
-            // Reîmprospătează afișajul cărților pentru a reflecta selecția
+            // Refresh the cards display to show selection
             if (currentPlayer == Color::Blue) {
                 setPlayer2Cards(game->getCurrentPlayer().getVector());
             }

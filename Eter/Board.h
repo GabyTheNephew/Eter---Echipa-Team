@@ -46,13 +46,13 @@ public:
     std::vector<int> countCardsPerColumn() const;
     std::vector<int> countCardsPerRow() const;
 
-    // Check if board should be fixed horizontally or vertically
-    bool shouldFixHorizontally() const;
-    bool shouldFixVertically() const;
+    // Check if board should be fixed horizontally or vertically with configurable target
+    bool shouldFixHorizontally(int16_t targetSize = 3) const;
+    bool shouldFixVertically(int16_t targetSize = 3) const;
 
     // Fix the board by removing empty borders when conditions are met
-    void fixBoardHorizontally();
-    void fixBoardVertically();
+    void fixBoardHorizontally(int16_t targetSize = 3);
+    void fixBoardVertically(int16_t targetSize = 3);
 
     // Updated board management
     void smartBoardManagement(int16_t maxSize);
