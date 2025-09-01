@@ -68,6 +68,7 @@ protected:
     void keyPressEvent(QKeyEvent* event) override;
 
 private:
+    void refreshCardDisplays();
     // In SecondaryWindow.h, add these declarations to the private section:
     void setPowersCompact(const QString& power1Name, const QString& power2Name);
     void setMagesAndPowersCompact(const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name);

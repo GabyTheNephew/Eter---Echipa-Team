@@ -698,6 +698,8 @@ void Game::startMageDuel() {
         qDebug() << "UNKNOWN EXCEPTION in startMageDuel";
     }
 }
+
+
 void Game::startNewMageDuelRound() {
     if (!currentGameWindow) return;
 
