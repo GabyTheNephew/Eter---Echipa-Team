@@ -1,7 +1,14 @@
-Eter is a virtual rendition of the classic board game that meticulously adheres to its traditional rules while offering a seamless digital experience. Built with modern C++ for the core game logic, the project leverages state-of-the-art algorithms to ensure smooth gameplay and efficient processing. The codebase is organized into well-defined classes, which enhances readability and maintainability, allowing for easy updates and potential expansions in the future.
-
-The game board is designed to expand dynamically, precisely following the unique specifications of the original board game. This dynamic scaling not only brings authenticity to the virtual game but also challenges players with a progressively evolving playfield that remains true to the established rules.
-
-The user interface, implemented using Qt, is both responsive and visually engaging. Every user action triggers immediate updates, ensuring that the display remains current and intuitive. The UI has been carefully crafted to provide a pleasant visual experience, making it easier for players to follow the game’s progress and enjoy the overall interaction.
-
-Overall, the project successfully marries modern programming techniques with traditional game mechanics, resulting in a virtual version of Eter that is as challenging as it is enjoyable. Whether you are a fan of the original board game or new to the concept, this digital adaptation promises a user-friendly and engaging experience.
+Elemente extra introduse:
+-Logică pentru plasarea cărților - am introdus logica ca cărțile să se poată pune numai în zone adiacente față de alte cărți
+-Interfață completă pentru puteri/mage - am introdus toate puterile/mage-urile în interfață și am modificat logica la anumite puteri/mage-uri pentru ca totul să meargă corect
+-DLL pentru logare - am adăugat un DLL care conține logica de logare
+-Sistem de salvare - "logarea" am implementat-o pentru ca un user să poată salva jocul curent
+-Salvare/încărcare cu JSON - am adăugat logica de salvare și deschidere de joc în punctul în care a fost salvat (am folosit JSON)
+-Validare cu regex - în logare am introdus regex pentru ca userul să fie nevoit să pună email și parolă valide
+-Logica exploziilor - am completat logica exploziilor
+-Smart pointers - am adăugat smart pointeri pentru explozii, meniul care se deschide și din care poți selecta dacă vrei să salvezi sau să ieși din joc
+-Template pentru conversii - am adăugat template în EnumConversion pentru a trata diverse tipuri de conversii de la enum la string și viceversa
+-Iluzii - am adăugat iluziile
+-Timer - am adăugat timer-ul
+-Algoritmi moderni - am mai adăugat algoritmi moderni și ranges
+-Bug Fix-uri
