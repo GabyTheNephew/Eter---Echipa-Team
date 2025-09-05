@@ -1,5 +1,7 @@
 ﻿#include "BoardView.h"
-
+#include <QApplication>
+#include <QVBoxLayout>
+#include <chrono>
 BoardView::BoardView(Board& boardInstance, QWidget* parent, int maxSize)
     : QWidget(parent), board(boardInstance), maxSize(maxSize), isMaxSize(false) {
 
@@ -126,7 +128,9 @@ void BoardView::createCellButton(int row, int col) {
             return;
         }
 
-        // Create button using make_unique
+        qDebug() << "Creating button at (" << row << "," << col << ")";
+
+        // Create button using make_unique - start it hidden to prevent flash
         auto cellButton = std::make_unique<QPushButton>(this);
         if (!cellButton) {
             qDebug() << "Failed to create button for position (" << row << "," << col << ")";
@@ -135,6 +139,12 @@ void BoardView::createCellButton(int row, int col) {
 
         // Set fixed size immediately
         cellButton->setFixedSize(100, 100);
+
+        // Start hidden to prevent flicker during setup
+        cellButton->setVisible(false);
+
+        // Block signals during setup
+        cellButton->blockSignals(true);
 
         // Calculate playable area logic
         bool isInPlayableArea = true;
@@ -174,29 +184,35 @@ void BoardView::createCellButton(int row, int col) {
             setupButtonIcon(cellButton.get(), board[{row, col}].back());
         }
 
-        // Connect signal for relevant positions
-        if (canPlace || !isEmpty) {
-            connect(cellButton.get(), &QPushButton::clicked, [this, row, col]() {
-                qDebug() << "Button clicked at (" << row << "," << col << ")";
-                emit cellClicked(row, col);
-                });
-        }
-
         // Get raw pointer before moving to container
         QPushButton* rawPtr = cellButton.get();
 
         // Store in smart pointer container
         cellButtons[row][col] = std::move(cellButton);
 
-        // Add to Qt layout system - this automatically shows the widget
+        // Add to Qt layout system - this automatically manages the widget
         if (gridLayout) {
             gridLayout->addWidget(rawPtr, row, col);
+            qDebug() << "Added button to grid layout at (" << row << "," << col << ")";
         }
         else {
             qDebug() << "ERROR: gridLayout is null!";
+            return;
         }
 
-        qDebug() << "Successfully created button at (" << row << "," << col << ")";
+        // Connect signal for relevant positions AFTER adding to layout
+        if (canPlace || !isEmpty) {
+            connect(rawPtr, &QPushButton::clicked, [this, row, col]() {
+                qDebug() << "Button clicked at (" << row << "," << col << ")";
+                emit cellClicked(row, col);
+                });
+        }
+
+        // Re-enable signals and show the button ONLY after everything is ready
+        rawPtr->blockSignals(false);
+        rawPtr->setVisible(true);
+
+        qDebug() << "Successfully created and configured button at (" << row << "," << col << ")";
 
     }
     catch (const std::exception& e) {
@@ -206,31 +222,29 @@ void BoardView::createCellButton(int row, int col) {
         qDebug() << "Unknown exception in createCellButton for (" << row << "," << col << ")";
     }
 }
-
 void BoardView::updateView() {
     // Prevent multiple simultaneous updates
     static bool isUpdating = false;
     if (isUpdating) {
-        qDebug() << "BoardView update already in progress, skipping duplicate call";
+        qDebug() << "BoardView update already in progress, skipping";
         return;
     }
     isUpdating = true;
 
     qDebug() << "Starting updateView - current board size: " << board.getRowSize() << "x" << board.getColumnSize();
 
-    // Block all signals during update
-    this->blockSignals(true);
-    if (gridLayout) {
-        gridLayout->blockSignals(true);
-    }
-
     try {
-        // First, safely remove all widgets from the layout WITHOUT hiding them
+        // Disable updates to prevent flashing during reconstruction
+        this->setUpdatesEnabled(false);
+
+        // First, safely remove all widgets from the layout
         QLayoutItem* item;
         while ((item = gridLayout->takeAt(0)) != nullptr) {
             if (QWidget* widget = item->widget()) {
-                // Don't hide - just remove from layout and set parent to nullptr
+                widget->hide(); // Hide immediately to prevent flash
+                widget->disconnect();
                 widget->setParent(nullptr);
+                widget->deleteLater();
             }
             delete item;
         }
@@ -240,7 +254,7 @@ void BoardView::updateView() {
             for (auto& button : row) {
                 if (button) {
                     button->disconnect();
-                    button.reset();  // Don't call setVisible - just reset
+                    button.reset();
                 }
             }
             row.clear();
@@ -255,23 +269,19 @@ void BoardView::updateView() {
             row.resize(board.getColumnSize());
         }
 
-        // Create new buttons in batch
+        // Create new buttons in batch - they start hidden
         for (int row = 0; row < board.getRowSize(); ++row) {
             for (int col = 0; col < board.getColumnSize(); ++col) {
                 createCellButton(row, col);
             }
         }
 
-        // Re-enable signals
-        if (gridLayout) {
-            gridLayout->blockSignals(false);
-        }
-        this->blockSignals(false);
-
-        // Force layout update and make sure everything is visible
+        // Force layout update
         gridLayout->activate();
         this->adjustSize();
-        this->setVisible(true);
+
+        // Re-enable updates and refresh
+        this->setUpdatesEnabled(true);
         this->update();
 
         qDebug() << "Grid updated successfully with size: " << board.getRowSize() << "x" << board.getColumnSize();
@@ -279,12 +289,8 @@ void BoardView::updateView() {
     }
     catch (const std::exception& e) {
         qDebug() << "Exception in updateView: " << e.what();
-
-        // Ensure we restore signals even on exception
-        if (gridLayout) {
-            gridLayout->blockSignals(false);
-        }
-        this->blockSignals(false);
+        // Re-enable updates even if there was an error
+        this->setUpdatesEnabled(true);
     }
 
     // Reset the updating flag

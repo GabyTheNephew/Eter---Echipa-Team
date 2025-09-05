@@ -109,6 +109,9 @@ void Game::showMainMenu() {
         // Disconnect signals first to prevent cascading calls
         currentGameWindow->disconnect();
 
+        // Hide the window immediately to prevent flash
+        currentGameWindow->hide();
+
         // Close the window
         currentGameWindow->close();
 
@@ -125,22 +128,30 @@ void Game::showMainMenu() {
     player2RoundsWon = 0;
     playerMoveCompleted = false;
 
-    // Create main window using Qt's standard approach
+    // Create main window using Qt's standard approach with proper preparation
     QTimer::singleShot(100, [this]() {
         // Reset the flag before creating the window
         static bool returningToMenu = false;
         returningToMenu = false;
 
-        // Don't use smart pointer for MainWindow - let Qt handle it
+        // Create MainWindow but prepare it fully before showing
         MainWindow* mainWindow = new MainWindow(QDir::currentPath() + QDir::separator() + "eter.png");
-        mainWindow->setAttribute(Qt::WA_DeleteOnClose); // Qt will delete when closed
+        mainWindow->setAttribute(Qt::WA_DeleteOnClose);
         mainWindow->setObjectName("MainWindow");
+
+        // Prepare the window completely to prevent flashing
+        mainWindow->adjustSize();
+        mainWindow->setAttribute(Qt::WA_DontShowOnScreen, false);
+
+        // Show everything at once
         mainWindow->show();
         mainWindow->raise();
         mainWindow->activateWindow();
+
         qDebug() << "MainWindow created and shown";
         });
 }
+
 void Game::startTraining() {
     qDebug() << "=== DEBUG: startTraining called ===";
 
@@ -156,6 +167,9 @@ void Game::startTraining() {
             QDir::currentPath() + QDir::separator() + "eter.png",
             &Game::get_Instance(), "", "", "", "", false, false);
 
+        // Hide window initially to prevent flash during setup
+        window->hide();
+
         // Transfer ownership to smart pointer with custom deleter
         currentGameWindow.reset(window);
 
@@ -164,21 +178,17 @@ void Game::startTraining() {
             return;
         }
 
-        // Don't set WA_DeleteOnClose when using smart pointers
-        // currentGameWindow->setAttribute(Qt::WA_DeleteOnClose);
-
+        // Setup connections while window is hidden
         connect(currentGameWindow.get(), &SecondaryWindow::boardClicked,
             this, &Game::handleBoardClick);
         connect(currentGameWindow.get(), &SecondaryWindow::returnToMainMenu,
             this, &Game::showMainMenu);
 
-        // Remove this connection as it can cause double deletion
-        // connect(currentGameWindow.get(), &QObject::destroyed, this, [this]() {
-        //     currentGameWindow.reset();
-        // });
-
-        currentGameWindow->show();
+        // Prepare the game state
         startNewRound();
+
+        // Show the window only after everything is ready
+        currentGameWindow->show();
 
         qDebug() << "=== DEBUG: startTraining completed successfully ===";
 
@@ -286,6 +296,7 @@ void Game::checkRoundEnd() {
 }
 
 void Game::handleBoardClick(int row, int col, int player) {
+    qDebug() << "=== BOARD CLICK DEBUG START ===";
     qDebug() << "Processing move at (" << row << ", " << col << ") for player "
         << (currentPlayer == Color::Red ? "1 (Red)" : "2 (Blue)");
 
@@ -302,11 +313,12 @@ void Game::handleBoardClick(int row, int col, int player) {
     }
     processingMove = true;
 
-    // Don't block UI updates - this can cause flickering
-    // currentGameWindow->setUpdatesEnabled(false);
+    // Block signals during processing to prevent cascading updates
+    currentGameWindow->blockSignals(true);
 
     if (!m_gameBoard.canBePlaced(row, col)) {
         qDebug() << "Position is not valid for placement.";
+        currentGameWindow->blockSignals(false);
         processingMove = false;
         return;
     }
@@ -315,8 +327,13 @@ void Game::handleBoardClick(int row, int col, int player) {
 
     if (currentPlayerRef.numberofValidCards() <= 0) {
         qDebug() << "Current player has no more cards!";
+        currentGameWindow->blockSignals(false);
         processingMove = false;
-        checkRoundEnd();
+
+        // Use timer to prevent immediate UI conflicts
+        QTimer::singleShot(100, this, [this]() {
+            checkRoundEnd();
+            });
         return;
     }
 
@@ -337,30 +354,33 @@ void Game::handleBoardClick(int row, int col, int player) {
 
         if (!foundCard) {
             qDebug() << "Selected card is not valid for current player!";
+            currentGameWindow->blockSignals(false);
             processingMove = false;
             return;
         }
     }
     else {
         qDebug() << "No card selected! Player must select a card first.";
+        currentGameWindow->blockSignals(false);
         processingMove = false;
         return;
     }
 
     if (!m_gameBoard.canBePushed(cardToPlay, { row, col })) {
         qDebug() << "Card cannot be pushed to this position - value too low";
+        currentGameWindow->blockSignals(false);
         processingMove = false;
         return;
     }
+
+    qDebug() << "Placing card with value:" << cardToPlay.getValue();
 
     // Place the card
     m_gameBoard.pushCard(cardToPlay, { row, col });
 
     // Clear selection
     clearSelectedCard();
-    if (currentGameWindow) {
-        currentGameWindow->clearCardSelection();
-    }
+    currentGameWindow->clearCardSelection();
 
     // Board expansion logic
     QString windowTitle = currentGameWindow->windowTitle();
@@ -386,70 +406,86 @@ void Game::handleBoardClick(int row, int col, int player) {
 
     // Do board management
     try {
+        qDebug() << "Starting board management...";
         m_gameBoard.smartBoardManagement(maxBoardSize);
+        qDebug() << "Board management completed";
 
         // Mark card as used
         currentPlayerRef.makeCardInvalid(cardToPlay);
         currentPlayerRef.getPastVector().push_back(cardToPlay);
 
-        // Batch update interface - update cards first, then board
-        currentGameWindow->setPlayer1Cards(player1.getVector());
-        currentGameWindow->setPlayer2Cards(player2.getVector());
-
-        // Single board view update at the end
-        currentGameWindow->updateBoardView();
-
     }
     catch (const std::exception& e) {
         qDebug() << "Exception during board management: " << e.what();
+        currentGameWindow->blockSignals(false);
         processingMove = false;
         return;
     }
 
-    // Check end of round
-    Board::State winState = m_gameBoard.checkWin(false, targetWinSize);
+    // Re-enable signals
+    currentGameWindow->blockSignals(false);
 
-    if (winState != Board::State::None) {
-        processingMove = false;
-        if (windowTitle == "Training") {
-            checkRoundEnd();
-        }
-        else if (windowTitle == "Mage Duel") {
-            checkMageDuelRoundEnd();
-        }
-        else if (windowTitle == "Power Duel") {
-            checkPowerDuelRoundEnd();
-        }
-        else if (windowTitle == "Power & Mage Duel") {
-            checkCombinedRoundEnd();
-        }
-        return;
-    }
+    // Batch update interface using timer to prevent conflicts
+    QTimer::singleShot(50, this, [this, targetWinSize, windowTitle]() {
+        if (!currentGameWindow) return;
 
-    // Check if both players are out of cards
-    if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
-        processingMove = false;
-        if (windowTitle == "Training") {
-            checkRoundEnd();
-        }
-        else if (windowTitle == "Mage Duel") {
-            checkMageDuelRoundEnd();
-        }
-        else if (windowTitle == "Power Duel") {
-            checkPowerDuelRoundEnd();
-        }
-        else if (windowTitle == "Power & Mage Duel") {
-            checkCombinedRoundEnd();
-        }
-        return;
-    }
+        qDebug() << "Starting UI update batch...";
 
-    // Switch player
-    currentPlayer = (currentPlayer == Color::Red) ? Color::Blue : Color::Red;
-    currentGameWindow->setCurrentPlayer(currentPlayer);
+        // Single batch update
+        currentGameWindow->setPlayer1Cards(player1.getVector());
+        currentGameWindow->setPlayer2Cards(player2.getVector());
+        currentGameWindow->updateBoardView();
+
+        qDebug() << "UI update batch completed";
+
+        // Check end of round
+        Board::State winState = m_gameBoard.checkWin(false, targetWinSize);
+
+        if (winState != Board::State::None) {
+            qDebug() << "Win condition detected, ending round";
+            if (windowTitle == "Training") {
+                checkRoundEnd();
+            }
+            else if (windowTitle == "Mage Duel") {
+                checkMageDuelRoundEnd();
+            }
+            else if (windowTitle == "Power Duel") {
+                checkPowerDuelRoundEnd();
+            }
+            else if (windowTitle == "Power & Mage Duel") {
+                checkCombinedRoundEnd();
+            }
+            return;
+        }
+
+        // Check if both players are out of cards
+        if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
+            qDebug() << "Both players out of cards, ending round";
+            if (windowTitle == "Training") {
+                checkRoundEnd();
+            }
+            else if (windowTitle == "Mage Duel") {
+                checkMageDuelRoundEnd();
+            }
+            else if (windowTitle == "Power Duel") {
+                checkPowerDuelRoundEnd();
+            }
+            else if (windowTitle == "Power & Mage Duel") {
+                checkCombinedRoundEnd();
+            }
+            return;
+        }
+
+        // Switch player
+        currentPlayer = (currentPlayer == Color::Red) ? Color::Blue : Color::Red;
+        currentGameWindow->setCurrentPlayer(currentPlayer);
+
+        qDebug() << "Player switched to" << (currentPlayer == Color::Red ? "Red" : "Blue");
+        });
 
     // Reset the processing flag
     processingMove = false;
+    qDebug() << "=== BOARD CLICK DEBUG END ===";
 }
 void Game::cleanupEmptyBorders() {
     qDebug() << "Cleaning up borders...";
@@ -502,6 +538,9 @@ void Game::startMageDuel() {
             QDir::currentPath() + QDir::separator() + "eter.png",
             &Game::get_Instance(), "", "", "", "", true, false);
 
+        // Hide initially to prevent flash
+        window3->hide();
+
         // Transfer ownership to smart pointer with custom deleter
         currentGameWindow.reset(window3);
 
@@ -510,16 +549,13 @@ void Game::startMageDuel() {
             return;
         }
 
-        //currentGameWindow->setAttribute(Qt::WA_DeleteOnClose);
-
+        // Setup connections while hidden
         connect(currentGameWindow.get(), &SecondaryWindow::boardClicked,
             this, &Game::handleBoardClick);
         connect(currentGameWindow.get(), &SecondaryWindow::returnToMainMenu,
             this, &Game::showMainMenu);
-        connect(currentGameWindow.get(), &QObject::destroyed, this, [this]() {
-            currentGameWindow.reset();
-            });
 
+        // Setup game state
         std::vector<SimpleCard> PastCards;
         player1 = Player("Jucătorul 1", {
             SimpleCard(1, Color::Red), SimpleCard(1, Color::Red),
@@ -544,9 +580,12 @@ void Game::startMageDuel() {
 
         currentGameWindow->setMagesCompact(QString::fromStdString(player1.getMage()),
             QString::fromStdString(player2.getMage()));
-        currentGameWindow->show();
 
+        // Start the round while window is still hidden
         startNewMageDuelRound();
+
+        // Show only after everything is ready
+        currentGameWindow->show();
 
     }
     catch (const std::exception& e) {
@@ -684,6 +723,9 @@ void Game::startPowerDuel() {
             power1Name, power2Name,
             false, true);
 
+        // Hide initially
+        window->hide();
+
         // Transfer ownership to smart pointer with custom deleter
         currentGameWindow.reset(window);
 
@@ -692,16 +734,15 @@ void Game::startPowerDuel() {
             return;
         }
 
-        //currentGameWindow->setAttribute(Qt::WA_DeleteOnClose);
-
+        // Setup connections while hidden
         connect(currentGameWindow.get(), &SecondaryWindow::boardClicked, this, &Game::handleBoardClick);
         connect(currentGameWindow.get(), &SecondaryWindow::returnToMainMenu, this, &Game::showMainMenu);
-        connect(currentGameWindow.get(), &QObject::destroyed, this, [this]() {
-            currentGameWindow.reset();
-            });
 
-        currentGameWindow->show();
+        // Start round while hidden
         startNewPowerDuelRound();
+
+        // Show only when ready
+        currentGameWindow->show();
 
     }
     catch (const std::exception& e) {
@@ -870,13 +911,15 @@ void Game::startMageDuelAndPower() {
         QString power1Name = getPowerDisplayName(player1.getPower());
         QString power2Name = getPowerDisplayName(player2.getPower());
 
-        // THIS IS THE KEY FIX - Using smart pointer consistently!
         auto* window2 = new SecondaryWindow("Power & Mage Duel",
             QDir::currentPath() + QDir::separator() + "eter.png",
             &Game::get_Instance(),
             mage1Name, mage2Name,
             power1Name, power2Name,
             true, true);
+
+        // Hide initially to prevent flash
+        window2->hide();
 
         // Transfer ownership to smart pointer with custom deleter
         currentGameWindow.reset(window2);
@@ -886,16 +929,15 @@ void Game::startMageDuelAndPower() {
             return;
         }
 
-        //currentGameWindow->setAttribute(Qt::WA_DeleteOnClose);
-
+        // Setup connections while hidden
         connect(currentGameWindow.get(), &SecondaryWindow::boardClicked, this, &Game::handleBoardClick);
         connect(currentGameWindow.get(), &SecondaryWindow::returnToMainMenu, this, &Game::showMainMenu);
-        connect(currentGameWindow.get(), &QObject::destroyed, this, [this]() {
-            currentGameWindow.reset();
-            });
 
-        currentGameWindow->show();
+        // Start round while hidden
         startNewCombinedRound();
+
+        // Show only when everything is ready
+        currentGameWindow->show();
 
     }
     catch (const std::exception& e) {

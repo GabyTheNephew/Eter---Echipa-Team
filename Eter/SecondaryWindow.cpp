@@ -42,17 +42,27 @@ void SecondaryWindow::showWinner(const QString& winnerName) {
     }
     winnerShown = true;
 
+    qDebug() << "=== SHOWING WINNER DIALOG ===";
+    qDebug() << "Winner:" << winnerName;
+
+    // Block all signals to prevent interference
+    this->blockSignals(true);
+
+    // Use stack allocation for QMessageBox to prevent flashing
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("Meci Terminat");
     msgBox.setText("Câștigătorul este: " + winnerName);
     msgBox.setInformativeText("Felicitări!");
     msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setModal(true);
 
     msgBox.setStyleSheet(
         "QMessageBox { "
         "   background-color: #2b2b2b; "
         "   color: white; "
         "   font-size: 16px; "
+        "   min-width: 400px; "
+        "   min-height: 200px; "
         "}"
         "QMessageBox QPushButton { "
         "   background-color: #4CAF50; "
@@ -68,14 +78,22 @@ void SecondaryWindow::showWinner(const QString& winnerName) {
         "}"
     );
 
-    msgBox.exec();
+    // Execute modally - this prevents flashing
+    int result = msgBox.exec();
 
-    qDebug() << "Game completed, emitting returnToMainMenu";
+    // Re-enable signals
+    this->blockSignals(false);
 
-    // Reset the flag before emitting
+    // Reset the flag
     winnerShown = false;
 
-    emit returnToMainMenu();
+    qDebug() << "Message box closed with result:" << result;
+    qDebug() << "Game completed, emitting returnToMainMenu";
+
+    // Use timer to ensure clean transition
+    QTimer::singleShot(100, this, [this]() {
+        emit returnToMainMenu();
+        });
 }
 // Add this to the SecondaryWindow constructor after setting up mainLayout:
 void SecondaryWindow::setupMatchInfoUI() {
@@ -131,15 +149,15 @@ void SecondaryWindow::updateMatchInfo(int currentRound, int player1Score, int pl
         .arg(roundsToWin));
 }
 
-// Add this method to show round winner with a temporary message
 void SecondaryWindow::showRoundWinner(const QString& winnerName, int currentRound) {
+    // Use stack allocation and exec() to prevent flashing
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("Round Complete");
     msgBox.setText(QString("%1 wins Round %2!").arg(winnerName).arg(currentRound));
     msgBox.setInformativeText("Starting next round...");
     msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setModal(true);
 
-    // Make the message box more visible
     msgBox.setStyleSheet(
         "QMessageBox { "
         "   background-color: #2b2b2b; "
@@ -155,9 +173,9 @@ void SecondaryWindow::showRoundWinner(const QString& winnerName, int currentRoun
         "}"
     );
 
+    // Execute modally - no flashing
     msgBox.exec();
 }
-
 void SecondaryWindow::onBoardClicked(int row, int col) {
     qDebug() << "Board clicked at (" << row << ", " << col << ")";
 
@@ -627,7 +645,9 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Escape) {
         if (!menu) {
             try {
+                // Create menu but keep it hidden initially
                 menu = std::make_unique<MenuWindow>(this);
+                menu->hide(); // Ensure it starts hidden to prevent flash
 
                 connect(menu.get(), &MenuWindow::goToHome, this, [this]() {
                     if (menu) {
@@ -662,6 +682,8 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
                 menu->hide();
             }
             else {
+                // Prepare the menu before showing to prevent flash
+                menu->adjustSize();
                 menu->show();
                 menu->raise();
                 menu->activateWindow();
@@ -672,8 +694,6 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
         QWidget::keyPressEvent(event);
     }
 }
-
-
 void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color) {
     qDebug() << "Mage clicked:" << mageName;
 
@@ -842,32 +862,24 @@ void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& colo
 
 
 void SecondaryWindow::updateBoardView() {
-    // Prevent multiple rapid updates with a more robust check
+    // Prevent multiple rapid updates
     static bool boardUpdateInProgress = false;
-    static std::chrono::steady_clock::time_point lastUpdate = std::chrono::steady_clock::now();
 
-    auto now = std::chrono::steady_clock::now();
-    auto timeSinceLastUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdate);
-
-    // Ignore updates that come too rapidly (less than 50ms apart)
-    if (boardUpdateInProgress || timeSinceLastUpdate.count() < 50) {
-        qDebug() << "Board update skipped - too frequent or already in progress";
+    if (boardUpdateInProgress) {
+        qDebug() << "Board update already in progress, skipping";
         return;
     }
 
     boardUpdateInProgress = true;
-    lastUpdate = now;
 
     if (m_boardView) {
         try {
-            // Don't disable updates - this can cause visual artifacts
-            // m_boardView->setUpdatesEnabled(false);
+            qDebug() << "Updating board view...";
 
-            // Use a simple, single update call
+            // Simple, single update call
             m_boardView->updateView();
 
-            // Force a single repaint
-            m_boardView->repaint();
+            qDebug() << "Board view update completed";
 
         }
         catch (const std::exception& e) {
