@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿// SOLUȚIA pentru Game.h - Custom deleter pentru Qt objects
+#pragma once
 #include <string_view>
 #include<cstdint>
 #include "Board.h"
@@ -10,21 +11,35 @@
 #include <QObject>
 #include <QWidget>
 #include <QDir>
-//#include "SecondaryWindow.h"
 #include "IntermediateMenu.h"
 #include "BoardView.h"
 #include <cstdlib>
 #include <ctime>
 #include "MainWindow.h"
+#include <memory> // Added for smart pointers
+#include "SecondaryWindow.h"
 
-class SecondaryWindow;
-class Game:public QObject
+// Custom deleter for Qt objects to avoid double deletion
+struct QObjectDeleter {
+    void operator()(QObject* obj) const {
+        if (obj && !obj->parent()) {
+            // Only delete if object has no parent (not managed by Qt)
+            obj->deleteLater();
+        }
+        // If object has parent, Qt will handle deletion automatically
+    }
+};
+
+class Game :public QObject
 {
     Q_OBJECT
 
 private:
     SimpleCard selectedCard;
-    SecondaryWindow* currentGameWindow = nullptr;
+
+    // Using custom deleter to handle Qt's parent-child system properly
+    std::unique_ptr<SecondaryWindow, QObjectDeleter> currentGameWindow;
+
     int16_t player1RoundsWon = 0;
     int16_t player2RoundsWon = 0;
     int16_t roundsToWin = 2;
@@ -39,7 +54,6 @@ private:
     bool m_illusionsEnabled;
     Color currentPlayer;
 
-
     Game() : m_round_Counter{ 0 }, m_gameBoard{}, playerMoveCompleted{ false },
         currentPlayer{ Color::Red }, m_illusionsEnabled{ false } {
     }
@@ -52,15 +66,24 @@ private:
     void showExplosionMenu();
 
     bool playerMoveCompleted;
+    QString getPowerDisplayName(Power power) const;
 
 public:
+    void startNewCombinedRound();
+    void checkCombinedRoundEnd();
+
+    void startNewPowerDuelRound();
+    void checkPowerDuelRoundEnd();
+
     void startNewMageDuelRound();
     void checkMageDuelRoundEnd();
 
     void setSelectedCard(const SimpleCard& card) { selectedCard = card; }
     bool hasSelectedCard() const { return selectedCard.getValue() > 0; }
     void clearSelectedCard() { selectedCard = SimpleCard(); }
+
     ~Game();
+
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
 
@@ -82,7 +105,6 @@ public:
     bool checkPlayExplosion(Board& m_board);
     void startGame(GameType selectedGameType);
 
-
     void setExplosionsEnabled(bool enabled);
     bool areExplosionsEnabled() const;
 
@@ -100,6 +122,12 @@ public:
     void startNewRound();
     void checkRoundEnd();
     void cleanupEmptyBorders();
+
+    // Helper method to get raw pointer when needed for Qt connections
+    SecondaryWindow* getCurrentGameWindow() const {
+        return currentGameWindow.get();
+    }
+
 public slots:
     void handleBoardClick(int row, int col, int player);
 signals:

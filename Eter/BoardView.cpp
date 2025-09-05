@@ -1,150 +1,295 @@
 ﻿#include "BoardView.h"
 
 BoardView::BoardView(Board& boardInstance, QWidget* parent, int maxSize)
-    : QWidget(parent), board(boardInstance), maxSize(maxSize) {
+    : QWidget(parent), board(boardInstance), maxSize(maxSize), isMaxSize(false) {
 
-    QVBoxLayout* mainLayout = new QVBoxLayout(this);
-    gridLayout = new QGridLayout(this);
+    qDebug() << "Creating BoardView with max size:" << maxSize;
 
-    mainLayout->addStretch();
-    mainLayout->addLayout(gridLayout);
-    mainLayout->addStretch();
+    try {
+        // Create layouts with this widget as parent
+        QVBoxLayout* mainLayout = new QVBoxLayout(this);
+        if (!mainLayout) {
+            qDebug() << "ERROR: Failed to create main layout";
+            return;
+        }
 
-    setLayout(mainLayout);
+        gridLayout = new QGridLayout();
+        if (!gridLayout) {
+            qDebug() << "ERROR: Failed to create grid layout";
+            return;
+        }
 
-    isMaxSize = false;
+        // Set up the layout structure
+        mainLayout->addStretch();
+        mainLayout->addLayout(gridLayout);
+        mainLayout->addStretch();
+
+        // Set spacing and margins for better appearance
+        mainLayout->setContentsMargins(10, 10, 10, 10);
+        mainLayout->setSpacing(5);
+        gridLayout->setSpacing(2);
+
+        setLayout(mainLayout);
+
+        // Initialize the containers but don't create buttons yet
+        // updateView() will be called after this constructor
+        cellButtons.clear();
+
+        // Make sure the widget is visible by default
+        this->setVisible(true);
+
+        qDebug() << "BoardView constructor completed successfully";
+
+    }
+    catch (const std::exception& e) {
+        qDebug() << "Exception in BoardView constructor:" << e.what();
+    }
+    catch (...) {
+        qDebug() << "Unknown exception in BoardView constructor";
+    }
+}
+void BoardView::setupButtonIcon(QPushButton* button, const SimpleCard& card) {
+    QString imagePath = (card.getColor() == Color::Red || card.getColor() == Color::IlusionRed) ? "red" : "blue";
+    imagePath += QString::number(card.getValue()) + ".jpg";
+
+    QPixmap pixmap(imagePath);
+    if (!pixmap.isNull()) {
+        QPixmap scaledPixmap = pixmap.scaled(button->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        button->setIcon(QIcon(scaledPixmap));
+        button->setIconSize(button->size());
+    }
+    else {
+        qDebug() << "Image not found for card: Value =" << card.getValue()
+            << ", Color =" << (card.getColor() == Color::Red ? "Red" : "Blue");
+        button->setText(QString::number(card.getValue()));
+    }
+}
+
+void BoardView::styleCellButton(QPushButton* button, bool canPlace, bool isEmpty, bool isInPlayableArea) {
+    if (canPlace && isEmpty) {
+        // Poziție goală unde se poate plasa o carte
+        button->setStyleSheet(
+            "QPushButton {"
+            "    background-color: rgba(144, 238, 144, 100);" // Verde pentru pozițiile valide
+            "    border: 2px solid green;"
+            "}"
+            "QPushButton:hover {"
+            "    background-color: rgba(144, 238, 144, 150);"
+            "}"
+        );
+    }
+    else if (isEmpty && isInPlayableArea) {
+        // Poziție în zona jucabilă dar nu adiacentă
+        button->setStyleSheet(
+            "QPushButton {"
+            "    background-color: rgba(255, 255, 220, 70);" // Galben pal pentru zona jucabilă
+            "    border: 1px solid #DDD;"
+            "}"
+        );
+        button->setEnabled(false);
+    }
+    else if (isEmpty) {
+        // Poziție în afara zonei jucabile - aproape invizibilă
+        button->setStyleSheet(
+            "QPushButton {"
+            "    background-color: rgba(240, 240, 240, 30);" // Foarte pal
+            "    border: 1px solid rgba(200, 200, 200, 50);"
+            "}"
+        );
+        button->setEnabled(false);
+    }
+    else {
+        // Poziție ocupată
+        button->setStyleSheet(
+            "QPushButton {"
+            "    background-color: rgba(255, 255, 255, 80);"
+            "    border: 2px solid black;"
+            "}"
+            "QPushButton:hover {"
+            "    background-color: rgba(255, 255, 255, 120);"
+            "}"
+        );
+    }
+}
+
+void BoardView::createCellButton(int row, int col) {
+    try {
+        // Validate indices
+        if (row < 0 || row >= board.getRowSize() || col < 0 || col >= board.getColumnSize()) {
+            qDebug() << "Invalid indices for createCellButton:" << row << col;
+            return;
+        }
+
+        // Ensure the container is properly sized
+        if (row >= static_cast<int>(cellButtons.size()) || col >= static_cast<int>(cellButtons[row].size())) {
+            qDebug() << "Container not properly sized for button at (" << row << "," << col << ")";
+            return;
+        }
+
+        // Create button using make_unique
+        auto cellButton = std::make_unique<QPushButton>(this);
+        if (!cellButton) {
+            qDebug() << "Failed to create button for position (" << row << "," << col << ")";
+            return;
+        }
+
+        // Set fixed size immediately
+        cellButton->setFixedSize(100, 100);
+
+        // Calculate playable area logic
+        bool isInPlayableArea = true;
+        auto [actualRows, actualCols] = board.getActualBoardBounds();
+
+        if (!isMaxSize && actualRows > 0 && actualCols > 0) {
+            int16_t minRow = board.getRowSize(), maxRow = -1;
+            int16_t minCol = board.getColumnSize(), maxCol = -1;
+
+            bool hasCards = false;
+            for (int16_t i = 0; i < board.getRowSize(); ++i) {
+                for (int16_t j = 0; j < board.getColumnSize(); ++j) {
+                    if (!board[{i, j}].empty()) {
+                        hasCards = true;
+                        minRow = std::min(minRow, i);
+                        maxRow = std::max(maxRow, i);
+                        minCol = std::min(minCol, j);
+                        maxCol = std::max(maxCol, j);
+                    }
+                }
+            }
+
+            if (hasCards) {
+                isInPlayableArea = (row >= minRow - 1 && row <= maxRow + 1 &&
+                    col >= minCol - 1 && col <= maxCol + 1);
+            }
+        }
+
+        bool canPlace = board.canBePlaced(row, col) && isInPlayableArea;
+        bool isEmpty = board[{row, col}].empty();
+
+        // Style the button
+        styleCellButton(cellButton.get(), canPlace, isEmpty, isInPlayableArea);
+
+        // Setup icon if cell contains a card
+        if (!isEmpty) {
+            setupButtonIcon(cellButton.get(), board[{row, col}].back());
+        }
+
+        // Connect signal for relevant positions
+        if (canPlace || !isEmpty) {
+            connect(cellButton.get(), &QPushButton::clicked, [this, row, col]() {
+                qDebug() << "Button clicked at (" << row << "," << col << ")";
+                emit cellClicked(row, col);
+                });
+        }
+
+        // Get raw pointer before moving to container
+        QPushButton* rawPtr = cellButton.get();
+
+        // Store in smart pointer container
+        cellButtons[row][col] = std::move(cellButton);
+
+        // Add to Qt layout system - this automatically shows the widget
+        if (gridLayout) {
+            gridLayout->addWidget(rawPtr, row, col);
+        }
+        else {
+            qDebug() << "ERROR: gridLayout is null!";
+        }
+
+        qDebug() << "Successfully created button at (" << row << "," << col << ")";
+
+    }
+    catch (const std::exception& e) {
+        qDebug() << "Exception in createCellButton for (" << row << "," << col << "):" << e.what();
+    }
+    catch (...) {
+        qDebug() << "Unknown exception in createCellButton for (" << row << "," << col << ")";
+    }
 }
 
 void BoardView::updateView() {
-    // Curățăm layout-ul existent
-    QLayoutItem* item;
-    while ((item = gridLayout->takeAt(0)) != nullptr) {
-        delete item->widget();
-        delete item;
+    // Prevent multiple simultaneous updates
+    static bool isUpdating = false;
+    if (isUpdating) {
+        qDebug() << "BoardView update already in progress, skipping duplicate call";
+        return;
+    }
+    isUpdating = true;
+
+    qDebug() << "Starting updateView - current board size: " << board.getRowSize() << "x" << board.getColumnSize();
+
+    // Block all signals during update
+    this->blockSignals(true);
+    if (gridLayout) {
+        gridLayout->blockSignals(true);
     }
 
-    // Pentru tabla dinamică Eter, calculăm granițele reale
-    auto [actualRows, actualCols] = board.getActualBoardBounds();
-
-    // Creăm butoanele pentru fiecare celulă
-    for (int row = 0; row < board.getRowSize(); ++row) {
-        for (int col = 0; col < board.getColumnSize(); ++col) {
-            QPushButton* cellButton = new QPushButton(this);
-            cellButton->setFixedSize(100, 100);
-
-            // Pentru tabla dinamică, afișăm doar zonele relevante
-            bool isInPlayableArea = true;
-
-            // Dacă tabla nu este încă fixată, evidențiem doar zonele accesibile
-            if (!isMaxSize && actualRows > 0 && actualCols > 0) {
-                // Calculăm zona expandabilă în jurul cărților existente
-                int16_t minRow = board.getRowSize(), maxRow = -1;
-                int16_t minCol = board.getColumnSize(), maxCol = -1;
-
-                bool hasCards = false;
-                for (int16_t i = 0; i < board.getRowSize(); ++i) {
-                    for (int16_t j = 0; j < board.getColumnSize(); ++j) {
-                        if (!board[{i, j}].empty()) {
-                            hasCards = true;
-                            minRow = std::min(minRow, i);
-                            maxRow = std::max(maxRow, i);
-                            minCol = std::min(minCol, j);
-                            maxCol = std::max(maxCol, j);
-                        }
-                    }
-                }
-
-                if (hasCards) {
-                    // Zona jucabilă include cărțile existente plus o margine de 1
-                    isInPlayableArea = (row >= minRow - 1 && row <= maxRow + 1 &&
-                        col >= minCol - 1 && col <= maxCol + 1);
-                }
+    try {
+        // First, safely remove all widgets from the layout WITHOUT hiding them
+        QLayoutItem* item;
+        while ((item = gridLayout->takeAt(0)) != nullptr) {
+            if (QWidget* widget = item->widget()) {
+                // Don't hide - just remove from layout and set parent to nullptr
+                widget->setParent(nullptr);
             }
-
-            // Verificăm dacă poziția poate fi utilizată pentru plasarea unei cărți
-            bool canPlace = board.canBePlaced(row, col) && isInPlayableArea;
-
-            if (canPlace && board[{row, col}].empty()) {
-                // Poziție goală unde se poate plasa o carte
-                cellButton->setStyleSheet(
-                    "QPushButton {"
-                    "    background-color: rgba(144, 238, 144, 100);" // Verde pentru pozițiile valide
-                    "    border: 2px solid green;"
-                    "}"
-                    "QPushButton:hover {"
-                    "    background-color: rgba(144, 238, 144, 150);"
-                    "}"
-                );
-            }
-            else if (board[{row, col}].empty() && isInPlayableArea) {
-                // Poziție în zona jucabilă dar nu adiacentă
-                cellButton->setStyleSheet(
-                    "QPushButton {"
-                    "    background-color: rgba(255, 255, 220, 70);" // Galben pal pentru zona jucabilă
-                    "    border: 1px solid #DDD;"
-                    "}"
-                );
-                cellButton->setEnabled(false);
-            }
-            else if (board[{row, col}].empty()) {
-                // Poziție în afara zonei jucabile - aproape invizibilă
-                cellButton->setStyleSheet(
-                    "QPushButton {"
-                    "    background-color: rgba(240, 240, 240, 30);" // Foarte pal
-                    "    border: 1px solid rgba(200, 200, 200, 50);"
-                    "}"
-                );
-                cellButton->setEnabled(false);
-            }
-            else {
-                // Poziție ocupată
-                cellButton->setStyleSheet(
-                    "QPushButton {"
-                    "    background-color: rgba(255, 255, 255, 80);"
-                    "    border: 2px solid black;"
-                    "}"
-                    "QPushButton:hover {"
-                    "    background-color: rgba(255, 255, 255, 120);"
-                    "}"
-                );
-            }
-
-            // Dacă celula conține o carte, afișăm imaginea
-            if (!board[{row, col}].empty()) {
-                const SimpleCard& card = board[{row, col}].back();
-
-                QString imagePath = (card.getColor() == Color::Red || card.getColor() == Color::IlusionRed) ? "red" : "blue";
-                imagePath += QString::number(card.getValue()) + ".jpg";
-
-                QPixmap pixmap(imagePath);
-                if (!pixmap.isNull()) {
-                    QPixmap scaledPixmap = pixmap.scaled(cellButton->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-                    cellButton->setIcon(QIcon(scaledPixmap));
-                    cellButton->setIconSize(cellButton->size());
-                }
-                else {
-                    qDebug() << "Image not found for card: Value =" << card.getValue()
-                        << ", Color =" << (card.getColor() == Color::Red ? "Red" : "Blue");
-                    cellButton->setText(QString::number(card.getValue()));
-                }
-            }
-
-            // Conectăm semnalul pentru toate pozițiile relevante
-            if (canPlace || !board[{row, col}].empty()) {
-                connect(cellButton, &QPushButton::clicked, [this, row, col]() {
-                    emit cellClicked(row, col);
-                    });
-            }
-
-            gridLayout->addWidget(cellButton, row, col);
+            delete item;
         }
+
+        // Clear smart pointer containers
+        for (auto& row : cellButtons) {
+            for (auto& button : row) {
+                if (button) {
+                    button->disconnect();
+                    button.reset();  // Don't call setVisible - just reset
+                }
+            }
+            row.clear();
+        }
+        cellButtons.clear();
+
+        qDebug() << "Cleared existing widgets and containers";
+
+        // Resize containers for new board size
+        cellButtons.resize(board.getRowSize());
+        for (auto& row : cellButtons) {
+            row.resize(board.getColumnSize());
+        }
+
+        // Create new buttons in batch
+        for (int row = 0; row < board.getRowSize(); ++row) {
+            for (int col = 0; col < board.getColumnSize(); ++col) {
+                createCellButton(row, col);
+            }
+        }
+
+        // Re-enable signals
+        if (gridLayout) {
+            gridLayout->blockSignals(false);
+        }
+        this->blockSignals(false);
+
+        // Force layout update and make sure everything is visible
+        gridLayout->activate();
+        this->adjustSize();
+        this->setVisible(true);
+        this->update();
+
+        qDebug() << "Grid updated successfully with size: " << board.getRowSize() << "x" << board.getColumnSize();
+
+    }
+    catch (const std::exception& e) {
+        qDebug() << "Exception in updateView: " << e.what();
+
+        // Ensure we restore signals even on exception
+        if (gridLayout) {
+            gridLayout->blockSignals(false);
+        }
+        this->blockSignals(false);
     }
 
-    gridLayout->activate();
-    qDebug() << "Grid updated with size: " << board.getRowSize() << "x" << board.getColumnSize()
-        << " (actual bounds: " << actualRows << "x" << actualCols << ")";
+    // Reset the updating flag
+    isUpdating = false;
 }
-
 bool BoardView::canPlaceCard(const SimpleCard& card, int row, int col) const {
     Board::Position pos = { row, col };
 
@@ -153,36 +298,21 @@ bool BoardView::canPlaceCard(const SimpleCard& card, int row, int col) const {
 }
 
 void BoardView::placeCard(const SimpleCard& card, int row, int col) {
-    Board::Position pos = { row, col };
+    // Check bounds
+    if (row < 0 || row >= static_cast<int>(cellButtons.size()) ||
+        col < 0 || col >= static_cast<int>(cellButtons[row].size())) {
+        qDebug() << "Invalid position for placeCard: (" << row << "," << col << ")";
+        return;
+    }
 
-    // Această metodă este doar pentru actualizarea vizuală după ce cartea a fost deja plasată
-    // Logica de verificare și expandare se face în SecondaryWindow
-
-    // Actualizăm doar vizualizarea celulei specifice
-    QLayoutItem* item = gridLayout->itemAtPosition(row, col);
-    if (item) {
-        QPushButton* cellButton = qobject_cast<QPushButton*>(item->widget());
-        if (cellButton) {
-            QString imagePath = (card.getColor() == Color::Red ? "red" : "blue");
-            imagePath += QString::number(card.getValue()) + ".jpg";
-
-            QPixmap pixmap(imagePath);
-            if (!pixmap.isNull()) {
-                QSize cellSize = cellButton->size();
-                cellButton->setIcon(QIcon(pixmap));
-                cellButton->setIconSize(cellSize);
-            }
-            else {
-                qDebug() << "Image not found for card: Value =" << card.getValue()
-                    << ", Color =" << (card.getColor() == Color::Red ? "Red" : "Blue");
-                cellButton->setText(QString::number(card.getValue()));
-            }
-        }
+    // Get the button from smart pointer container
+    if (cellButtons[row][col]) {
+        QPushButton* cellButton = cellButtons[row][col].get();
+        setupButtonIcon(cellButton, card);
     }
 
     qDebug() << "Card visual update completed at position (" << row << "," << col << ")";
 }
-
 Board& BoardView::getBoard()
 {
     return board;

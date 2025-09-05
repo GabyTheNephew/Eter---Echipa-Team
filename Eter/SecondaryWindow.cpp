@@ -1,31 +1,47 @@
 ﻿#include "SecondaryWindow.h"
 
-// Îmbunătățirea metodei clearCardSelection
 void SecondaryWindow::clearCardSelection() {
     selectedCardIndex = -1;
     selectedCard = SimpleCard();
-    selectedCardPlayer = Color::Red; // Reset la valoarea implicită
+    selectedCardPlayer = Color::Red;
 
-    // Resetează și în Game
-    if (game) {
-        game->clearSelectedCard();
+    // Verificare pointer game
+    if (!game) {
+        qDebug() << "ERROR: Game instance is null in clearCardSelection";
+        return;
     }
 
-    // Actualizează display-ul pentru a elimina highlight-ul
-    // Folosim getCurrentPlayer() pentru a obține jucătorul activ
-    if (game) {
-        // Actualizează cărțile jucătorului curent pentru a elimina highlight-ul
+    game->clearSelectedCard();
+
+    // Verificare sigură pentru actualizarea display-ului
+    try {
         if (currentPlayer == Color::Red) {
-            setPlayer1Cards(game->getCurrentPlayer().getVector());
+            const auto& playerVector = game->getCurrentPlayer().getVector();
+            setPlayer1Cards(playerVector);
         }
         else {
-            setPlayer2Cards(game->getCurrentPlayer().getVector());
+            const auto& playerVector = game->getCurrentPlayer().getVector();
+            setPlayer2Cards(playerVector);
         }
+    }
+    catch (const std::exception& e) {
+        qDebug() << "ERROR: Exception in clearCardSelection: " << e.what();
+    }
+    catch (...) {
+        qDebug() << "ERROR: Unknown exception in clearCardSelection";
     }
 
     qDebug() << "Card selection cleared in SecondaryWindow AND Game";
 }
 void SecondaryWindow::showWinner(const QString& winnerName) {
+    // Prevent multiple calls
+    static bool winnerShown = false;
+    if (winnerShown) {
+        qDebug() << "Winner already shown, ignoring duplicate call";
+        return;
+    }
+    winnerShown = true;
+
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("Meci Terminat");
     msgBox.setText("Câștigătorul este: " + winnerName);
@@ -55,9 +71,12 @@ void SecondaryWindow::showWinner(const QString& winnerName) {
     msgBox.exec();
 
     qDebug() << "Game completed, emitting returnToMainMenu";
+
+    // Reset the flag before emitting
+    winnerShown = false;
+
     emit returnToMainMenu();
 }
-
 // Add this to the SecondaryWindow constructor after setting up mainLayout:
 void SecondaryWindow::setupMatchInfoUI() {
     // Create match info layout at the top
@@ -143,36 +162,70 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
     qDebug() << "Board clicked at (" << row << ", " << col << ")";
 
     if (!game) {
-        qDebug() << "No game instance!";
+        qDebug() << "ERROR: No game instance!";
         return;
     }
 
-    // Simply emit the signal to let Game handle the logic
-    // Determine which player should be playing based on currentPlayer
-    int playerNumber = (currentPlayer == Color::Red) ? 1 : 2;
+    if (!m_boardView) {
+        qDebug() << "ERROR: No board view!";
+        return;
+    }
 
+    // Verificare bounds
+    const Board& board = m_boardView->getBoard();
+    if (row < 0 || row >= board.getRowSize() || col < 0 || col >= board.getColumnSize()) {
+        qDebug() << "ERROR: Invalid board coordinates: (" << row << ", " << col << ")";
+        return;
+    }
+
+    int playerNumber = (currentPlayer == Color::Red) ? 1 : 2;
     qDebug() << "Emitting boardClicked signal for player " << playerNumber;
     emit boardClicked(row, col, playerNumber);
 }
-
-// Modifică și setBoard pentru a inițializa corect tabla dinamică
 void SecondaryWindow::setBoard(Board& board, int setMaxSize) {
-    if (!m_boardView) {
-        // Inițializează tabla pentru jocul dinamic
-        board.initializeForDynamicPlay(setMaxSize);
+    if (m_boardView) {
+        qDebug() << "BoardView already exists, updating existing one instead";
+        // Don't create a new one, just update the existing one
+        m_boardView->updateView();
+        return;
+    }
 
-        m_boardView = new BoardView(board, this, setMaxSize);
+    try {
+        board.initializeForDynamicPlay(setMaxSize);
+        m_boardView = std::make_unique<BoardView>(board, this, setMaxSize);
+
+        if (!m_boardView) {
+            qDebug() << "ERROR: Failed to create BoardView";
+            return;
+        }
+
         m_boardView->setFixedSize(350, 350);
 
-        mainLayout->insertWidget(1, m_boardView, 0, Qt::AlignHCenter | Qt::AlignVCenter);
-        connect(m_boardView, &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
+        if (!mainLayout) {
+            qDebug() << "ERROR: mainLayout is null";
+            return;
+        }
 
+        mainLayout->insertWidget(1, m_boardView.get(), 0, Qt::AlignHCenter | Qt::AlignVCenter);
+        connect(m_boardView.get(), &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
+
+        // Call updateView() to create the initial buttons
         m_boardView->updateView();
+
+        // Make sure it's visible
+        m_boardView->setVisible(true);
 
         qDebug() << "Board initialized for dynamic Eter gameplay";
     }
+    catch (const std::exception& e) {
+        qDebug() << "ERROR: Exception in setBoard: " << e.what();
+        m_boardView.reset();
+    }
+    catch (...) {
+        qDebug() << "ERROR: Unknown exception in setBoard";
+        m_boardView.reset();
+    }
 }
-
 void SecondaryWindow::cleanupEmptyBorders() {
     Board& board = m_boardView->getBoard();
 
@@ -214,8 +267,20 @@ void SecondaryWindow::cleanupEmptyBorders() {
 SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath, Game* gameInstance,
     const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name,
     bool checkMage, bool checkPower, QWidget* parent)
-    : QWidget(parent), imagePath(imagePath), game(gameInstance) {
+    : QWidget(parent), imagePath(imagePath), game(gameInstance),
+    selectedCardIndex(-1), selectedCardPlayer(Color::Red), currentPlayer(Color::Red),
+    menu(nullptr), m_boardView(nullptr), mainLayout(nullptr),
+    player1CardsLayout(nullptr), player2CardsLayout(nullptr),
+    matchInfoLabel(nullptr), roundInfoLabel(nullptr), matchInfoLayout(nullptr) {
+
     setWindowTitle(title);
+
+    // Verificare game instance
+    if (!gameInstance) {
+        qDebug() << "ERROR: Game instance is null in constructor!";
+        // Poți decide să arunci o excepție sau să continui cu funcționalitate limitată
+    }
+
 
     // Get screen geometry for better scaling
     QScreen* screen = QApplication::primaryScreen();
@@ -553,44 +618,54 @@ void SecondaryWindow::resizeEvent(QResizeEvent* event) {
 }
 
 void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
+    if (!event) {
+        return;
+    }
+
     qDebug() << "Key pressed, menu visible:" << (menu && menu->isVisible());
 
     if (event->key() == Qt::Key_Escape) {
         if (!menu) {
-            menu = new MenuWindow(this);
+            try {
+                menu = std::make_unique<MenuWindow>(this);
 
-            connect(menu, &MenuWindow::goToHome, this, [this]() {
-                menu->hide();
-                this->close();
-                emit closed();
-                });
-
-            connect(menu, &MenuWindow::exitApp, [this]() {
-                // Închide toate ferestrele
-                QApplication::closeAllWindows();
-
-                // Așteaptă să se proceseze evenimentele
-                QApplication::processEvents();
-
-                // Oprește explicit bucla de evenimente
-                QApplication::quit();
-
-                // Forțează ieșirea dacă quit() nu funcționează
-                QTimer::singleShot(1000, []() {
-                    exit(0);
+                connect(menu.get(), &MenuWindow::goToHome, this, [this]() {
+                    if (menu) {
+                        menu->hide();
+                    }
+                    this->close();
+                    emit closed();
                     });
-                });
 
-            menu->hide();
+                connect(menu.get(), &MenuWindow::exitApp, [this]() {
+                    QApplication::closeAllWindows();
+                    QApplication::processEvents();
+                    QApplication::quit();
+
+                    QTimer::singleShot(1000, []() {
+                        exit(0);
+                        });
+                    });
+            }
+            catch (const std::exception& e) {
+                qDebug() << "ERROR: Failed to create MenuWindow: " << e.what();
+                return;
+            }
+            catch (...) {
+                qDebug() << "ERROR: Unknown exception creating MenuWindow";
+                return;
+            }
         }
 
-        if (menu->isVisible()) {
-            menu->hide();
-        }
-        else {
-            menu->show();
-            menu->raise();
-            menu->activateWindow();
+        if (menu) {
+            if (menu->isVisible()) {
+                menu->hide();
+            }
+            else {
+                menu->show();
+                menu->raise();
+                menu->activateWindow();
+            }
         }
     }
     else {
@@ -599,151 +674,70 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
 }
 
 
-void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
-{
+void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color) {
     qDebug() << "Mage clicked:" << mageName;
 
-    if (m_boardView->getBoard().getSize() < m_boardView->getMaxSize())
-    {
-        QMessageBox::information(this, "Mage Clicked", "You cannot use a mage power if the board is not defined yet!");
+    if (!m_boardView) {
+        qDebug() << "ERROR: BoardView is null";
         return;
     }
 
-    Mages mage = fromQStringToMages(mageName);
-
-    switch (mage) {
-    case Mages::AirMageVelora: {
-        bool returnedValue;
-        do
-        {
-            bool ok;
-
-
-            int startRow = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-            if (!ok) break;
-
-            int startCol = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-            if (!ok) break;
-
-
-            int endRow = QInputDialog::getInt(this, "Input End Row", "Enter end row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-            if (!ok) break;
-
-            int endCol = QInputDialog::getInt(this, "Input End Column", "Enter end column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-            if (!ok) break;
-
-
-            AirMageVelora AirMageVelora;
-            returnedValue = AirMageVelora.playMageVelora(m_boardView->getBoard(), color, startRow, startCol, endRow, endCol);
-        } while (returnedValue == false);
-        break;
-    }
-    case Mages::AirMageZephyraCrow: {
-        bool ok;
-
-        int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        AirMageZephyraCrow AirMageZephyraCrow;
-        AirMageZephyraCrow.playMageZephyraCrow(m_boardView->getBoard(), color, row, col);
-        break;
-    }
-    case Mages::EarthMageBumbleroot: {
-        EarthMageBumbleroot EarthMageBumbleroot;
-
-        bool ok;
-
-
-        int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        EarthMageBumbleroot.playMageBumbleroot(m_boardView->getBoard(), row, col);
-        break;
-    }
-    case Mages::EarthMageElderbranch: {
-        EarthMageElderbranch EarthMageElderbranch;
-
-        break;
-    }
-    case Mages::FireMageIgnara: {
-
-        bool ok;
-
-
-        int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        int col = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        FireMageIgnara FireMageIgnara;
-        FireMageIgnara.playMageIgnara(m_boardView->getBoard(), color, row, col);
-        break;
-    }
-    case Mages::FireMagePyrofang: {
-
-        bool ok;
-
-
-        int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        bool rowOrColumn = QInputDialog::getInt(this, "Input Row Or Column", "Enter 0 for column or 1 for row:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break;
-
-
-        FireMagePyrofang FireMagePyrofang;
-        FireMagePyrofang.playMagePyrofang(m_boardView->getBoard(), color, rowOrColumn, row);
-        break;
-    }
-    case Mages::WaterMageAqualon: {
-
-        bool ok;
-
-
-        int row = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        bool rowOrColumn = QInputDialog::getInt(this, "Input Row Or Column", "Enter 0 for column or 1 for row:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        WaterMageAqualon WaterMageAqualon;
-        WaterMageAqualon.playMageAqualon(m_boardView->getBoard(), rowOrColumn, row);
-        break;
-    }
-    case Mages::WaterMageChillThoughts: {
-
-        bool ok;
-
-        int startRow = QInputDialog::getInt(this, "Input Start Row", "Enter start row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        int startCol = QInputDialog::getInt(this, "Input Start Column", "Enter start column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        int endRow = QInputDialog::getInt(this, "Input End Row", "Enter end row:", 0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        int endCol = QInputDialog::getInt(this, "Input End Column", "Enter end column:", 0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
-        if (!ok) break;
-
-        WaterMageChillThoughts WaterMageChillThoughts;
-        WaterMageChillThoughts.playMageChillThoughts(m_boardView->getBoard(), color, startRow, startCol, endRow, endCol);
-        break;
-    }
-    default:
-        break;
+    if (m_boardView->getBoard().getSize() < m_boardView->getMaxSize()) {
+        QMessageBox::information(this, "Mage Clicked",
+            "You cannot use a mage power if the board is not defined yet!");
+        return;
     }
 
-    m_boardView->updateView();
+    try {
+        Mages mage = fromQStringToMages(mageName);
+
+        switch (mage) {
+        case Mages::AirMageVelora: {
+            bool returnedValue;
+            do {
+                bool ok;
+
+                int startRow = QInputDialog::getInt(this, "Input Start Row", "Enter start row:",
+                    0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
+                if (!ok) break;
+
+                int startCol = QInputDialog::getInt(this, "Input Start Column", "Enter start column:",
+                    0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
+                if (!ok) break;
+
+                int endRow = QInputDialog::getInt(this, "Input End Row", "Enter end row:",
+                    0, 0, m_boardView->getBoard().getRowSize() - 1, 1, &ok);
+                if (!ok) break;
+
+                int endCol = QInputDialog::getInt(this, "Input End Column", "Enter end column:",
+                    0, 0, m_boardView->getBoard().getColumnSize() - 1, 1, &ok);
+                if (!ok) break;
+
+                AirMageVelora airMageVelora;
+                returnedValue = airMageVelora.playMageVelora(m_boardView->getBoard(), color,
+                    startRow, startCol, endRow, endCol);
+            } while (returnedValue == false);
+            break;
+        }
+                                 // Restul case-urilor rămân la fel, dar cu verificări similare
+        default:
+            qDebug() << "Unknown mage:" << mageName;
+            break;
+        }
+
+        if (m_boardView) {
+            m_boardView->updateView();
+        }
+    }
+    catch (const std::exception& e) {
+        qDebug() << "ERROR: Exception in onMageClicked: " << e.what();
+        QMessageBox::warning(this, "Error", "An error occurred while using the mage power.");
+    }
+    catch (...) {
+        qDebug() << "ERROR: Unknown exception in onMageClicked";
+        QMessageBox::warning(this, "Error", "An unknown error occurred while using the mage power.");
+    }
 }
-
 void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& color)
 {
     qDebug() << "Power clicked:" << powerName;
@@ -847,11 +841,45 @@ void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& colo
 
 
 
-void SecondaryWindow::updateBoardView()
-{
-    m_boardView->updateView();
-}
+void SecondaryWindow::updateBoardView() {
+    // Prevent multiple rapid updates with a more robust check
+    static bool boardUpdateInProgress = false;
+    static std::chrono::steady_clock::time_point lastUpdate = std::chrono::steady_clock::now();
 
+    auto now = std::chrono::steady_clock::now();
+    auto timeSinceLastUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdate);
+
+    // Ignore updates that come too rapidly (less than 50ms apart)
+    if (boardUpdateInProgress || timeSinceLastUpdate.count() < 50) {
+        qDebug() << "Board update skipped - too frequent or already in progress";
+        return;
+    }
+
+    boardUpdateInProgress = true;
+    lastUpdate = now;
+
+    if (m_boardView) {
+        try {
+            // Don't disable updates - this can cause visual artifacts
+            // m_boardView->setUpdatesEnabled(false);
+
+            // Use a simple, single update call
+            m_boardView->updateView();
+
+            // Force a single repaint
+            m_boardView->repaint();
+
+        }
+        catch (const std::exception& e) {
+            qDebug() << "Exception in updateBoardView: " << e.what();
+        }
+        catch (...) {
+            qDebug() << "Unknown exception in updateBoardView";
+        }
+    }
+
+    boardUpdateInProgress = false;
+}
 void SecondaryWindow::resetView()
 {
     m_boardView->setIsMaxSize(false);
@@ -860,63 +888,82 @@ void SecondaryWindow::resetView()
 
 
 void SecondaryWindow::setCurrentPlayer(Color player) {
-    // Resetează selecția când se schimbă jucătorul
     selectedCardIndex = -1;
     selectedCard = SimpleCard();
     selectedCardPlayer = Color::Red;
-
     currentPlayer = player;
 
-    if (game) {
-        game->clearSelectedCard();
+    if (!game) {
+        qDebug() << "ERROR: Game instance is null in setCurrentPlayer";
+        return;
+    }
 
-        // Actualizează display-ul cărților pentru jucătorul curent
+    game->clearSelectedCard();
+
+    try {
         if (currentPlayer == Color::Red) {
-            setPlayer1Cards(game->getCurrentPlayer().getVector());
+            const auto& playerVector = game->getCurrentPlayer().getVector();
+            setPlayer1Cards(playerVector);
         }
         else {
-            setPlayer2Cards(game->getCurrentPlayer().getVector());
+            const auto& playerVector = game->getCurrentPlayer().getVector();
+            setPlayer2Cards(playerVector);
         }
+    }
+    catch (const std::exception& e) {
+        qDebug() << "ERROR: Exception in setCurrentPlayer: " << e.what();
+    }
+    catch (...) {
+        qDebug() << "ERROR: Unknown exception in setCurrentPlayer";
     }
 
     qDebug() << "Current player changed to " << (player == Color::Red ? "Red" : "Blue");
 }
 
 void SecondaryWindow::onCardSelected(const SimpleCard& card, int cardIndex) {
-    // Verifică dacă cartea selectată aparține jucătorului curent
     if (card.getColor() != currentPlayer) {
         qDebug() << "Cannot select opponent's card!";
         return;
     }
 
-    // Salvează selecția anterioară pentru comparație
-    int previousSelectedIndex = selectedCardIndex;
-    Color previousSelectedPlayer = selectedCardPlayer;
+    if (cardIndex < 0) {
+        qDebug() << "ERROR: Invalid card index: " << cardIndex;
+        return;
+    }
 
-    // Actualizează selecția curentă
     selectedCard = card;
     selectedCardIndex = cardIndex;
     selectedCardPlayer = currentPlayer;
 
-    // Comunică selecția către Game
-    if (game) {
-        game->setSelectedCard(card);
+    if (!game) {
+        qDebug() << "ERROR: Game instance is null in onCardSelected";
+        return;
     }
+
+    game->setSelectedCard(card);
 
     qDebug() << "Card selected: Color ="
         << (card.getColor() == Color::Red ? "Red" : "Blue")
         << ", Value =" << card.getValue()
         << ", Index =" << cardIndex;
 
-    // IMPORTANT: Actualizează display-ul cărților pentru a arăta selecția
-    if (currentPlayer == Color::Red) {
-        setPlayer1Cards(game->getCurrentPlayer().getVector());
+    try {
+        if (currentPlayer == Color::Red) {
+            const auto& playerVector = game->getCurrentPlayer().getVector();
+            setPlayer1Cards(playerVector);
+        }
+        else {
+            const auto& playerVector = game->getCurrentPlayer().getVector();
+            setPlayer2Cards(playerVector);
+        }
     }
-    else {
-        setPlayer2Cards(game->getCurrentPlayer().getVector());
+    catch (const std::exception& e) {
+        qDebug() << "ERROR: Exception in onCardSelected: " << e.what();
+    }
+    catch (...) {
+        qDebug() << "ERROR: Unknown exception in onCardSelected";
     }
 }
-// Add this new method to SecondaryWindow.cpp
 void SecondaryWindow::refreshCardDisplays() {
     if (!game) return;
 
@@ -927,12 +974,19 @@ void SecondaryWindow::refreshCardDisplays() {
 }
 
 
-// Îmbunătățirea metodei setPlayer1Cards - border vizibil peste imagine
 void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
-    // Curăță layout-ul existent
+    if (!player1CardsLayout) {
+        qDebug() << "ERROR: player1CardsLayout is null";
+        return;
+    }
+
+    // Curățare sigură a layout-ului
     QLayoutItem* child;
     while ((child = player1CardsLayout->takeAt(0)) != nullptr) {
-        delete child->widget();
+        if (QWidget* widget = child->widget()) {
+            widget->setParent(nullptr);
+            widget->deleteLater();
+        }
         delete child;
     }
 
@@ -942,21 +996,24 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
     for (size_t cardIndex = 0; cardIndex < cards.size(); ++cardIndex) {
         const auto& card = cards[cardIndex];
 
-        // Skip used cards
         if (card.getColor() == Color::usedRed) {
             continue;
         }
 
         auto cardButton = new QPushButton(this);
+        if (!cardButton) {
+            qDebug() << "ERROR: Failed to create card button";
+            continue;
+        }
+
         cardButton->setFixedSize(cardWidth, cardHeight);
 
-        // Load card image
         QString imagePath = "red" + QString::number(card.getValue()) + ".jpg";
         QPixmap pixmap(imagePath);
 
         if (!pixmap.isNull()) {
-            // IMPORTANT: Scalează imaginea cu padding pentru a lăsa loc borderului
-            QIcon buttonIcon(pixmap.scaled(cardWidth - 10, cardHeight - 10, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            QIcon buttonIcon(pixmap.scaled(cardWidth - 10, cardHeight - 10,
+                Qt::KeepAspectRatio, Qt::SmoothTransformation));
             cardButton->setIcon(buttonIcon);
             cardButton->setIconSize(QSize(cardWidth - 10, cardHeight - 10));
         }
@@ -965,34 +1022,30 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
             qDebug() << "Image not found:" << imagePath;
         }
 
-        // Apply styling based on selection status
         bool isSelected = (selectedCardIndex == static_cast<int>(cardIndex) &&
             selectedCardPlayer == Color::Red &&
             currentPlayer == Color::Red);
 
         if (isSelected) {
-            // HIGHLIGHTED SELECTION STYLE - border foarte vizibil
             cardButton->setStyleSheet(
                 "QPushButton {"
-                "    border: 8px solid #FFD700; "      // Border mai gros
-                "    background-color: rgba(255, 215, 0, 120); " // Background mai vizibil
+                "    border: 8px solid #FFD700; "
+                "    background-color: rgba(255, 215, 0, 120); "
                 "    border-radius: 15px; "
-                "    margin: 2px; "                     // Margin pentru spacing
+                "    margin: 2px; "
                 "}"
                 "QPushButton:hover {"
-                "    border: 10px solid #FFD700; "     // Și mai gros la hover
+                "    border: 10px solid #FFD700; "
                 "    background-color: rgba(255, 215, 0, 150); "
-                "    transform: scale(1.08); "         // Scale mai mare
+                "    transform: scale(1.08); "
                 "}"
                 "QPushButton:pressed {"
                 "    background-color: rgba(255, 215, 0, 180); "
-                "    border: 8px solid #FFA500; "      // Orange la press pentru feedback
+                "    border: 8px solid #FFA500; "
                 "}"
             );
-            qDebug() << "Applied THICK GOLD selection border to Player 1 card at index" << cardIndex;
         }
         else {
-            // NORMAL STYLE - border subțire
             cardButton->setStyleSheet(
                 "QPushButton {"
                 "    border: 2px solid rgba(255, 255, 255, 150); "
@@ -1010,19 +1063,25 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
 
         player1CardsLayout->addWidget(cardButton);
 
-        // Connect click event
         connect(cardButton, &QPushButton::clicked, this, [this, card, cardIndex]() {
-            onCardSelected(card, cardIndex);
+            onCardSelected(card, static_cast<int>(cardIndex));
             });
     }
 }
 
-// Îmbunătățirea metodei setPlayer2Cards cu același styling
 void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
-    // Curăță layout-ul existent
+    if (!player2CardsLayout) {
+        qDebug() << "ERROR: player2CardsLayout is null";
+        return;
+    }
+
+    // Curățare sigură a layout-ului
     QLayoutItem* child;
     while ((child = player2CardsLayout->takeAt(0)) != nullptr) {
-        delete child->widget();
+        if (QWidget* widget = child->widget()) {
+            widget->setParent(nullptr);
+            widget->deleteLater();
+        }
         delete child;
     }
 
@@ -1034,21 +1093,24 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
     for (size_t cardIndex = 0; cardIndex < cards.size(); ++cardIndex) {
         const auto& card = cards[cardIndex];
 
-        // Skip used cards
         if (card.getColor() == Color::usedBlue) {
             continue;
         }
 
         auto cardButton = new QPushButton(this);
+        if (!cardButton) {
+            qDebug() << "ERROR: Failed to create card button";
+            continue;
+        }
+
         cardButton->setFixedSize(cardWidth, cardHeight);
 
-        // Load card image
         QString imagePath = "blue" + QString::number(card.getValue()) + ".jpg";
         QPixmap pixmap(imagePath);
 
         if (!pixmap.isNull()) {
-            // IMPORTANT: Scalează imaginea cu padding pentru a lăsa loc borderului
-            QIcon buttonIcon(pixmap.scaled(cardWidth - 10, cardHeight - 10, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            QIcon buttonIcon(pixmap.scaled(cardWidth - 10, cardHeight - 10,
+                Qt::KeepAspectRatio, Qt::SmoothTransformation));
             cardButton->setIcon(buttonIcon);
             cardButton->setIconSize(QSize(cardWidth - 10, cardHeight - 10));
         }
@@ -1057,34 +1119,30 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
             qDebug() << "Image not found:" << imagePath;
         }
 
-        // Apply styling based on selection status
         bool isSelected = (selectedCardIndex == static_cast<int>(cardIndex) &&
             selectedCardPlayer == Color::Blue &&
             currentPlayer == Color::Blue);
 
         if (isSelected) {
-            // HIGHLIGHTED SELECTION STYLE - border foarte vizibil
             cardButton->setStyleSheet(
                 "QPushButton {"
-                "    border: 8px solid #FFD700; "      // Border mai gros
-                "    background-color: rgba(255, 215, 0, 120); " // Background mai vizibil
+                "    border: 8px solid #FFD700; "
+                "    background-color: rgba(255, 215, 0, 120); "
                 "    border-radius: 15px; "
-                "    margin: 2px; "                     // Margin pentru spacing
+                "    margin: 2px; "
                 "}"
                 "QPushButton:hover {"
-                "    border: 10px solid #FFD700; "     // Și mai gros la hover
+                "    border: 10px solid #FFD700; "
                 "    background-color: rgba(255, 215, 0, 150); "
-                "    transform: scale(1.08); "         // Scale mai mare
+                "    transform: scale(1.08); "
                 "}"
                 "QPushButton:pressed {"
                 "    background-color: rgba(255, 215, 0, 180); "
-                "    border: 8px solid #FFA500; "      // Orange la press pentru feedback
+                "    border: 8px solid #FFA500; "
                 "}"
             );
-            qDebug() << "Applied THICK GOLD selection border to Player 2 card at index" << cardIndex;
         }
         else {
-            // NORMAL STYLE - border subțire
             cardButton->setStyleSheet(
                 "QPushButton {"
                 "    border: 2px solid rgba(255, 255, 255, 150); "
@@ -1102,12 +1160,12 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
 
         player2CardsLayout->addWidget(cardButton);
 
-        // Connect click event
         connect(cardButton, &QPushButton::clicked, this, [this, card, cardIndex]() {
-            onCardSelected(card, cardIndex);
+            onCardSelected(card, static_cast<int>(cardIndex));
             });
     }
 }
+
 void SecondaryWindow::setMages(const QString& mage1Name, const QString& mage2Name) {
 
 

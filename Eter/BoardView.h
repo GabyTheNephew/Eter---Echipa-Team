@@ -6,6 +6,8 @@
 #include <QStackedLayout>
 #include <Qlabel>
 #include "Board.h"
+#include <memory> // Added for smart pointers
+#include <vector>
 
 class BoardView : public QWidget {
     Q_OBJECT
@@ -22,14 +24,23 @@ public:
 
     int getMaxSize();
     void setIsMaxSize(bool isMaxSized);
-    bool getIsMaxSize()const;
+    bool getIsMaxSize() const;
 
 signals:
     void cellClicked(int row, int col);
 
 private:
-    QGridLayout* gridLayout;
-    Board& board;
+    QGridLayout* gridLayout; // Managed by Qt's parent-child system
+    Board& board; // Reference to board - no ownership
     int maxSize;
     bool isMaxSize;
+
+    // Container for managing cell buttons with smart pointers
+    // This helps with automatic cleanup and memory safety
+    std::vector<std::vector<std::unique_ptr<QPushButton>>> cellButtons;
+
+    // Helper methods for button management
+    void createCellButton(int row, int col);
+    void styleCellButton(QPushButton* button, bool canPlace, bool isEmpty, bool isInPlayableArea);
+    void setupButtonIcon(QPushButton* button, const SimpleCard& card);
 };
