@@ -9,6 +9,9 @@
 #include "CardColor.h"
 #include <QDebug>
 #include <queue>
+#include <type_traits>
+#include <functional>
+
 using matrix = std::vector<std::vector<std::deque<SimpleCard>>>;
 
 class Board
@@ -42,6 +45,150 @@ public:
 
     using Position = std::tuple<int16_t, int16_t>;
 
+    // Template pentru verificarea mai multor condiții de câștig simultan
+    template<typename... WinConditions>
+    bool checkMultipleWinConditions(int16_t boardMaxSize, WinConditions... conditions) const {
+        return (checkSingleWinCondition(boardMaxSize, conditions) || ...);
+    }
+
+    // Template pentru verificarea unei singure condiții de câștig
+    template<typename WinCondition>
+    bool checkSingleWinCondition(int16_t boardMaxSize, WinCondition condition) const {
+        if constexpr (std::is_same_v<WinCondition, std::function<bool()>>) {
+            return condition();
+        }
+        else {
+            // Fallback pentru alte tipuri de condiții
+            return false;
+        }
+    }
+
+    // Template pentru aplicarea unei operații pe toate pozițiile din tablă
+    template<typename Operation>
+    void forEachPosition(Operation op) {
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            for (int16_t j = 0; j < getColumnSize(); ++j) {
+                op(i, j, m_board[i][j]);
+            }
+        }
+    }
+
+    // Template const pentru aplicarea unei operații pe toate pozițiile din tablă
+    template<typename Operation>
+    void forEachPosition(Operation op) const {
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            for (int16_t j = 0; j < getColumnSize(); ++j) {
+                op(i, j, m_board[i][j]);
+            }
+        }
+    }
+
+    // Template pentru găsirea pozițiilor care îndeplinesc o condiție
+    template<typename Predicate>
+    std::vector<Position> findPositions(Predicate pred) const {
+        std::vector<Position> result;
+        forEachPosition([&](int16_t row, int16_t col, const auto& stack) {
+            if (pred(row, col, stack)) {
+                result.emplace_back(row, col);
+            }
+            });
+        return result;
+    }
+
+    // Template pentru aplicarea unei transformări pe toate pozițiile care îndeplinesc o condiție
+    template<typename Predicate, typename Transform>
+    void transformIf(Predicate pred, Transform transform) {
+        forEachPosition([&](int16_t row, int16_t col, auto& stack) {
+            if (pred(row, col, stack)) {
+                transform(row, col, stack);
+            }
+            });
+    }
+
+    // Template pentru numărarea pozițiilor care îndeplinesc o condiție
+    template<typename Predicate>
+    int countPositions(Predicate pred) const {
+        int count = 0;
+        forEachPosition([&](int16_t row, int16_t col, const auto& stack) {
+            if (pred(row, col, stack)) {
+                ++count;
+            }
+            });
+        return count;
+    }
+
+    // Variadic template pentru verificarea mai multor tipuri de direcții simultan
+    template<typename... Directions>
+    bool checkWinInDirections(int16_t boardMaxSize, Directions... directions) const {
+        return (checkWinInDirection(boardMaxSize, directions) || ...);
+    }
+
+    // Template pentru verificarea câștigului într-o direcție specifică
+    template<typename Direction>
+    bool checkWinInDirection(int16_t boardMaxSize, Direction dir) const {
+        if constexpr (std::is_same_v<Direction, std::string>) {
+            if (dir == "row") {
+                return checkRowWins(boardMaxSize);
+            }
+            else if (dir == "column") {
+                return checkColumnWins(boardMaxSize);
+            }
+            else if (dir == "diagonal") {
+                return checkDiagonalWins(boardMaxSize);
+            }
+        }
+        return false;
+    }
+
+    // Template pentru aplicarea unei operații pe mai multe rânduri/coloane
+    template<typename... Indices>
+    void processMultipleRows(std::function<void(int16_t)> operation, Indices... rowIndices) {
+        (operation(rowIndices), ...);
+    }
+
+    template<typename... Indices>
+    void processMultipleColumns(std::function<void(int16_t)> operation, Indices... colIndices) {
+        (operation(colIndices), ...);
+    }
+
+    // Template pentru verificarea validității mai multor poziții simultan
+    template<typename... Positions>
+    bool areAllPositionsValid(Positions... positions) const {
+        return (isPositionValid(positions) && ...);
+    }
+
+    template<typename PositionType>
+    bool isPositionValid(PositionType pos) const {
+        if constexpr (std::is_same_v<PositionType, Position>) {
+            auto [row, col] = pos;
+            return row >= 0 && row < getRowSize() && col >= 0 && col < getColumnSize();
+        }
+        else if constexpr (std::is_same_v<PositionType, std::pair<int16_t, int16_t>>) {
+            return pos.first >= 0 && pos.first < getRowSize() &&
+                pos.second >= 0 && pos.second < getColumnSize();
+        }
+        return false;
+    }
+
+    template<typename... Operations>
+    void processMultipleCards(const SimpleCard& card, Operations... operations) {
+        (operations(card), ...);
+    }
+
+    // Template pentru verificarea mai multor condiții de expansiune
+    template<typename... ExpansionChecks>
+    bool needsAnyExpansion(int16_t maxSize, ExpansionChecks... checks) const {
+        return (checks(maxSize) || ...);
+    }
+
+private:
+    // Helper methods pentru template-uri
+    bool checkRowWins(int16_t boardMaxSize) const;
+
+    bool checkColumnWins(int16_t boardMaxSize) const;
+
+    bool checkDiagonalWins(int16_t boardMaxSize) const;
+
 public:
     std::vector<int> countCardsPerColumn() const;
     std::vector<int> countCardsPerRow() const;
@@ -70,9 +217,6 @@ public:
     std::vector<std::pair<int16_t, int16_t>> findConnectedComponent(int16_t startRow, int16_t startCol,
         std::vector<std::vector<bool>>& visited) const;
 
-    /*void ensureAllCardsHaveAdjacency(int16_t maxSize = 4);
-    bool canExpandHorizontally() const;
-    bool canExpandVertically() const;*/
     int16_t getMinRowWithCards() const;
     int16_t getMaxRowWithCards() const;
     int16_t getMinColWithCards() const;
@@ -153,4 +297,10 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Board& board);
     friend std::istream& operator>>(std::istream& in, Board& board);
+
+    void optimizedBoardOperations();
+    void smartExpansionWithTemplates(int16_t maxSize);
+    bool validateMultiplePositions();
+    void optimizedCardProcessing();
+    void templateBasedCleanup();
 };

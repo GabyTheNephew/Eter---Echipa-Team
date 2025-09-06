@@ -1,5 +1,418 @@
 ﻿#include "Board.h"
 
+Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
+{
+    qDebug() << "Checking win with boardMaxSize:" << boardMaxSize;
+
+    // Check rows for consecutive cards
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        int16_t redCount = 0, blueCount = 0;
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            if (!m_board[i][j].empty()) {
+                Color color = m_board[i][j].back().getColor();
+                if (color == Color::Red || color == Color::IlusionRed) {
+                    redCount++;
+                    blueCount = 0; // Reset blue count
+                    qDebug() << "Red card found at (" << i << "," << j << ") - consecutive count:" << redCount;
+                }
+                else if (color == Color::Blue || color == Color::IlusionBlue) {
+                    blueCount++;
+                    redCount = 0; // Reset red count
+                    qDebug() << "Blue card found at (" << i << "," << j << ") - consecutive count:" << blueCount;
+                }
+                else {
+                    redCount = blueCount = 0; // Reset both for other colors
+                }
+
+                // Check for win immediately
+                if (redCount >= boardMaxSize) {
+                    qDebug() << "RED WINS with row" << i << "! Found" << redCount << "consecutive red cards";
+                    return State::RedWin;
+                }
+                if (blueCount >= boardMaxSize) {
+                    qDebug() << "BLUE WINS with row" << i << "! Found" << blueCount << "consecutive blue cards";
+                    return State::BlueWin;
+                }
+            }
+            else {
+                redCount = blueCount = 0; // Reset counts for empty spaces
+            }
+        }
+    }
+
+    // Check columns for consecutive cards
+    for (int16_t j = 0; j < getColumnSize(); ++j) {
+        int16_t redCount = 0, blueCount = 0;
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            if (!m_board[i][j].empty()) {
+                Color color = m_board[i][j].back().getColor();
+                if (color == Color::Red || color == Color::IlusionRed) {
+                    redCount++;
+                    blueCount = 0;
+                    qDebug() << "Red card found at (" << i << "," << j << ") - consecutive count:" << redCount;
+                }
+                else if (color == Color::Blue || color == Color::IlusionBlue) {
+                    blueCount++;
+                    redCount = 0;
+                    qDebug() << "Blue card found at (" << i << "," << j << ") - consecutive count:" << blueCount;
+                }
+                else {
+                    redCount = blueCount = 0;
+                }
+
+                // Check for win immediately
+                if (redCount >= boardMaxSize) {
+                    qDebug() << "RED WINS with column" << j << "! Found" << redCount << "consecutive red cards";
+                    return State::RedWin;
+                }
+                if (blueCount >= boardMaxSize) {
+                    qDebug() << "BLUE WINS with column" << j << "! Found" << blueCount << "consecutive blue cards";
+                    return State::BlueWin;
+                }
+            }
+            else {
+                redCount = blueCount = 0;
+            }
+        }
+    }
+
+    // Check diagonals for consecutive cards (only for square boards)
+    if (getRowSize() == getColumnSize()) {
+        // Main diagonal
+        int16_t redCount = 0, blueCount = 0;
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            if (!m_board[i][i].empty()) {
+                Color color = m_board[i][i].back().getColor();
+                if (color == Color::Red || color == Color::IlusionRed) {
+                    redCount++;
+                    blueCount = 0;
+                    qDebug() << "Red card found on main diagonal at (" << i << "," << i << ") - consecutive count:" << redCount;
+                }
+                else if (color == Color::Blue || color == Color::IlusionBlue) {
+                    blueCount++;
+                    redCount = 0;
+                    qDebug() << "Blue card found on main diagonal at (" << i << "," << i << ") - consecutive count:" << blueCount;
+                }
+                else {
+                    redCount = blueCount = 0;
+                }
+
+                // Check for win immediately
+                if (redCount >= boardMaxSize) {
+                    qDebug() << "RED WINS with main diagonal! Found" << redCount << "consecutive red cards";
+                    return State::RedWin;
+                }
+                if (blueCount >= boardMaxSize) {
+                    qDebug() << "BLUE WINS with main diagonal! Found" << blueCount << "consecutive blue cards";
+                    return State::BlueWin;
+                }
+            }
+            else {
+                redCount = blueCount = 0;
+            }
+        }
+
+        // Secondary diagonal
+        redCount = blueCount = 0;
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            int16_t j = getColumnSize() - 1 - i;
+            if (!m_board[i][j].empty()) {
+                Color color = m_board[i][j].back().getColor();
+                if (color == Color::Red || color == Color::IlusionRed) {
+                    redCount++;
+                    blueCount = 0;
+                    qDebug() << "Red card found on secondary diagonal at (" << i << "," << j << ") - consecutive count:" << redCount;
+                }
+                else if (color == Color::Blue || color == Color::IlusionBlue) {
+                    blueCount++;
+                    redCount = 0;
+                    qDebug() << "Blue card found on secondary diagonal at (" << i << "," << j << ") - consecutive count:" << blueCount;
+                }
+                else {
+                    redCount = blueCount = 0;
+                }
+
+                // Check for win immediately
+                if (redCount >= boardMaxSize) {
+                    qDebug() << "RED WINS with secondary diagonal! Found" << redCount << "consecutive red cards";
+                    return State::RedWin;
+                }
+                if (blueCount >= boardMaxSize) {
+                    qDebug() << "BLUE WINS with secondary diagonal! Found" << blueCount << "consecutive blue cards";
+                    return State::BlueWin;
+                }
+            }
+            else {
+                redCount = blueCount = 0;
+            }
+        }
+    }
+
+    qDebug() << "No line-based wins found, checking point-based win...";
+
+    // If no line-based win, check point-based win if enabled
+    if (canCountPoints) {
+        int16_t redSum = sumPoints(Color::Red);
+        int16_t blueSum = sumPoints(Color::Blue);
+
+        qDebug() << "Counting points - Red:" << redSum << ", Blue:" << blueSum;
+
+        if (redSum > blueSum) {
+            qDebug() << "RED WINS by points!";
+            return State::RedWin;
+        }
+        else if (blueSum > redSum) {
+            qDebug() << "BLUE WINS by points!";
+            return State::BlueWin;
+        }
+
+        qDebug() << "Game is a DRAW!";
+        return State::Draw;
+    }
+
+    qDebug() << "No winner found - game continues";
+    return State::None;
+}
+void Board::optimizedBoardOperations() {
+
+    auto emptyPositions = findPositions([](int16_t row, int16_t col, const auto& stack) {
+        return stack.empty();
+        });
+
+    qDebug() << "Found" << emptyPositions.size() << "empty positions";
+
+    // Numărăm cărțile roșii
+    int redCardCount = countPositions([](int16_t row, int16_t col, const auto& stack) {
+        return !stack.empty() &&
+            (stack.back().getColor() == Color::Red || stack.back().getColor() == Color::IlusionRed);
+        });
+
+    // Numărăm cărțile albastre
+    int blueCardCount = countPositions([](int16_t row, int16_t col, const auto& stack) {
+        return !stack.empty() &&
+            (stack.back().getColor() == Color::Blue || stack.back().getColor() == Color::IlusionBlue);
+        });
+
+    qDebug() << "Red cards:" << redCardCount << ", Blue cards:" << blueCardCount;
+
+    // Aplicăm o transformare pe toate pozițiile cu cărți de valoare mare
+    transformIf([](int16_t row, int16_t col, const auto& stack) {
+        return !stack.empty() && stack.back().getValue() >= 4;
+        }, [](int16_t row, int16_t col, auto& stack) {
+            qDebug() << "High value card found at (" << row << "," << col << ")";
+            });
+}
+
+// Implementarea metodelor pentru expansion folosind template-uri
+void Board::smartExpansionWithTemplates(int16_t maxSize) {
+    // Verificăm mai multe condiții de expansiune simultan
+    auto needsRowExpansion = [this, maxSize](int16_t) { return canExpandVertically(maxSize); };
+    auto needsColExpansion = [this, maxSize](int16_t) { return canExpandHorizontally(maxSize); };
+
+    if (needsAnyExpansion(maxSize, needsRowExpansion, needsColExpansion)) {
+        qDebug() << "Board needs expansion";
+
+        // Aplicăm expansiunea folosind template-uri
+        if (needsRowExpansion(maxSize)) {
+            processMultipleRows([this](int16_t row) {
+                if (row == 0 && hasCardsInRow(0)) {
+                    expandRow(RowExpandDirection::Up);
+                }
+                else if (row == getRowSize() - 1 && hasCardsInRow(getRowSize() - 1)) {
+                    expandRow(RowExpandDirection::Down);
+                }
+                }, 0, getRowSize() - 1);
+        }
+
+        if (needsColExpansion(maxSize)) {
+            processMultipleColumns([this](int16_t col) {
+                if (col == 0 && hasCardsInColumn(0)) {
+                    expandColumn(ColumnExpandDirection::Left);
+                }
+                else if (col == getColumnSize() - 1 && hasCardsInColumn(getColumnSize() - 1)) {
+                    expandColumn(ColumnExpandDirection::Right);
+                }
+                }, 0, getColumnSize() - 1);
+        }
+    }
+}
+
+// Implementarea validării pozițiilor folosind template-uri
+bool Board::validateMultiplePositions() {
+    // Definim pozițiile importante
+    Position centerPos = { getRowSize() / 2, getColumnSize() / 2 };
+    Position topLeftPos = { 0, 0 };
+    Position bottomRightPos = { getRowSize() - 1, getColumnSize() - 1 };
+
+    // Verificăm toate pozițiile simultan
+    return areAllPositionsValid(centerPos, topLeftPos, bottomRightPos);
+}
+
+// În Board.cpp, înlocuiește metoda optimizedCardProcessing cu această versiune:
+void Board::optimizedCardProcessing() {
+    // Procesăm mai multe tipuri de cărți simultan
+    auto redCardProcessor = [](const SimpleCard& card) {
+        if (card.getColor() == Color::Red || card.getColor() == Color::IlusionRed) {
+            qDebug() << "Processing red card with value:" << card.getValue();
+        }
+        };
+
+    auto blueCardProcessor = [](const SimpleCard& card) {
+        if (card.getColor() == Color::Blue || card.getColor() == Color::IlusionBlue) {
+            qDebug() << "Processing blue card with value:" << card.getValue();
+        }
+        };
+
+    auto eterCardProcessor = [](const SimpleCard& card) {
+        if (card.getValue() == 5) { // Presupunem că Eter are valoarea 5
+            qDebug() << "Processing Eter card";
+        }
+        };
+
+    // Aplicăm procesarea pe toate cărțile de pe tablă
+    forEachPosition([&](int16_t row, int16_t col, const auto& stack) {
+        if (!stack.empty()) {
+            const auto& topCard = stack.back();
+
+            // Acum folosim template-ul corect - trecem carta și toate operațiile
+            processMultipleCards(topCard, redCardProcessor, blueCardProcessor, eterCardProcessor);
+        }
+        });
+}
+// Implementarea unei metode pentru cleanup folosind template-uri
+void Board::templateBasedCleanup() {
+    // Găsim toate pozițiile care trebuie curățate
+    auto isolatedPositions = findPositions([this](int16_t row, int16_t col, const auto& stack) {
+        return !stack.empty() && !hasAdjacentCards(row, col);
+        });
+
+    // Curățăm pozițiile izolate
+    for (const auto& pos : isolatedPositions) {
+        auto [row, col] = pos;
+        m_board[row][col].clear();
+        qDebug() << "Cleaned isolated position at (" << row << "," << col << ")";
+    }
+
+    // Verificăm mai multe condiții de curățare
+    auto hasEmptyRows = [this]() { return !searchEmptyRows().empty(); };
+    auto hasEmptyCols = [this]() { return !searchEmptyColumns().empty(); };
+    auto hasIsolatedCards = [this]() { return countIsolatedPositions() > 0; };
+
+    if (checkMultipleWinConditions(3, hasEmptyRows, hasEmptyCols, hasIsolatedCards)) {
+        qDebug() << "Additional cleanup needed";
+        cleanupIsolatedPositions();
+    }
+}
+
+bool Board::checkRowWins(int16_t boardMaxSize) const
+{
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        int16_t redCount = 0, blueCount = 0;
+        for (int16_t j = 0; j < getColumnSize(); ++j) {
+            if (!m_board[i][j].empty()) {
+                Color color = m_board[i][j].back().getColor();
+                if (color == Color::Red || color == Color::IlusionRed) {
+                    redCount++;
+                    blueCount = 0;
+                }
+                else if (color == Color::Blue || color == Color::IlusionBlue) {
+                    blueCount++;
+                    redCount = 0;
+                }
+
+                if (redCount >= boardMaxSize || blueCount >= boardMaxSize) {
+                    return true;
+                }
+            }
+            else {
+                redCount = blueCount = 0;
+            }
+        }
+    }
+    return false;
+}
+
+bool Board::checkColumnWins(int16_t boardMaxSize) const
+{
+    for (int16_t j = 0; j < getColumnSize(); ++j) {
+        int16_t redCount = 0, blueCount = 0;
+        for (int16_t i = 0; i < getRowSize(); ++i) {
+            if (!m_board[i][j].empty()) {
+                Color color = m_board[i][j].back().getColor();
+                if (color == Color::Red || color == Color::IlusionRed) {
+                    redCount++;
+                    blueCount = 0;
+                }
+                else if (color == Color::Blue || color == Color::IlusionBlue) {
+                    blueCount++;
+                    redCount = 0;
+                }
+
+                if (redCount >= boardMaxSize || blueCount >= boardMaxSize) {
+                    return true;
+                }
+            }
+            else {
+                redCount = blueCount = 0;
+            }
+        }
+    }
+    return false;
+}
+
+bool Board::checkDiagonalWins(int16_t boardMaxSize) const
+{
+    if (getRowSize() != getColumnSize()) return false;
+
+    // Diagonala principală
+    int16_t redCount = 0, blueCount = 0;
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        if (!m_board[i][i].empty()) {
+            Color color = m_board[i][i].back().getColor();
+            if (color == Color::Red || color == Color::IlusionRed) {
+                redCount++;
+                blueCount = 0;
+            }
+            else if (color == Color::Blue || color == Color::IlusionBlue) {
+                blueCount++;
+                redCount = 0;
+            }
+
+            if (redCount >= boardMaxSize || blueCount >= boardMaxSize) {
+                return true;
+            }
+        }
+        else {
+            redCount = blueCount = 0;
+        }
+    }
+
+    // Diagonala secundară
+    redCount = blueCount = 0;
+    for (int16_t i = 0; i < getRowSize(); ++i) {
+        if (!m_board[i][getColumnSize() - 1 - i].empty()) {
+            Color color = m_board[i][getColumnSize() - 1 - i].back().getColor();
+            if (color == Color::Red || color == Color::IlusionRed) {
+                redCount++;
+                blueCount = 0;
+            }
+            else if (color == Color::Blue || color == Color::IlusionBlue) {
+                blueCount++;
+                redCount = 0;
+            }
+
+            if (redCount >= boardMaxSize || blueCount >= boardMaxSize) {
+                return true;
+            }
+        }
+        else {
+            redCount = blueCount = 0;
+        }
+    }
+
+    return false;
+}
+
 std::vector<int> Board::countCardsPerColumn() const {
     std::vector<int> columnCounts(getColumnSize(), 0);
 
@@ -1076,121 +1489,121 @@ int Board::getTotalCardsOnBoard() const {
     return count;
 }
 
-Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
-{
-    int16_t kRows = m_board.size();
-    int16_t kColumns = m_board[0].size();
-
-    // Pentru tablă dinamică, creăm array-uri pentru fiecare rând, coloană și diagonale
-    std::vector<int16_t> rowResults(kRows, 0);
-    std::vector<int16_t> colResults(kColumns, 0);
-    int16_t diag1 = 0, diag2 = 0; // diagonalele
-
-    int16_t chessmanCount = 0;
-
-    // Calculăm score-urile pentru fiecare rând, coloană și diagonală
-    for (int16_t i = 0; i < kRows; ++i)
-    {
-        for (int16_t j = 0; j < kColumns; ++j)
-        {
-            if (!m_board[i][j].empty())
-            {
-                int16_t value;
-                Color color = m_board[i][j].back().getColor();
-
-                switch (color)
-                {
-                case Color::Red:
-                case Color::IlusionRed:
-                    value = 1;
-                    break;
-                case Color::Blue:
-                case Color::IlusionBlue:
-                    value = -1;
-                    break;
-                default:
-                    value = 0;
-                }
-
-                // Rând i
-                rowResults[i] += value;
-
-                // Coloană j
-                colResults[j] += value;
-
-                // Diagonala principală (doar pentru pătrate)
-                if (i == j && kRows == kColumns)
-                    diag1 += value;
-
-                // Diagonala secundară (doar pentru pătrate)
-                if (i == kColumns - 1 - j && kRows == kColumns)
-                    diag2 += value;
-
-                ++chessmanCount;
-            }
-        }
-    }
-
-    // Verificăm câștigul prin rânduri
-    for (auto result : rowResults)
-    {
-        if (result == boardMaxSize) {
-            qDebug() << "Red wins with row!";
-            return State::RedWin;
-        }
-        else if (result == -boardMaxSize) {
-            qDebug() << "Blue wins with row!";
-            return State::BlueWin;
-        }
-    }
-
-    // Verificăm câștigul prin coloane
-    for (auto result : colResults)
-    {
-        if (result == boardMaxSize) {
-            qDebug() << "Red wins with column!";
-            return State::RedWin;
-        }
-        else if (result == -boardMaxSize) {
-            qDebug() << "Blue wins with column!";
-            return State::BlueWin;
-        }
-    }
-
-    // Verificăm câștigul prin diagonale (doar pentru table pătrate)
-    if (kRows == kColumns) {
-        if (diag1 == boardMaxSize || diag2 == boardMaxSize) {
-            qDebug() << "Red wins with diagonal!";
-            return State::RedWin;
-        }
-        else if (diag1 == -boardMaxSize || diag2 == -boardMaxSize) {
-            qDebug() << "Blue wins with diagonal!";
-            return State::BlueWin;
-        }
-    }
-
-    // Verificăm dacă tabla este plină sau jucătorii au rămas fără cărți
-    if (canCountPoints)
-    {
-        int16_t redSum = sumPoints(Color::Red);
-        int16_t blueSum = sumPoints(Color::Blue);
-
-        qDebug() << "Counting points - Red:" << redSum << ", Blue:" << blueSum;
-
-        if (redSum > blueSum)
-        {
-            return State::RedWin;
-        }
-        else if (blueSum > redSum)
-        {
-            return State::BlueWin;
-        }
-
-        return State::Draw;
-    }
-
-    return State::None;
-}
+//Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
+//{
+//    int16_t kRows = m_board.size();
+//    int16_t kColumns = m_board[0].size();
+//
+//    // Pentru tablă dinamică, creăm array-uri pentru fiecare rând, coloană și diagonale
+//    std::vector<int16_t> rowResults(kRows, 0);
+//    std::vector<int16_t> colResults(kColumns, 0);
+//    int16_t diag1 = 0, diag2 = 0; // diagonalele
+//
+//    int16_t chessmanCount = 0;
+//
+//    // Calculăm score-urile pentru fiecare rând, coloană și diagonală
+//    for (int16_t i = 0; i < kRows; ++i)
+//    {
+//        for (int16_t j = 0; j < kColumns; ++j)
+//        {
+//            if (!m_board[i][j].empty())
+//            {
+//                int16_t value;
+//                Color color = m_board[i][j].back().getColor();
+//
+//                switch (color)
+//                {
+//                case Color::Red:
+//                case Color::IlusionRed:
+//                    value = 1;
+//                    break;
+//                case Color::Blue:
+//                case Color::IlusionBlue:
+//                    value = -1;
+//                    break;
+//                default:
+//                    value = 0;
+//                }
+//
+//                // Rând i
+//                rowResults[i] += value;
+//
+//                // Coloană j
+//                colResults[j] += value;
+//
+//                // Diagonala principală (doar pentru pătrate)
+//                if (i == j && kRows == kColumns)
+//                    diag1 += value;
+//
+//                // Diagonala secundară (doar pentru pătrate)
+//                if (i == kColumns - 1 - j && kRows == kColumns)
+//                    diag2 += value;
+//
+//                ++chessmanCount;
+//            }
+//        }
+//    }
+//
+//    // Verificăm câștigul prin rânduri
+//    for (auto result : rowResults)
+//    {
+//        if (result == boardMaxSize) {
+//            qDebug() << "Red wins with row!";
+//            return State::RedWin;
+//        }
+//        else if (result == -boardMaxSize) {
+//            qDebug() << "Blue wins with row!";
+//            return State::BlueWin;
+//        }
+//    }
+//
+//    // Verificăm câștigul prin coloane
+//    for (auto result : colResults)
+//    {
+//        if (result == boardMaxSize) {
+//            qDebug() << "Red wins with column!";
+//            return State::RedWin;
+//        }
+//        else if (result == -boardMaxSize) {
+//            qDebug() << "Blue wins with column!";
+//            return State::BlueWin;
+//        }
+//    }
+//
+//    // Verificăm câștigul prin diagonale (doar pentru table pătrate)
+//    if (kRows == kColumns) {
+//        if (diag1 == boardMaxSize || diag2 == boardMaxSize) {
+//            qDebug() << "Red wins with diagonal!";
+//            return State::RedWin;
+//        }
+//        else if (diag1 == -boardMaxSize || diag2 == -boardMaxSize) {
+//            qDebug() << "Blue wins with diagonal!";
+//            return State::BlueWin;
+//        }
+//    }
+//
+//    // Verificăm dacă tabla este plină sau jucătorii au rămas fără cărți
+//    if (canCountPoints)
+//    {
+//        int16_t redSum = sumPoints(Color::Red);
+//        int16_t blueSum = sumPoints(Color::Blue);
+//
+//        qDebug() << "Counting points - Red:" << redSum << ", Blue:" << blueSum;
+//
+//        if (redSum > blueSum)
+//        {
+//            return State::RedWin;
+//        }
+//        else if (blueSum > redSum)
+//        {
+//            return State::BlueWin;
+//        }
+//
+//        return State::Draw;
+//    }
+//
+//    return State::None;
+//}
 
 int16_t Board::sumPoints(const Color& color)
 {
