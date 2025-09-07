@@ -1,5 +1,334 @@
 ﻿#include "Board.h"
 
+// === RANGES AND MODERN ALGORITHMS IMPLEMENTATIONS ===
+
+int16_t Board::sumPointsModern(const Color& color) const {
+    using namespace std::ranges;
+
+    // Create a flat view of all cards on the board
+    std::vector<SimpleCard> allCards;
+
+    for (auto [row, col] : views::cartesian_product(
+        views::iota(0, getRowSize()),
+        views::iota(0, getColumnSize())
+    )) {
+        if (!m_board[row][col].empty()) {
+            allCards.push_back(m_board[row][col].back());
+        }
+    }
+
+    // Filter cards by color using ranges
+    auto matchingCards = allCards | views::filter([color](const SimpleCard& card) {
+        Color cardColor = card.getColor();
+        return (color == Color::Red && (cardColor == Color::Red || cardColor == Color::IlusionRed)) ||
+            (color == Color::Blue && (cardColor == Color::Blue || cardColor == Color::IlusionBlue));
+        });
+
+    // Calculate sum using fold (C++23) or accumulate
+    return std::accumulate(matchingCards.begin(), matchingCards.end(), int16_t{ 0 },
+        [](int16_t sum, const SimpleCard& card) {
+            if (card.getColor() == Color::IlusionBlue || card.getColor() == Color::IlusionRed) {
+                return sum + 1; // Illusions worth 1 point
+            }
+            return sum + card.getValue();
+        });
+}
+std::vector<int16_t> Board::searchEmptyColumnsModern() const {
+    using namespace std::ranges;
+
+    auto columnIndices = views::iota(0, getColumnSize());
+
+    std::vector<int16_t> result;
+    result.reserve(getColumnSize());
+
+    for (auto col : columnIndices | views::filter([this](int16_t col) {
+        auto columnCells = views::iota(0, getRowSize()) | views::transform([this, col](int16_t row) {
+            return m_board[row][col].empty();
+            });
+        return all_of(columnCells, std::identity{});
+        })) {
+        result.push_back(col);
+    }
+
+    return result;
+}
+
+std::vector<int16_t> Board::searchEmptyRowsModern() const {
+    using namespace std::ranges;
+
+    auto rowIndices = views::iota(0, getRowSize());
+
+    std::vector<int16_t> result;
+    result.reserve(getRowSize());
+
+    for (auto row : rowIndices | views::filter([this](int16_t row) {
+        auto rowCells = views::iota(0, getColumnSize()) | views::transform([this, row](int16_t col) {
+            return m_board[row][col].empty();
+            });
+        return all_of(rowCells, std::identity{});
+        })) {
+        result.push_back(row);
+    }
+
+    return result;
+}
+
+std::vector<int> Board::countCardsPerColumnModern() const {
+    using namespace std::ranges;
+
+    auto columnIndices = views::iota(0, getColumnSize());
+
+    std::vector<int> result;
+    result.reserve(getColumnSize());
+
+    for (auto count : columnIndices | views::transform([this](int16_t col) {
+        auto columnCells = views::iota(0, getRowSize()) | views::transform([this, col](int16_t row) {
+            return !m_board[row][col].empty();
+            });
+        return static_cast<int>(std::ranges::count(columnCells, true));
+        })) {
+        result.push_back(count);
+    }
+
+    return result;
+}
+
+std::vector<int> Board::countCardsPerRowModern() const {
+    using namespace std::ranges;
+
+    auto rowIndices = views::iota(0, getRowSize());
+
+    std::vector<int> result;
+    result.reserve(getRowSize());
+
+    for (auto count : rowIndices | views::transform([this](int16_t row) {
+        auto rowCells = views::iota(0, getColumnSize()) | views::transform([this, row](int16_t col) {
+            return !m_board[row][col].empty();
+            });
+        return static_cast<int>(std::ranges::count(rowCells, true));
+        })) {
+        result.push_back(count);
+    }
+
+    return result;
+}
+std::vector<Board::Position> Board::getAllCardPositionsModern() const {
+    using namespace std::ranges;
+
+    auto allPositions = views::cartesian_product(
+        views::iota(0, getRowSize()),
+        views::iota(0, getColumnSize())
+    );
+
+    std::vector<Position> result;
+    result.reserve(getRowSize() * getColumnSize()); // Optimize allocation
+
+    for (auto pos : allPositions | views::filter([this](const auto& pos) {
+        auto [row, col] = pos;
+        return !m_board[row][col].empty();
+        })) {
+        auto [row, col] = pos;
+        result.emplace_back(row, col);
+    }
+
+    return result;
+}
+
+std::vector<Board::Position> Board::getEmptyPositionsModern() const {
+    using namespace std::ranges;
+
+    auto allPositions = views::cartesian_product(
+        views::iota(0, getRowSize()),
+        views::iota(0, getColumnSize())
+    );
+
+    std::vector<Position> result;
+    result.reserve(getRowSize() * getColumnSize()); // Optimize allocation
+
+    for (auto pos : allPositions | views::filter([this](const auto& pos) {
+        auto [row, col] = pos;
+        return m_board[row][col].empty();
+        })) {
+        auto [row, col] = pos;
+        result.emplace_back(row, col);
+    }
+
+    return result;
+}
+std::vector<Board::Position> Board::getPositionsByColorModern(const Color& color) const {
+    using namespace std::ranges;
+
+    auto allPositions = views::cartesian_product(
+        views::iota(0, getRowSize()),
+        views::iota(0, getColumnSize())
+    );
+
+    std::vector<Position> result;
+    result.reserve(getRowSize() * getColumnSize()); // Optimize allocation
+
+    for (auto pos : allPositions | views::filter([this, color](const auto& pos) {
+        auto [row, col] = pos;
+        if (m_board[row][col].empty()) return false;
+
+        Color cardColor = m_board[row][col].back().getColor();
+        return (color == Color::Red && (cardColor == Color::Red || cardColor == Color::IlusionRed)) ||
+            (color == Color::Blue && (cardColor == Color::Blue || cardColor == Color::IlusionBlue));
+        })) {
+        auto [row, col] = pos;
+        result.emplace_back(row, col);
+    }
+
+    return result;
+}
+bool Board::hasAnyCardModern() const {
+    using namespace std::ranges;
+
+    auto allPositions = views::cartesian_product(
+        views::iota(0, getRowSize()),
+        views::iota(0, getColumnSize())
+    );
+
+    return any_of(allPositions, [this](const auto& pos) {
+        auto [row, col] = pos;
+        return !m_board[row][col].empty();
+        });
+}
+
+bool Board::hasCardsInRowModern(int16_t row) const {
+    using namespace std::ranges;
+
+    if (row < 0 || row >= getRowSize()) return false;
+
+    auto rowCells = views::iota(0, getColumnSize());
+
+    return any_of(rowCells, [this, row](int16_t col) {
+        return !m_board[row][col].empty();
+        });
+}
+
+bool Board::hasCardsInColumnModern(int16_t col) const {
+    using namespace std::ranges;
+
+    if (col < 0 || col >= getColumnSize()) return false;
+
+    auto columnCells = views::iota(0, getRowSize());
+
+    return any_of(columnCells, [this, col](int16_t row) {
+        return !m_board[row][col].empty();
+        });
+}
+
+int16_t Board::getTotalCardsModern() const {
+    using namespace std::ranges;
+
+    auto allPositions = views::cartesian_product(
+        views::iota(0, getRowSize()),
+        views::iota(0, getColumnSize())
+    );
+
+    auto nonEmptyPositions = allPositions | views::filter([this](const auto& pos) {
+        auto [row, col] = pos;
+        return !m_board[row][col].empty();
+        });
+
+    return static_cast<int16_t>(distance(nonEmptyPositions.begin(), nonEmptyPositions.end()));
+}
+
+std::pair<int16_t, int16_t> Board::getCardCountByColorModern() const {
+    using namespace std::ranges;
+
+    auto allPositions = views::cartesian_product(
+        views::iota(0, getRowSize()),
+        views::iota(0, getColumnSize())
+    );
+
+    auto cards = allPositions | views::filter([this](const auto& pos) {
+        auto [row, col] = pos;
+        return !m_board[row][col].empty();
+        }) | views::transform([this](const auto& pos) {
+            auto [row, col] = pos;
+            return m_board[row][col].back().getColor();
+            });
+
+        int16_t redCount = static_cast<int16_t>(count_if(cards, [](Color c) {
+            return c == Color::Red || c == Color::IlusionRed;
+            }));
+
+        int16_t blueCount = static_cast<int16_t>(count_if(cards, [](Color c) {
+            return c == Color::Blue || c == Color::IlusionBlue;
+            }));
+
+        return { redCount, blueCount };
+}
+
+bool Board::areAllPositionsEmptyModern(const std::vector<Position>& positions) const {
+    using namespace std::ranges;
+
+    return all_of(positions, [this](const Position& pos) {
+        auto [row, col] = pos;
+        return row >= 0 && row < getRowSize() &&
+            col >= 0 && col < getColumnSize() &&
+            m_board[row][col].empty();
+        });
+}
+
+bool Board::areAnyPositionsEmptyModern(const std::vector<Position>& positions) const {
+    using namespace std::ranges;
+
+    return any_of(positions, [this](const Position& pos) {
+        auto [row, col] = pos;
+        return row >= 0 && row < getRowSize() &&
+            col >= 0 && col < getColumnSize() &&
+            m_board[row][col].empty();
+        });
+}
+
+// Template implementations
+template<typename Range, typename Predicate>
+auto Board::countPositionsInRangeModern(Range&& range, Predicate pred) const {
+    using namespace std::ranges;
+    return count_if(std::forward<Range>(range), pred);
+}
+
+template<typename Range, typename Transform>
+auto Board::transformPositionsModern(Range&& range, Transform transform) const {
+    using namespace std::ranges;
+    using ValueType = std::decay_t<decltype(transform(*range.begin()))>;
+
+    std::vector<ValueType> result;
+    result.reserve(std::distance(range.begin(), range.end()));
+
+    for (auto&& item : std::forward<Range>(range) | views::transform(transform)) {
+        result.push_back(std::forward<decltype(item)>(item));
+    }
+
+    return result;
+}
+
+template<typename Range>
+auto Board::getMaxValueInRangeModern(Range&& range) const {
+    using namespace std::ranges;
+    using ValueType = std::decay_t<decltype(*range.begin())>;
+
+    if (std::ranges::empty(range)) {
+        return std::optional<ValueType>{};
+    }
+
+    auto maxIt = std::ranges::max_element(range);
+    return std::optional<ValueType>{*maxIt};
+}
+template<typename Range>
+auto Board::getMinValueInRangeModern(Range&& range) const {
+    using namespace std::ranges;
+    using ValueType = std::decay_t<decltype(*range.begin())>;
+
+    if (std::ranges::empty(range)) {
+        return std::optional<ValueType>{};
+    }
+
+    auto minIt = std::ranges::min_element(range);
+    return std::optional<ValueType>{*minIt};
+}
 Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
 {
     qDebug() << "Checking win with boardMaxSize:" << boardMaxSize;
@@ -152,8 +481,8 @@ Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
 
     // If no line-based win, check point-based win if enabled
     if (canCountPoints) {
-        int16_t redSum = sumPoints(Color::Red);
-        int16_t blueSum = sumPoints(Color::Blue);
+        int16_t redSum = sumPointsModern(Color::Red);
+        int16_t blueSum = sumPointsModern(Color::Blue);
 
         qDebug() << "Counting points - Red:" << redSum << ", Blue:" << blueSum;
 
@@ -174,33 +503,11 @@ Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
     return State::None;
 }
 void Board::optimizedBoardOperations() {
-
-    auto emptyPositions = findPositions([](int16_t row, int16_t col, const auto& stack) {
-        return stack.empty();
-        });
-
+    auto emptyPositions = getEmptyPositionsModern(); // FOLOSEȘTE VERSIUNEA MODERNĂ
     qDebug() << "Found" << emptyPositions.size() << "empty positions";
 
-    // Numărăm cărțile roșii
-    int redCardCount = countPositions([](int16_t row, int16_t col, const auto& stack) {
-        return !stack.empty() &&
-            (stack.back().getColor() == Color::Red || stack.back().getColor() == Color::IlusionRed);
-        });
-
-    // Numărăm cărțile albastre
-    int blueCardCount = countPositions([](int16_t row, int16_t col, const auto& stack) {
-        return !stack.empty() &&
-            (stack.back().getColor() == Color::Blue || stack.back().getColor() == Color::IlusionBlue);
-        });
-
+    auto [redCardCount, blueCardCount] = getCardCountByColorModern(); // FOLOSEȘTE VERSIUNEA MODERNĂ
     qDebug() << "Red cards:" << redCardCount << ", Blue cards:" << blueCardCount;
-
-    // Aplicăm o transformare pe toate pozițiile cu cărți de valoare mare
-    transformIf([](int16_t row, int16_t col, const auto& stack) {
-        return !stack.empty() && stack.back().getValue() >= 4;
-        }, [](int16_t row, int16_t col, auto& stack) {
-            qDebug() << "High value card found at (" << row << "," << col << ")";
-            });
 }
 
 // Implementarea metodelor pentru expansion folosind template-uri
@@ -414,41 +721,11 @@ bool Board::checkDiagonalWins(int16_t boardMaxSize) const
 }
 
 std::vector<int> Board::countCardsPerColumn() const {
-    std::vector<int> columnCounts(getColumnSize(), 0);
-
-    for (int16_t j = 0; j < getColumnSize(); ++j) {
-        for (int16_t i = 0; i < getRowSize(); ++i) {
-            if (!m_board[i][j].empty()) {
-                columnCounts[j]++;
-            }
-        }
-    }
-
-    qDebug() << "Cards per column:";
-    for (int j = 0; j < columnCounts.size(); ++j) {
-        qDebug() << "Column" << j << ":" << columnCounts[j] << "cards";
-    }
-
-    return columnCounts;
+    return countCardsPerColumnModern();
 }
 
 std::vector<int> Board::countCardsPerRow() const {
-    std::vector<int> rowCounts(getRowSize(), 0);
-
-    for (int16_t i = 0; i < getRowSize(); ++i) {
-        for (int16_t j = 0; j < getColumnSize(); ++j) {
-            if (!m_board[i][j].empty()) {
-                rowCounts[i]++;
-            }
-        }
-    }
-
-    qDebug() << "Cards per row:";
-    for (int i = 0; i < rowCounts.size(); ++i) {
-        qDebug() << "Row" << i << ":" << rowCounts[i] << "cards";
-    }
-
-    return rowCounts;
+    return countCardsPerRowModern();
 }
 
 // Updated method to check for fixing with configurable target size
@@ -1400,44 +1677,12 @@ void Board::expandColumn(ColumnExpandDirection direction)
 
 std::vector<int16_t> Board::searchEmptyColumns()
 {
-    std::vector<int16_t> emptyCols;
-    for (int16_t i = 0; i < getColumnSize(); i++)
-    {
-        bool isEmpty = true;
-        for (int16_t j = 0; j < getRowSize(); j++)
-        {
-            if (m_board[j][i].size() != 0)
-                isEmpty = false;
-        }
-
-        if (isEmpty)
-        {
-            emptyCols.push_back(i);
-        }
-    }
-
-    return emptyCols;
+    return searchEmptyColumnsModern();
 }
 
 std::vector<int16_t> Board::searchEmptyRows()
 {
-    std::vector<int16_t> emptyRows;
-    for (int16_t i = 0; i < m_board.size(); i++)
-    {
-        bool isEmpty = true;
-        for (int16_t j = 0; j < m_board[i].size(); j++)
-        {
-            if (m_board[i][j].size() != 0)
-                isEmpty = false;
-        }
-
-        if (isEmpty)
-        {
-            emptyRows.push_back(i);
-        }
-    }
-
-    return emptyRows;
+    return searchEmptyRowsModern();
 }
 
 bool Board::canBePlaced(int16_t x, int16_t y) const {
@@ -1478,132 +1723,9 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 }
 
 int Board::getTotalCardsOnBoard() const {
-    int count = 0;
-    for (int16_t i = 0; i < m_board.size(); ++i) {
-        for (int16_t j = 0; j < m_board[i].size(); ++j) {
-            if (!m_board[i][j].empty()) {
-                count++;
-            }
-        }
-    }
-    return count;
+    return getTotalCardsModern();
 }
 
-//Board::State Board::checkWin(bool canCountPoints, int16_t boardMaxSize)
-//{
-//    int16_t kRows = m_board.size();
-//    int16_t kColumns = m_board[0].size();
-//
-//    // Pentru tablă dinamică, creăm array-uri pentru fiecare rând, coloană și diagonale
-//    std::vector<int16_t> rowResults(kRows, 0);
-//    std::vector<int16_t> colResults(kColumns, 0);
-//    int16_t diag1 = 0, diag2 = 0; // diagonalele
-//
-//    int16_t chessmanCount = 0;
-//
-//    // Calculăm score-urile pentru fiecare rând, coloană și diagonală
-//    for (int16_t i = 0; i < kRows; ++i)
-//    {
-//        for (int16_t j = 0; j < kColumns; ++j)
-//        {
-//            if (!m_board[i][j].empty())
-//            {
-//                int16_t value;
-//                Color color = m_board[i][j].back().getColor();
-//
-//                switch (color)
-//                {
-//                case Color::Red:
-//                case Color::IlusionRed:
-//                    value = 1;
-//                    break;
-//                case Color::Blue:
-//                case Color::IlusionBlue:
-//                    value = -1;
-//                    break;
-//                default:
-//                    value = 0;
-//                }
-//
-//                // Rând i
-//                rowResults[i] += value;
-//
-//                // Coloană j
-//                colResults[j] += value;
-//
-//                // Diagonala principală (doar pentru pătrate)
-//                if (i == j && kRows == kColumns)
-//                    diag1 += value;
-//
-//                // Diagonala secundară (doar pentru pătrate)
-//                if (i == kColumns - 1 - j && kRows == kColumns)
-//                    diag2 += value;
-//
-//                ++chessmanCount;
-//            }
-//        }
-//    }
-//
-//    // Verificăm câștigul prin rânduri
-//    for (auto result : rowResults)
-//    {
-//        if (result == boardMaxSize) {
-//            qDebug() << "Red wins with row!";
-//            return State::RedWin;
-//        }
-//        else if (result == -boardMaxSize) {
-//            qDebug() << "Blue wins with row!";
-//            return State::BlueWin;
-//        }
-//    }
-//
-//    // Verificăm câștigul prin coloane
-//    for (auto result : colResults)
-//    {
-//        if (result == boardMaxSize) {
-//            qDebug() << "Red wins with column!";
-//            return State::RedWin;
-//        }
-//        else if (result == -boardMaxSize) {
-//            qDebug() << "Blue wins with column!";
-//            return State::BlueWin;
-//        }
-//    }
-//
-//    // Verificăm câștigul prin diagonale (doar pentru table pătrate)
-//    if (kRows == kColumns) {
-//        if (diag1 == boardMaxSize || diag2 == boardMaxSize) {
-//            qDebug() << "Red wins with diagonal!";
-//            return State::RedWin;
-//        }
-//        else if (diag1 == -boardMaxSize || diag2 == -boardMaxSize) {
-//            qDebug() << "Blue wins with diagonal!";
-//            return State::BlueWin;
-//        }
-//    }
-//
-//    // Verificăm dacă tabla este plină sau jucătorii au rămas fără cărți
-//    if (canCountPoints)
-//    {
-//        int16_t redSum = sumPoints(Color::Red);
-//        int16_t blueSum = sumPoints(Color::Blue);
-//
-//        qDebug() << "Counting points - Red:" << redSum << ", Blue:" << blueSum;
-//
-//        if (redSum > blueSum)
-//        {
-//            return State::RedWin;
-//        }
-//        else if (blueSum > redSum)
-//        {
-//            return State::BlueWin;
-//        }
-//
-//        return State::Draw;
-//    }
-//
-//    return State::None;
-//}
 
 int16_t Board::sumPoints(const Color& color)
 {
@@ -1706,25 +1828,11 @@ void Board::smartExpand(int16_t placementRow, int16_t placementCol, int16_t maxS
 }
 
 bool Board::hasCardsInRow(int16_t row) const {
-    if (row < 0 || row >= getRowSize()) return false;
-
-    for (int16_t j = 0; j < getColumnSize(); ++j) {
-        if (!m_board[row][j].empty()) {
-            return true;
-        }
-    }
-    return false;
+    return hasCardsInRowModern(row);
 }
 
 bool Board::hasCardsInColumn(int16_t col) const {
-    if (col < 0 || col >= getColumnSize()) return false;
-
-    for (int16_t i = 0; i < getRowSize(); ++i) {
-        if (!m_board[i][col].empty()) {
-            return true;
-        }
-    }
-    return false;
+    return hasCardsInColumnModern(col);
 }
 
 // Restul metodelor rămân la fel...

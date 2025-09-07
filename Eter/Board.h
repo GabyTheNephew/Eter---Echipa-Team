@@ -11,7 +11,10 @@
 #include <queue>
 #include <type_traits>
 #include <functional>
-
+#include <ranges>
+#include <algorithm>
+#include <numeric>
+#include <iterator>
 using matrix = std::vector<std::vector<std::deque<SimpleCard>>>;
 
 class Board
@@ -303,4 +306,45 @@ public:
     bool validateMultiplePositions();
     void optimizedCardProcessing();
     void templateBasedCleanup();
+
+    int16_t sumPointsModern(const Color& color) const;
+
+    // Modern version of search functions using ranges
+    std::vector<int16_t> searchEmptyColumnsModern() const;
+    std::vector<int16_t> searchEmptyRowsModern() const;
+
+    // Modern version of counting functions using ranges
+    std::vector<int> countCardsPerColumnModern() const;
+    std::vector<int> countCardsPerRowModern() const;
+
+    // New utility functions using ranges
+    std::vector<Position> getAllCardPositionsModern() const;
+    std::vector<Position> getEmptyPositionsModern() const;
+    std::vector<Position> getPositionsByColorModern(const Color& color) const;
+
+    // Modern analysis functions
+    bool hasAnyCardModern() const;
+    bool hasCardsInRowModern(int16_t row) const;
+    bool hasCardsInColumnModern(int16_t col) const;
+
+    // Modern aggregate functions
+    int16_t getTotalCardsModern() const;
+    std::pair<int16_t, int16_t> getCardCountByColorModern() const; // {red, blue}
+
+    // Modern validation functions
+    bool areAllPositionsEmptyModern(const std::vector<Position>& positions) const;
+    bool areAnyPositionsEmptyModern(const std::vector<Position>& positions) const;
+
+    // Enhanced template functions with ranges
+    template<typename Range, typename Predicate>
+    auto countPositionsInRangeModern(Range&& range, Predicate pred) const;
+
+    template<typename Range, typename Transform>
+    auto transformPositionsModern(Range&& range, Transform transform) const;
+
+    template<typename Range>
+    auto getMaxValueInRangeModern(Range&& range) const;
+
+    template<typename Range>
+    auto getMinValueInRangeModern(Range&& range) const;
 };

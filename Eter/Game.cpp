@@ -222,6 +222,11 @@ void Game::startNewRound() {
     currentPlayer = Color::Red;
     playerMoveCompleted = false;
 
+    bool hasAnyCards = m_gameBoard.hasAnyCardModern();
+    auto [redCount, blueCount] = m_gameBoard.getCardCountByColorModern();
+    auto totalCards = m_gameBoard.getTotalCardsModern();
+    auto emptyPositions = m_gameBoard.getEmptyPositionsModern();
+
     currentGameWindow->setBoard(m_gameBoard, 3);
     currentGameWindow->setPlayer1Cards(player1.getVector());
     currentGameWindow->setPlayer2Cards(player2.getVector());
@@ -322,7 +327,9 @@ void Game::handleBoardClick(int row, int col, int player) {
         processingMove = false;
         return;
     }
-
+    auto emptyPositions = m_gameBoard.getEmptyPositionsModern();
+    auto playerPositions = m_gameBoard.getPositionsByColorModern(currentPlayer);
+    auto [redCount, blueCount] = m_gameBoard.getCardCountByColorModern();
     Player& currentPlayerRef = (currentPlayer == Color::Red) ? player1 : player2;
 
     if (currentPlayerRef.numberofValidCards() <= 0) {
