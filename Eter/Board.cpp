@@ -869,10 +869,33 @@ void Board::fixBoardVertically(int16_t targetSize) {
 void Board::smartBoardManagement(int16_t maxSize) {
     qDebug() << "Starting smart board management (maxSize:" << maxSize << ")...";
 
-    // Determine the target final size based on maxSize
-    int16_t targetSize = (maxSize == 4) ? 3 : (maxSize == 5) ? 4 : maxSize - 1;
+    // FOLOSEȘTE pentru a verifica dacă există cărți de gestionat
+    auto allCardPositions = getAllCardPositionsModern();
+    if (allCardPositions.empty()) {
+        qDebug() << "No cards on board - nothing to manage";
+        return;
+    }
 
-    qDebug() << "Target final size determined as:" << targetSize << " (maxSize was " << maxSize << ")";
+    // FOLOSEȘTE pentru calculul target size - LOGICA CORECTATĂ
+    auto [redCount, blueCount] = getCardCountByColorModern();
+    int16_t totalCards = redCount + blueCount;
+
+    // LOGICA CORECTATĂ pentru target size:
+    int16_t targetSize;
+    if (maxSize == 3 || maxSize == 4) {
+        // Pentru Training mode (maxSize = 4, target final = 3x3)
+        targetSize = 3;
+    }
+    else if (maxSize == 5) {
+        // Pentru Mage Duel, Power Duel, Combined (maxSize = 5, target final = 4x4)
+        targetSize = 4;
+    }
+    else {
+        // Fallback pentru alte dimensiuni
+        targetSize = maxSize - 1;
+    }
+
+    qDebug() << "Target final size determined as:" << targetSize << " (maxSize was " << maxSize << ", totalCards=" << totalCards << ")";
 
     // First, ensure adjacency for all existing cards
     ensureAllCardsHaveAdjacency(maxSize);
@@ -899,9 +922,6 @@ void Board::smartBoardManagement(int16_t maxSize) {
     qDebug() << "Smart board management complete. Final size:"
         << getRowSize() << "x" << getColumnSize();
 }
-
-
-
 void Board::ensureAllCardsHaveAdjacency(int16_t maxSize) {
     qDebug() << "Ensuring all cards have complete adjacency...";
     qDebug() << "Current board size: " << getRowSize() << "x" << getColumnSize()
@@ -1695,7 +1715,7 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
     }
 
     // Pentru prima carte, poate fi plasată oriunde pe o poziție goală
-    if (getTotalCardsOnBoard() == 0) {
+    if (!hasAnyCardModern()) {
         return m_board[x][y].empty();
     }
 
@@ -1721,7 +1741,6 @@ bool Board::canBePlaced(int16_t x, int16_t y) const {
 
     return false; // Nu există cărți adiacente pentru poziția goală
 }
-
 int Board::getTotalCardsOnBoard() const {
     return getTotalCardsModern();
 }
@@ -1729,33 +1748,34 @@ int Board::getTotalCardsOnBoard() const {
 
 int16_t Board::sumPoints(const Color& color)
 {
-    int16_t sum = 0;
+    //int16_t sum = 0;
 
-    for (int16_t i = 0; i < m_board.size(); i++)
-    {
-        for (int16_t j = 0; j < m_board[i].size(); j++)
-        {
-            if (!m_board[i][j].empty())
-            {
-                Color cardColor = m_board[i][j].back().getColor();
+    //for (int16_t i = 0; i < m_board.size(); i++)
+    //{
+    //    for (int16_t j = 0; j < m_board[i].size(); j++)
+    //    {
+    //        if (!m_board[i][j].empty())
+    //        {
+    //            Color cardColor = m_board[i][j].back().getColor();
 
-                if ((color == Color::Red && (cardColor == Color::Red || cardColor == Color::IlusionRed)) ||
-                    (color == Color::Blue && (cardColor == Color::Blue || cardColor == Color::IlusionBlue)))
-                {
-                    if (cardColor == Color::IlusionBlue || cardColor == Color::IlusionRed)
-                    {
-                        sum += 1; // Iluziile valorează 1
-                    }
-                    else
-                    {
-                        sum += m_board[i][j].back().getValue();
-                    }
-                }
-            }
-        }
-    }
+    //            if ((color == Color::Red && (cardColor == Color::Red || cardColor == Color::IlusionRed)) ||
+    //                (color == Color::Blue && (cardColor == Color::Blue || cardColor == Color::IlusionBlue)))
+    //            {
+    //                if (cardColor == Color::IlusionBlue || cardColor == Color::IlusionRed)
+    //                {
+    //                    sum += 1; // Iluziile valorează 1
+    //                }
+    //                else
+    //                {
+    //                    sum += m_board[i][j].back().getValue();
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
 
-    return sum;
+    //return sum;
+    return sumPointsModern(color);
 }
 
 bool Board::needsExpansion(int16_t placementRow, int16_t placementCol, int16_t maxSize) const {

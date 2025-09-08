@@ -254,12 +254,15 @@ void Game::checkRoundEnd() {
         roundWinnerName = "Jucătorul 2";
     }
     else if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
-        auto state = m_gameBoard.checkWin(true, 3);
-        if (state == Board::State::RedWin) {
+        // FOLOSEȘTE direct funcțiile moderne pentru calculul punctelor
+        int16_t redSum = m_gameBoard.sumPointsModern(Color::Red);
+        int16_t blueSum = m_gameBoard.sumPointsModern(Color::Blue);
+
+        if (redSum > blueSum) {
             player1RoundsWon++;
             roundWinnerName = "Jucătorul 1";
         }
-        else if (state == Board::State::BlueWin) {
+        else if (blueSum > redSum) {
             player2RoundsWon++;
             roundWinnerName = "Jucátorul 2";
         }
@@ -299,7 +302,6 @@ void Game::checkRoundEnd() {
         QTimer::singleShot(2000, this, &Game::startNewRound);
     }
 }
-
 void Game::handleBoardClick(int row, int col, int player) {
     qDebug() << "=== BOARD CLICK DEBUG START ===";
     qDebug() << "Processing move at (" << row << ", " << col << ") for player "
@@ -327,9 +329,20 @@ void Game::handleBoardClick(int row, int col, int player) {
         processingMove = false;
         return;
     }
+
+    // FOLOSEȘTE pentru logica de sfârșit de joc
     auto emptyPositions = m_gameBoard.getEmptyPositionsModern();
-    auto playerPositions = m_gameBoard.getPositionsByColorModern(currentPlayer);
-    auto [redCount, blueCount] = m_gameBoard.getCardCountByColorModern();
+    if (emptyPositions.empty()) {
+        qDebug() << "No empty positions left - triggering end game";
+        currentGameWindow->blockSignals(false);
+        processingMove = false;
+
+        QTimer::singleShot(100, this, [this]() {
+            checkRoundEnd();
+            });
+        return;
+    }
+
     Player& currentPlayerRef = (currentPlayer == Color::Red) ? player1 : player2;
 
     if (currentPlayerRef.numberofValidCards() <= 0) {
@@ -614,6 +627,8 @@ void Game::startNewMageDuelRound() {
     currentPlayer = Color::Red;
     playerMoveCompleted = false;
 
+    auto emptyPositions = m_gameBoard.getEmptyPositionsModern();
+
     currentGameWindow->setBoard(m_gameBoard, 5);
     currentGameWindow->setPlayer1Cards(player1.getVector());
     currentGameWindow->setPlayer2Cards(player2.getVector());
@@ -775,6 +790,8 @@ void Game::startNewPowerDuelRound() {
     m_gameBoard.initializeForDynamicPlay(5);  // Can expand to 5x5, will fix to 4x4
     currentPlayer = Color::Red;
     playerMoveCompleted = false;
+
+    auto emptyPositions = m_gameBoard.getEmptyPositionsModern();
 
     // Set the board with max size 5 for Power Duel (will fix to 4x4 final target)
     currentGameWindow->setBoard(m_gameBoard, 5);  // Max expansion size
