@@ -1,7 +1,19 @@
-Eter is a virtual rendition of the classic board game that meticulously adheres to its traditional rules while offering a seamless digital experience. Built with modern C++ for the core game logic, the project leverages state-of-the-art algorithms to ensure smooth gameplay and efficient processing. The codebase is organized into well-defined classes, which enhances readability and maintainability, allowing for easy updates and potential expansions in the future.
+Functionalitati adaugate in plus pentru marire:
 
-The game board is designed to expand dynamically, precisely following the unique specifications of the original board game. This dynamic scaling not only brings authenticity to the virtual game but also challenges players with a progressively evolving playfield that remains true to the established rules.
+tabla de joc - avea cateva cazuri specifice in care ori nu se extindea bine, ori nu se fixa bine, ori se puteau juca carti pe pozitii "interzise"(pozitii care nu aveau carti adiacente)
+             - am reparat-o complet si adaptat-o atat pentru modul Training (3x3), cat si pentru celelalte moduri (4x4)
 
-The user interface, implemented using Qt, is both responsive and visually engaging. Every user action triggers immediate updates, ensuring that the display remains current and intuitive. The UI has been carefully crafted to provide a pleasant visual experience, making it easier for players to follow the game’s progress and enjoy the overall interaction.
+regex - verifica numele introdus de user in Main Menu, acesta nu are voie sa foloseasca cuvinte obscene (sunt mai multe cuvinte obscene introduse intr-un fisier)
 
-Overall, the project successfully marries modern programming techniques with traditional game mechanics, resulting in a virtual version of Eter that is as challenging as it is enjoyable. Whether you are a fan of the original board game or new to the concept, this digital adaptation promises a user-friendly and engaging experience.
+lambdas - desi aveam cateva functii lambda folosite, am adaugat mai multe, folosite pentru semnale Qt si callback-uri
+
+smart pointers - am folosit std::unique_ptr pentru management pentru mai multe ferestre, dar si pentru BoardView (UI-ul tablei de joc)
+               - acum in loc sa declar ferestre cu *NumeFereastra, folosesc std::unique_ptr pentru management automat de memorie
+               - pentru structura de date pentru BoardView am folosit std::vector<std::vector<std::unique_ptr<QPushButton>>>
+
+templates - majoritar folosite in clasa Board, pentru operatii pe tabla de joc
+Ex:
+          - template<typename Operation> void forEachPosition(Operation op): parcurge toata tabla si aplica o operatie pe fiecare pozitie
+          - template<typename Predicate> std::vector<Position> findPositions(Predicate pred): cauta toate pozitiile care indeplinesc o conditie
+
+ranges - cateva adaugate pentru operatii pe tabla de joc
