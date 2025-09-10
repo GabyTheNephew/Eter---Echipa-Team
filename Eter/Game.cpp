@@ -4,7 +4,32 @@
 #include <QTimer>
 Game Game::m_current_Instance;
 
-// În Game.cpp - Înlocuiește destructorul cu această versiune mai sigură:
+void Game::createWindowFromLoad(GameType type) {
+    QString title;
+    bool hasMage = false, hasPower = false;
+
+    switch (type) {
+    case GameType::Training: title = "Training"; break;
+    case GameType::MageDuel: title = "Mage Duel"; hasMage = true; break;
+    case GameType::Power: title = "Power Duel"; hasPower = true; break;
+    case GameType::MageDuelAndPower: title = "Power & Mage Duel"; hasMage = hasPower = true; break;
+    case GameType::Tournament: title = "Tournament"; break;
+    }
+
+    auto* window = new SecondaryWindow(title,
+        QDir::currentPath() + QDir::separator() + "eter.png",
+        this, "", "", "", "", hasMage, hasPower);
+
+    // 🔹 NU îl arătăm încă, doar îl pregătim
+    currentGameWindow.reset(window);
+
+    connect(currentGameWindow.get(), &SecondaryWindow::boardClicked,
+        this, &Game::handleBoardClick);
+    connect(currentGameWindow.get(), &SecondaryWindow::returnToMainMenu,
+        this, &Game::showMainMenu);
+
+    // îl vom arăta abia după ce populăm datele în DeserializeGame
+}
 
 Game::~Game() {
     qDebug() << "Game destructor called - starting cleanup";
@@ -50,7 +75,7 @@ Game& Game::get_Instance()
 	return m_current_Instance;
 }
 
-Game::GameType Game::stringToGameType(std::string_view word)
+Game::GameType Game::stringToGameType(std::string_view word) const
 {
     if (word == "Training")
         return GameType::Training;

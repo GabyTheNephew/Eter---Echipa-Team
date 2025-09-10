@@ -2306,22 +2306,14 @@ Board::Board(const Board& board)
 {
 }
 
-Board& Board::operator=(const Board& board)
+Board& Board::operator=(const Board& other)
 {
-    if (this == &board)
-    {
+    if (this == &other) {
         return *this;
     }
 
-    for (int16_t i = 0; i < m_board.size(); i++)
-    {
-        for (int16_t j = 0; j < m_board[i].size(); j++)
-        {
-            m_board[i][j] = board.m_board[i][j];
-        }
-    }
-
-    m_size = board.m_size;
+    m_board = other.m_board;
+    m_size = other.m_size;
 
     return *this;
 }

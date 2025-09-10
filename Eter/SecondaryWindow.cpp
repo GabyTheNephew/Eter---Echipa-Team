@@ -209,7 +209,7 @@ void SecondaryWindow::setBoard(Board& board, int setMaxSize) {
     }
 
     try {
-        board.initializeForDynamicPlay(setMaxSize);
+        //board.initializeForDynamicPlay(setMaxSize);
         m_boardView = std::make_unique<BoardView>(board, this, setMaxSize);
 
         if (!m_boardView) {

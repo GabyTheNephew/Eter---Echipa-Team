@@ -63,6 +63,11 @@ public:
 	void assignPower();
 	void reassignPower();
 	Power getPower() const;
-
+	bool hasMage() const;
+	bool hasPower() const;
+	void setMage(Mages mage);  // For restoring from save
+	void setPower(Power power);
+	void setMageAssignment(int mageId);
+	void setPowerAssignment(int powerId);
 };
 

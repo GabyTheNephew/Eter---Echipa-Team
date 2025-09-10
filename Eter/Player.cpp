@@ -1,5 +1,39 @@
 ﻿#include "Player.h"
 
+void Player::setMageAssignment(int mageId) {
+	if (mageId >= 0 && mageId <= 7) {
+		m_mage = static_cast<Mages>(mageId);
+	}
+}
+
+void Player::setPowerAssignment(int powerId) {
+	if (powerId >= 0 && powerId <= 4) {
+		m_power = static_cast<Power>(powerId);
+	}
+}
+
+bool Player::hasMage() const {
+	// Check if player has a valid mage assigned
+	// Based on your asignMage() method which returns 0-7, assume all values are valid
+	int mageId = static_cast<int>(m_mage);
+	return mageId >= 0 && mageId <= 7;
+}
+
+bool Player::hasPower() const {
+	// Check if player has a valid power assigned
+	// Based on your assignPower() method which returns 0-4, assume all values are valid
+	int powerId = static_cast<int>(m_power);
+	return powerId >= 0 && powerId <= 4;
+}
+
+void Player::setMage(Mages mage) {
+	m_mage = mage;
+}
+
+void Player::setPower(Power power) {
+	m_power = power;
+}
+
 Player::Player()
 {
 	m_name = "Player";

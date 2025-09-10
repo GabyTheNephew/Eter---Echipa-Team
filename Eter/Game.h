@@ -1,7 +1,6 @@
-﻿// SOLUȚIA pentru Game.h - Custom deleter pentru Qt objects
-#pragma once
+﻿#pragma once
 #include <string_view>
-#include<cstdint>
+#include <cstdint>
 #include "Board.h"
 #include "Player.h"
 #include "Explosion.h"
@@ -16,22 +15,17 @@
 #include <cstdlib>
 #include <ctime>
 #include "MainWindow.h"
-#include <memory> // Added for smart pointers
+#include <memory>
 #include "SecondaryWindow.h"
-
-// Custom deleter for Qt objects to avoid double deletion
 struct QObjectDeleter {
-    void operator()(QObject* obj) const {
+    void operator()(QObject* obj)const {
         if (obj && !obj->parent()) {
-            // Only delete if object has no parent (not managed by Qt)
-            obj->deleteLater();
+			obj->deleteLater();
         }
-        // If object has parent, Qt will handle deletion automatically
     }
 };
 
-class Game :public QObject
-{
+class Game : public QObject {
     Q_OBJECT
 
 private:
@@ -67,7 +61,7 @@ private:
 
     bool playerMoveCompleted;
     QString getPowerDisplayName(Power power) const;
-
+    
 public:
     void startNewCombinedRound();
     void checkCombinedRoundEnd();
@@ -89,8 +83,7 @@ public:
 
     static Game& get_Instance();
 
-    enum class GameType : int16_t
-    {
+    enum class GameType : int16_t {
         Training,
         MageDuel,
         Power,
@@ -98,7 +91,7 @@ public:
         Tournament
     };
 
-    GameType stringToGameType(std::string_view word);
+    GameType stringToGameType(std::string_view word)const;
     std::string_view gameTypeToString(GameType gameType) const;
 
     void incrementRoundCounter();
@@ -109,7 +102,7 @@ public:
     bool areExplosionsEnabled() const;
 
     void setIllusionsEnabled(bool enabled);
-    bool areIllusionsEnabled()const;
+    bool areIllusionsEnabled() const;
 
     bool getPlayerMoveCompleted() const { return playerMoveCompleted; }
     void setPlayerMoveCompleted(bool completed) { playerMoveCompleted = completed; }
@@ -128,6 +121,18 @@ public:
         return currentGameWindow.get();
     }
 
+    // 🔹 Metode noi pentru GameSaveManager
+    Player& getPlayer1() { return player1; }
+    Player& getPlayer2() { return player2; }
+    const Player& getPlayer1() const { return player1; }
+    const Player& getPlayer2() const { return player2; }
+
+    Color getCurrentPlayerColor() const { return currentPlayer; }
+    void setCurrentPlayerColor(Color c) { currentPlayer = c; }
+    void createWindowFromLoad(GameType type);
+    GameType getCurrentGameType() const { return currentGameType; }
+private:
+    GameType currentGameType = GameType::Training;
 public slots:
     void handleBoardClick(int row, int col, int player);
 signals:
