@@ -702,9 +702,10 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
         return;
     }
 
-    if (m_boardView->getBoard().getSize() < m_boardView->getMaxSize()) {
+    Board& board = m_boardView->getBoard();
+    if (board.getNumberOfRowsWithCards() < 3 || board.getNumberOfColumnsWithCards() < 3) {
         QMessageBox::information(this, "Mage Clicked",
-            "You cannot use a mage power if the board is not defined yet!");
+            "You cannot use a mage power until the board has been fixed!");
         return;
     }
 
@@ -762,8 +763,10 @@ void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& colo
 {
     qDebug() << "Power clicked:" << powerName;
 
-    if (m_boardView->getBoard().getSize() < m_boardView->getMaxSize()) {
-        QMessageBox::information(this, "Power Clicked", "You cannot use a power if the board is not fully defined yet!");
+    Board& board = m_boardView->getBoard();
+    if (board.getNumberOfRowsWithCards() < 3 || board.getNumberOfColumnsWithCards() < 3) {
+        QMessageBox::information(this, "Power Clicked",
+            "You cannot use a power until the board has been fixed!");
         return;
     }
 
