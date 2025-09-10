@@ -9,6 +9,26 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
     this->setAutoFillBackground(true);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
+
+    QHBoxLayout* topRightLayout = new QHBoxLayout();
+    topRightLayout->setAlignment(Qt::AlignRight | Qt::AlignTop);
+
+    nameInput = new QLineEdit(this);
+    nameInput->setPlaceholderText("Enter your name");
+    nameInput->setFixedWidth(200);
+
+    doneButton = new QPushButton("Done", this);
+    nameLabel = new QLabel(this);
+    nameLabel->setStyleSheet("color: white; font-size: 14px;");
+
+    topRightLayout->addWidget(nameInput);
+    topRightLayout->addWidget(doneButton);
+
+    QVBoxLayout* rightContainer = new QVBoxLayout();
+    rightContainer->addLayout(topRightLayout);
+    rightContainer->addWidget(nameLabel, 0, Qt::AlignRight);
+
+    mainLayout->addLayout(rightContainer);
     mainLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
 
     QStringList buttonTexts = { "Load Game", "Training", "Mage Duel", "Power Duel", "Mage and Power Duel", "Tournament", "Exit" };
@@ -30,8 +50,6 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                         win->activateWindow();
                         win->setFocus(Qt::ActiveWindowFocusReason);
                     }
-
-                    // Ascunde fereastra principală pentru ca SecondaryWindow să fie în față
                     this->hide();
                 }
                 else {
@@ -66,6 +84,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                         Game& gameInstance = Game::get_Instance();
                         gameInstance.setIllusionsEnabled(illusions);
                         gameInstance.setExplosionsEnabled(explosions);
+                        gameInstance.setCurrentGameType(Game::GameType::Training);
                         gameInstance.startGame(Game::GameType::Training);
                     });
 
@@ -105,6 +124,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                         Game& gameInstance = Game::get_Instance();
                         gameInstance.setIllusionsEnabled(illusions);
                         gameInstance.setExplosionsEnabled(explosions);
+                        gameInstance.setCurrentGameType(Game::GameType::MageDuel);
                         gameInstance.startGame(Game::GameType::MageDuel);
                     });
 
@@ -144,6 +164,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                         Game& gameInstance = Game::get_Instance();
                         gameInstance.setIllusionsEnabled(illusions);
                         gameInstance.setExplosionsEnabled(explosions);
+                        gameInstance.setCurrentGameType(Game::GameType::Power);
                         gameInstance.startGame(Game::GameType::Power);
                     });
 
@@ -183,6 +204,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
                         Game& gameInstance = Game::get_Instance();
                         gameInstance.setIllusionsEnabled(illusions);
                         gameInstance.setExplosionsEnabled(explosions);
+                        gameInstance.setCurrentGameType(Game::GameType::MageDuelAndPower);
                         gameInstance.startGame(Game::GameType::MageDuelAndPower);
                     });
 
@@ -198,6 +220,7 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
 
             if (text == "Tournament") {
                 Game& gameInstance = Game::get_Instance();
+                gameInstance.setCurrentGameType(Game::GameType::Tournament);
                 gameInstance.startGame(Game::GameType::Tournament);
                 return;
             }
@@ -212,6 +235,43 @@ MainWindow::MainWindow(const QString& imagePath, QWidget* parent)
     mainLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
     this->setLayout(mainLayout);
     this->showFullScreen();
+
+    connect(doneButton, &QPushButton::clicked, this, [this]() {
+        QString name = nameInput->text().trimmed();
+        if (name.isEmpty()) {
+            QMessageBox::warning(this, "Invalid Name", "Please enter a name.");
+            return;
+        }
+
+        if (containsObsceneWord(name)) {
+            QMessageBox::warning(this, "Invalid Name", "Obscene words are not allowed!");
+            return;
+        }
+
+        nameLabel->setText("Player: " + name);
+        });
+}
+
+bool MainWindow::containsObsceneWord(const QString& text) {
+    QFile file("obscene_words.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Could not open obscene_words.txt";
+        return false;
+    }
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString word = in.readLine().trimmed();
+        if (word.isEmpty()) continue;
+
+        QRegularExpression regex("\\b" + QRegularExpression::escape(word) + "\\b",
+            QRegularExpression::CaseInsensitiveOption);
+
+        if (regex.match(text).hasMatch()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event) {

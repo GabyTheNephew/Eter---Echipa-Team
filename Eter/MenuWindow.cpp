@@ -54,7 +54,6 @@ MenuWindow::MenuWindow(QWidget* parent) : QWidget(parent) {
     connect(exitButton, &QPushButton::clicked, this, &MenuWindow::exitApp);
     connect(homeButton, &QPushButton::clicked, this, &MenuWindow::goToHome);
 
-    // Save Game cu popup
     connect(saveButton, &QPushButton::clicked, this, [this]() {
         Game& gameInstance = Game::get_Instance();
         if (GameSaveManager::Save("savegame.txt", gameInstance)) {

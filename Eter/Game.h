@@ -31,7 +31,6 @@ class Game : public QObject {
 private:
     SimpleCard selectedCard;
 
-    // Using custom deleter to handle Qt's parent-child system properly
     std::unique_ptr<SecondaryWindow, QObjectDeleter> currentGameWindow;
 
     int16_t player1RoundsWon = 0;
@@ -116,12 +115,10 @@ public:
     void checkRoundEnd();
     void cleanupEmptyBorders();
 
-    // Helper method to get raw pointer when needed for Qt connections
     SecondaryWindow* getCurrentGameWindow() const {
         return currentGameWindow.get();
     }
 
-    // 🔹 Metode noi pentru GameSaveManager
     Player& getPlayer1() { return player1; }
     Player& getPlayer2() { return player2; }
     const Player& getPlayer1() const { return player1; }
@@ -131,6 +128,7 @@ public:
     void setCurrentPlayerColor(Color c) { currentPlayer = c; }
     void createWindowFromLoad(GameType type);
     GameType getCurrentGameType() const { return currentGameType; }
+    void setCurrentGameType(GameType type);
 private:
     GameType currentGameType = GameType::Training;
 public slots:

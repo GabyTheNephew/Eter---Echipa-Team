@@ -48,25 +48,21 @@ public:
 
     using Position = std::tuple<int16_t, int16_t>;
 
-    // Template pentru verificarea mai multor condiții de câștig simultan
     template<typename... WinConditions>
     bool checkMultipleWinConditions(int16_t boardMaxSize, WinConditions... conditions) const {
         return (checkSingleWinCondition(boardMaxSize, conditions) || ...);
     }
 
-    // Template pentru verificarea unei singure condiții de câștig
     template<typename WinCondition>
     bool checkSingleWinCondition(int16_t boardMaxSize, WinCondition condition) const {
         if constexpr (std::is_same_v<WinCondition, std::function<bool()>>) {
             return condition();
         }
         else {
-            // Fallback pentru alte tipuri de condiții
             return false;
         }
     }
 
-    // Template pentru aplicarea unei operații pe toate pozițiile din tablă
     template<typename Operation>
     void forEachPosition(Operation op) {
         for (int16_t i = 0; i < getRowSize(); ++i) {
@@ -76,7 +72,6 @@ public:
         }
     }
 
-    // Template const pentru aplicarea unei operații pe toate pozițiile din tablă
     template<typename Operation>
     void forEachPosition(Operation op) const {
         for (int16_t i = 0; i < getRowSize(); ++i) {
@@ -86,7 +81,6 @@ public:
         }
     }
 
-    // Template pentru găsirea pozițiilor care îndeplinesc o condiție
     template<typename Predicate>
     std::vector<Position> findPositions(Predicate pred) const {
         std::vector<Position> result;
@@ -98,7 +92,6 @@ public:
         return result;
     }
 
-    // Template pentru aplicarea unei transformări pe toate pozițiile care îndeplinesc o condiție
     template<typename Predicate, typename Transform>
     void transformIf(Predicate pred, Transform transform) {
         forEachPosition([&](int16_t row, int16_t col, auto& stack) {
@@ -108,7 +101,6 @@ public:
             });
     }
 
-    // Template pentru numărarea pozițiilor care îndeplinesc o condiție
     template<typename Predicate>
     int countPositions(Predicate pred) const {
         int count = 0;
@@ -120,13 +112,11 @@ public:
         return count;
     }
 
-    // Variadic template pentru verificarea mai multor tipuri de direcții simultan
     template<typename... Directions>
     bool checkWinInDirections(int16_t boardMaxSize, Directions... directions) const {
         return (checkWinInDirection(boardMaxSize, directions) || ...);
     }
 
-    // Template pentru verificarea câștigului într-o direcție specifică
     template<typename Direction>
     bool checkWinInDirection(int16_t boardMaxSize, Direction dir) const {
         if constexpr (std::is_same_v<Direction, std::string>) {
@@ -143,7 +133,6 @@ public:
         return false;
     }
 
-    // Template pentru aplicarea unei operații pe mai multe rânduri/coloane
     template<typename... Indices>
     void processMultipleRows(std::function<void(int16_t)> operation, Indices... rowIndices) {
         (operation(rowIndices), ...);
@@ -154,7 +143,6 @@ public:
         (operation(colIndices), ...);
     }
 
-    // Template pentru verificarea validității mai multor poziții simultan
     template<typename... Positions>
     bool areAllPositionsValid(Positions... positions) const {
         return (isPositionValid(positions) && ...);
@@ -178,14 +166,12 @@ public:
         (operations(card), ...);
     }
 
-    // Template pentru verificarea mai multor condiții de expansiune
     template<typename... ExpansionChecks>
     bool needsAnyExpansion(int16_t maxSize, ExpansionChecks... checks) const {
         return (checks(maxSize) || ...);
     }
 
 private:
-    // Helper methods pentru template-uri
     bool checkRowWins(int16_t boardMaxSize) const;
 
     bool checkColumnWins(int16_t boardMaxSize) const;
@@ -196,15 +182,12 @@ public:
     std::vector<int> countCardsPerColumn() const;
     std::vector<int> countCardsPerRow() const;
 
-    // Check if board should be fixed horizontally or vertically with configurable target
     bool shouldFixHorizontally(int16_t targetSize = 3) const;
     bool shouldFixVertically(int16_t targetSize = 3) const;
 
-    // Fix the board by removing empty borders when conditions are met
     void fixBoardHorizontally(int16_t targetSize = 3);
     void fixBoardVertically(int16_t targetSize = 3);
 
-    // Updated board management
     void smartBoardManagement(int16_t maxSize);
 
     void ensureAllCardsHaveAdjacency(int16_t maxSize = 4);
@@ -309,33 +292,26 @@ public:
 
     int16_t sumPointsModern(const Color& color) const;
 
-    // Modern version of search functions using ranges
     std::vector<int16_t> searchEmptyColumnsModern() const;
     std::vector<int16_t> searchEmptyRowsModern() const;
 
-    // Modern version of counting functions using ranges
     std::vector<int> countCardsPerColumnModern() const;
     std::vector<int> countCardsPerRowModern() const;
 
-    // New utility functions using ranges
     std::vector<Position> getAllCardPositionsModern() const;
     std::vector<Position> getEmptyPositionsModern() const;
     std::vector<Position> getPositionsByColorModern(const Color& color) const;
 
-    // Modern analysis functions
     bool hasAnyCardModern() const;
     bool hasCardsInRowModern(int16_t row) const;
     bool hasCardsInColumnModern(int16_t col) const;
 
-    // Modern aggregate functions
     int16_t getTotalCardsModern() const;
     std::pair<int16_t, int16_t> getCardCountByColorModern() const; // {red, blue}
 
-    // Modern validation functions
     bool areAllPositionsEmptyModern(const std::vector<Position>& positions) const;
     bool areAnyPositionsEmptyModern(const std::vector<Position>& positions) const;
 
-    // Enhanced template functions with ranges
     template<typename Range, typename Predicate>
     auto countPositionsInRangeModern(Range&& range, Predicate pred) const;
 

@@ -1,5 +1,4 @@
 ﻿#include "GameSaveManager.h"
-// atenție: setează calea corectă spre proiectul DLL
 #include "../GameSaveLibrary/GameSaveLibrary.h"  
 
 #include <sstream>
@@ -18,11 +17,9 @@ bool GameSaveManager::Load(const std::string& filePath, Game& game) {
 std::string GameSaveManager::SerializeGame(const Game& game) {
     std::ostringstream ss;
 
-    // 1. Tip joc - acum corect, nu mereu "Training"
     Game::GameType type = game.getCurrentGameType();
     ss << game.gameTypeToString(type) << "\n";
 
-    // 2. Tabla
     const Board& board = game.getBoard();
     ss << board.getRowSize() << " " << board.getColumnSize() << "\n";
     for (int i = 0; i < board.getRowSize(); i++) {
@@ -37,7 +34,6 @@ std::string GameSaveManager::SerializeGame(const Game& game) {
         ss << "\n";
     }
 
-    // 3. Jucători
     auto savePlayer = [&](Player& player, const std::string& name) {
         ss << "Player " << name << "\n";
 
@@ -67,7 +63,6 @@ std::string GameSaveManager::SerializeGame(const Game& game) {
     savePlayer(const_cast<Game&>(game).getPlayer1(), "Player1");
     savePlayer(const_cast<Game&>(game).getPlayer2(), "Player2");
 
-    // 4. Jucător curent
     ss << "CurrentPlayer " << static_cast<int>(game.getCurrentPlayerColor()) << "\n";
 
     return ss.str();
@@ -77,15 +72,12 @@ void GameSaveManager::DeserializeGame(const std::string& data, Game& game) {
     std::istringstream ss(data);
     std::string token;
 
-    // 1. Tip joc
     std::string gameMode;
     ss >> gameMode;
     Game::GameType type = game.stringToGameType(gameMode);
 
-    // 🔹 Creăm fereastra UI fără resetarea logicii
     game.createWindowFromLoad(type);
 
-    // 2. Tabla
     int rows, cols;
     ss >> rows >> cols;
     Board board(rows);
@@ -99,18 +91,17 @@ void GameSaveManager::DeserializeGame(const std::string& data, Game& game) {
                 board[{i, j}].push_back(SimpleCard(val, static_cast<Color>(color)));
             }
             std::string sep;
-            ss >> sep; // consumă "|"
+            ss >> sep;
         }
     }
     game.getBoard() = board;
 
-    // 3. Jucători
     for (int p = 0; p < 2; p++) {
-        ss >> token; // "Player"
+        ss >> token;
         std::string playerName;
         ss >> playerName;
 
-        ss >> token; // "Hand"
+        ss >> token;
         int handSize;
         ss >> handSize;
         std::vector<SimpleCard> hand;
@@ -120,7 +111,7 @@ void GameSaveManager::DeserializeGame(const std::string& data, Game& game) {
             hand.push_back(SimpleCard(val, static_cast<Color>(color)));
         }
 
-        ss >> token; // "Past"
+        ss >> token;
         int pastSize;
         ss >> pastSize;
         std::vector<SimpleCard> past;
@@ -134,7 +125,7 @@ void GameSaveManager::DeserializeGame(const std::string& data, Game& game) {
 
         if (type == Game::GameType::MageDuel ||
             type == Game::GameType::MageDuelAndPower) {
-            ss >> token; // Mage
+            ss >> token;
             int mageId;
             ss >> mageId;
             player.setMageAssignment(mageId);
@@ -142,7 +133,7 @@ void GameSaveManager::DeserializeGame(const std::string& data, Game& game) {
 
         if (type == Game::GameType::Power ||
             type == Game::GameType::MageDuelAndPower) {
-            ss >> token; // Power
+            ss >> token;
             int powerId;
             ss >> powerId;
             player.setPowerAssignment(powerId);
@@ -156,13 +147,11 @@ void GameSaveManager::DeserializeGame(const std::string& data, Game& game) {
         }
     }
 
-    // 4. Jucător curent
-    ss >> token; // CurrentPlayer
+    ss >> token;
     int currentColorInt;
     ss >> currentColorInt;
     game.setCurrentPlayerColor(static_cast<Color>(currentColorInt));
 
-    // 🔹 Actualizare UI după încărcare
     if (auto* win = game.getCurrentGameWindow()) {
         win->setBoard(game.getBoard(), game.getBoard().getSize());
         win->setPlayer1Cards(game.getPlayer1().getVector());

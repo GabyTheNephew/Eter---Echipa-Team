@@ -7,10 +7,16 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <unordered_map>
-//#include "SecondaryWindow.h"
 #include "IntermediateMenu.h"
 #include "LoadGameMenu.h"
 #include "Game.h"
+
+#include <QLineEdit>
+#include <QPushButton>
+#include <QLabel>
+#include <QFile>
+#include <QTextStream>
+#include <QRegularExpression>
 class SecondaryWindow;
 class MainWindow : public QWidget {
     Q_OBJECT
@@ -23,6 +29,11 @@ private:
     QString selectedGameMode; 
     std::unordered_map<QString, SecondaryWindow*> secondaryWindows;
 
+    QLineEdit* nameInput;
+    QPushButton* doneButton;
+    QLabel* nameLabel;
+
+    bool containsObsceneWord(const QString& text);
 protected:
     void resizeEvent(QResizeEvent* event);
 };

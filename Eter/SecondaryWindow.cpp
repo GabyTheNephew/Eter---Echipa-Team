@@ -5,7 +5,6 @@ void SecondaryWindow::clearCardSelection() {
     selectedCard = SimpleCard();
     selectedCardPlayer = Color::Red;
 
-    // Verificare pointer game
     if (!game) {
         qDebug() << "ERROR: Game instance is null in clearCardSelection";
         return;
@@ -13,7 +12,6 @@ void SecondaryWindow::clearCardSelection() {
 
     game->clearSelectedCard();
 
-    // Verificare sigură pentru actualizarea display-ului
     try {
         if (currentPlayer == Color::Red) {
             const auto& playerVector = game->getCurrentPlayer().getVector();
@@ -34,7 +32,6 @@ void SecondaryWindow::clearCardSelection() {
     qDebug() << "Card selection cleared in SecondaryWindow AND Game";
 }
 void SecondaryWindow::showWinner(const QString& winnerName) {
-    // Prevent multiple calls
     static bool winnerShown = false;
     if (winnerShown) {
         qDebug() << "Winner already shown, ignoring duplicate call";
@@ -45,10 +42,8 @@ void SecondaryWindow::showWinner(const QString& winnerName) {
     qDebug() << "=== SHOWING WINNER DIALOG ===";
     qDebug() << "Winner:" << winnerName;
 
-    // Block all signals to prevent interference
     this->blockSignals(true);
 
-    // Use stack allocation for QMessageBox to prevent flashing
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("Meci Terminat");
     msgBox.setText("Câștigătorul este: " + winnerName);
@@ -78,29 +73,22 @@ void SecondaryWindow::showWinner(const QString& winnerName) {
         "}"
     );
 
-    // Execute modally - this prevents flashing
     int result = msgBox.exec();
 
-    // Re-enable signals
     this->blockSignals(false);
 
-    // Reset the flag
     winnerShown = false;
 
     qDebug() << "Message box closed with result:" << result;
     qDebug() << "Game completed, emitting returnToMainMenu";
 
-    // Use timer to ensure clean transition
     QTimer::singleShot(100, this, [this]() {
         emit returnToMainMenu();
         });
 }
-// Add this to the SecondaryWindow constructor after setting up mainLayout:
 void SecondaryWindow::setupMatchInfoUI() {
-    // Create match info layout at the top
     matchInfoLayout = new QHBoxLayout();
 
-    // Round info label (left side)
     roundInfoLabel = new QLabel("Round 1", this);
     roundInfoLabel->setStyleSheet(
         "QLabel { "
@@ -114,7 +102,6 @@ void SecondaryWindow::setupMatchInfoUI() {
     );
     roundInfoLabel->setAlignment(Qt::AlignCenter);
 
-    // Match score label (right side)
     matchInfoLabel = new QLabel("Player 1: 0 - Player 2: 0", this);
     matchInfoLabel->setStyleSheet(
         "QLabel { "
@@ -129,17 +116,15 @@ void SecondaryWindow::setupMatchInfoUI() {
     matchInfoLabel->setAlignment(Qt::AlignCenter);
 
     matchInfoLayout->addWidget(roundInfoLabel);
-    matchInfoLayout->addStretch(); // Push labels to sides
+    matchInfoLayout->addStretch();
     matchInfoLayout->addWidget(matchInfoLabel);
 
-    // Insert at the top of main layout
     mainLayout->insertLayout(0, matchInfoLayout);
 }
 
-// Add this method to update the match info display
 void SecondaryWindow::updateMatchInfo(int currentRound, int player1Score, int player2Score, int roundsToWin) {
     if (!roundInfoLabel || !matchInfoLabel) {
-        return; // Safety check
+        return;
     }
 
     roundInfoLabel->setText(QString("Round %1").arg(currentRound));
@@ -150,7 +135,6 @@ void SecondaryWindow::updateMatchInfo(int currentRound, int player1Score, int pl
 }
 
 void SecondaryWindow::showRoundWinner(const QString& winnerName, int currentRound) {
-    // Use stack allocation and exec() to prevent flashing
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("Round Complete");
     msgBox.setText(QString("%1 wins Round %2!").arg(winnerName).arg(currentRound));
@@ -173,7 +157,6 @@ void SecondaryWindow::showRoundWinner(const QString& winnerName, int currentRoun
         "}"
     );
 
-    // Execute modally - no flashing
     msgBox.exec();
 }
 void SecondaryWindow::onBoardClicked(int row, int col) {
@@ -189,7 +172,6 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
         return;
     }
 
-    // Verificare bounds
     const Board& board = m_boardView->getBoard();
     if (row < 0 || row >= board.getRowSize() || col < 0 || col >= board.getColumnSize()) {
         qDebug() << "ERROR: Invalid board coordinates: (" << row << ", " << col << ")";
@@ -203,13 +185,11 @@ void SecondaryWindow::onBoardClicked(int row, int col) {
 void SecondaryWindow::setBoard(Board& board, int setMaxSize) {
     if (m_boardView) {
         qDebug() << "BoardView already exists, updating existing one instead";
-        // Don't create a new one, just update the existing one
         m_boardView->updateView();
         return;
     }
 
     try {
-        //board.initializeForDynamicPlay(setMaxSize);
         m_boardView = std::make_unique<BoardView>(board, this, setMaxSize);
 
         if (!m_boardView) {
@@ -227,10 +207,8 @@ void SecondaryWindow::setBoard(Board& board, int setMaxSize) {
         mainLayout->insertWidget(1, m_boardView.get(), 0, Qt::AlignHCenter | Qt::AlignVCenter);
         connect(m_boardView.get(), &BoardView::cellClicked, this, &SecondaryWindow::onBoardClicked);
 
-        // Call updateView() to create the initial buttons
         m_boardView->updateView();
 
-        // Make sure it's visible
         m_boardView->setVisible(true);
 
         qDebug() << "Board initialized for dynamic Eter gameplay";
@@ -249,7 +227,6 @@ void SecondaryWindow::cleanupEmptyBorders() {
 
     qDebug() << "Cleaning up borders...";
 
-    // Eliminăm rândurile goale de la margini
     while (board.getRowSize() > m_boardView->getMaxSize()) {
         if (board.isFirstRowEmpty() && !board.isLastRowEmpty()) {
             board.removeRow(0);
@@ -260,11 +237,10 @@ void SecondaryWindow::cleanupEmptyBorders() {
             qDebug() << "Removed last row";
         }
         else {
-            break; // Nu putem elimina mai multe rânduri
+            break;
         }
     }
 
-    // Eliminăm coloanele goale de la margini
     while (board.getColumnSize() > m_boardView->getMaxSize()) {
         if (board.isFirstColumnEmpty() && !board.isLastColumnEmpty()) {
             board.removeColumn(0);
@@ -275,7 +251,7 @@ void SecondaryWindow::cleanupEmptyBorders() {
             qDebug() << "Removed last column";
         }
         else {
-            break; // Nu putem elimina mai multe coloane
+            break;
         }
     }
 
@@ -293,30 +269,25 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
 
     setWindowTitle(title);
 
-    // Verificare game instance
     if (!gameInstance) {
         qDebug() << "ERROR: Game instance is null in constructor!";
-        // Poți decide să arunci o excepție sau să continui cu funcționalitate limitată
     }
 
 
-    // Get screen geometry for better scaling
     QScreen* screen = QApplication::primaryScreen();
     QRect screenGeometry = screen->geometry();
     qDebug() << "Screen resolution:" << screenGeometry.size();
 
     mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(20, 20, 20, 20); // Add margins for better scaling
+    mainLayout->setContentsMargins(20, 20, 20, 20);
     mainLayout->setSpacing(10);
 
-    // Setup match info UI first - make it more compact for scaling
     setupMatchInfoUI();
 
     player2CardsLayout = new QHBoxLayout();
     player2CardsLayout->setAlignment(Qt::AlignCenter);
     mainLayout->addLayout(player2CardsLayout);
 
-    // Reduce spacer size for better scaling
     mainLayout->addSpacerItem(new QSpacerItem(0, 15, QSizePolicy::Minimum, QSizePolicy::Fixed));
 
     m_boardView = nullptr;
@@ -327,14 +298,12 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
     player1CardsLayout->setAlignment(Qt::AlignCenter);
     mainLayout->addLayout(player1CardsLayout);
 
-    // Set background and other initialization...
     QPalette palette = this->palette();
     palette.setBrush(QPalette::Window,
         QBrush(QPixmap(imagePath).scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
     this->setPalette(palette);
     this->setAutoFillBackground(true);
 
-    // Setup mages and powers with smaller sizes for better scaling
     if (checkMage && checkPower) {
         setMagesAndPowersCompact(mage1Name, mage2Name, power1Name, power2Name);
     }
@@ -349,16 +318,10 @@ SecondaryWindow::SecondaryWindow(const QString& title, const QString& imagePath,
 }
 
 
-// In SecondaryWindow.cpp - Replace the setMagesCompact method with this fixed version:
-
-// In SecondaryWindow.cpp - Replace the setMagesCompact method with this corrected version:
-
 void SecondaryWindow::setMagesCompact(const QString& mage1Name, const QString& mage2Name) {
-    // Create a horizontal layout that spans the full width of the window
     QHBoxLayout* mageContainerLayout = new QHBoxLayout();
     mageContainerLayout->setContentsMargins(50, 10, 50, 10);
 
-    // Player 2 Mage (Blue) - LEFT side with BLUE border
     QString mage2ImagePath = mage2Name + ".jpg";
     QPixmap mage2Pixmap(mage2ImagePath);
 
@@ -369,11 +332,10 @@ void SecondaryWindow::setMagesCompact(const QString& mage1Name, const QString& m
         mage2Button->setFixedSize(120, 120);
         mage2Button->setIcon(mage2Icon);
         mage2Button->setIconSize(QSize(120, 120));
-        // Enhanced styling with BLUE border for Player 2 (Blue)
         mage2Button->setStyleSheet(
             "QPushButton {"
             "    background-color: rgba(255, 255, 255, 50); "
-            "    border: 5px solid #0000FF; "  // BLUE border for blue player
+            "    border: 5px solid #0000FF; "
             "    border-radius: 15px; "
             "    padding: 5px;"
             "}"
@@ -391,7 +353,6 @@ void SecondaryWindow::setMagesCompact(const QString& mage1Name, const QString& m
             onMageClicked(mage2Name, Color::Blue);
             });
 
-        // Add mage2 to the LEFT side
         mageContainerLayout->addWidget(mage2Button, 0, Qt::AlignLeft | Qt::AlignVCenter);
 
         qDebug() << "Added Player 2 mage:" << mage2Name << "with blue border on LEFT";
@@ -400,10 +361,8 @@ void SecondaryWindow::setMagesCompact(const QString& mage1Name, const QString& m
         qDebug() << "Failed to load mage2 image:" << mage2ImagePath;
     }
 
-    // Add stretch to push mages to opposite sides
     mageContainerLayout->addStretch(1);
 
-    // Player 1 Mage (Red) - RIGHT side with RED border
     QString mage1ImagePath = mage1Name + ".jpg";
     QPixmap mage1Pixmap(mage1ImagePath);
 
@@ -414,11 +373,10 @@ void SecondaryWindow::setMagesCompact(const QString& mage1Name, const QString& m
         mage1Button->setFixedSize(120, 120);
         mage1Button->setIcon(mage1Icon);
         mage1Button->setIconSize(QSize(120, 120));
-        // Enhanced styling with RED border for Player 1 (Red)
         mage1Button->setStyleSheet(
             "QPushButton {"
             "    background-color: rgba(255, 255, 255, 50); "
-            "    border: 5px solid #FF0000; "  // RED border for red player
+            "    border: 5px solid #FF0000; "
             "    border-radius: 15px; "
             "    padding: 5px;"
             "}"
@@ -436,7 +394,6 @@ void SecondaryWindow::setMagesCompact(const QString& mage1Name, const QString& m
             onMageClicked(mage1Name, Color::Red);
             });
 
-        // Add mage1 to the RIGHT side
         mageContainerLayout->addWidget(mage1Button, 0, Qt::AlignRight | Qt::AlignVCenter);
 
         qDebug() << "Added Player 1 mage:" << mage1Name << "with red border on RIGHT";
@@ -445,17 +402,14 @@ void SecondaryWindow::setMagesCompact(const QString& mage1Name, const QString& m
         qDebug() << "Failed to load mage1 image:" << mage1ImagePath;
     }
 
-    // Insert the mage container layout between player2 cards and board
     mainLayout->insertLayout(2, mageContainerLayout);
 
     qDebug() << "Mages positioned: " << mage2Name << " (LEFT, blue border) and " << mage1Name << " (RIGHT, red border)";
 }
-// Also update setPowersCompact method:
 void SecondaryWindow::setPowersCompact(const QString& power1Name, const QString& power2Name) {
     QHBoxLayout* powerContainerLayout = new QHBoxLayout();
     powerContainerLayout->setContentsMargins(50, 0, 50, 0);
 
-    // Player 1 Power (Red) - Left side
     QString power1ImagePath = power1Name + ".jpg";
     QPixmap power1Pixmap(power1ImagePath);
 
@@ -488,7 +442,6 @@ void SecondaryWindow::setPowersCompact(const QString& power1Name, const QString&
 
     powerContainerLayout->addStretch(1);
 
-    // Player 2 Power (Blue) - Right side
     QString power2ImagePath = power2Name + ".jpg";
     QPixmap power2Pixmap(power2ImagePath);
 
@@ -522,14 +475,11 @@ void SecondaryWindow::setPowersCompact(const QString& power1Name, const QString&
     mainLayout->insertLayout(1, powerContainerLayout);
     qDebug() << "Powers positioned: " << power1Name << " (left) and " << power2Name << " (right)";
 }
-// Update setMagesAndPowersCompact method:
 void SecondaryWindow::setMagesAndPowersCompact(const QString& mage1Name, const QString& mage2Name,
     const QString& power1Name, const QString& power2Name) {
 
-    // Left side - Player 1 (Red) mage and power
     QVBoxLayout* leftSideLayout = new QVBoxLayout();
 
-    // Player 1 Mage
     QString mage1ImagePath = mage1Name + ".jpg";
     QPixmap mage1Pixmap(mage1ImagePath);
     QIcon mage1Icon(mage1Pixmap.scaled(80, 80, Qt::KeepAspectRatio));
@@ -546,7 +496,6 @@ void SecondaryWindow::setMagesAndPowersCompact(const QString& mage1Name, const Q
         onMageClicked(mage1Name, Color::Red);
         });
 
-    // Player 1 Power
     QString power1ImagePath = power1Name + ".jpg";
     QPixmap power1Pixmap(power1ImagePath);
     QIcon power1Icon(power1Pixmap.scaled(80, 80, Qt::KeepAspectRatio));
@@ -567,10 +516,8 @@ void SecondaryWindow::setMagesAndPowersCompact(const QString& mage1Name, const Q
     leftSideLayout->addSpacing(10);
     leftSideLayout->addWidget(power1Button, 0, Qt::AlignLeft);
 
-    // Right side - Player 2 (Blue) mage and power
     QVBoxLayout* rightSideLayout = new QVBoxLayout();
 
-    // Player 2 Mage
     QString mage2ImagePath = mage2Name + ".jpg";
     QPixmap mage2Pixmap(mage2ImagePath);
     QIcon mage2Icon(mage2Pixmap.scaled(80, 80, Qt::KeepAspectRatio));
@@ -587,7 +534,6 @@ void SecondaryWindow::setMagesAndPowersCompact(const QString& mage1Name, const Q
         onMageClicked(mage2Name, Color::Blue);
         });
 
-    // Player 2 Power
     QString power2ImagePath = power2Name + ".jpg";
     QPixmap power2Pixmap(power2ImagePath);
     QIcon power2Icon(power2Pixmap.scaled(80, 80, Qt::KeepAspectRatio));
@@ -608,13 +554,11 @@ void SecondaryWindow::setMagesAndPowersCompact(const QString& mage1Name, const Q
     rightSideLayout->addSpacing(10);
     rightSideLayout->addWidget(power2Button, 0, Qt::AlignRight);
 
-    // Create horizontal container
     QHBoxLayout* combinedContainerLayout = new QHBoxLayout();
     combinedContainerLayout->addLayout(leftSideLayout);
-    combinedContainerLayout->addStretch(); // Push to sides
+    combinedContainerLayout->addStretch();
     combinedContainerLayout->addLayout(rightSideLayout);
 
-    // Insert in the main layout
     mainLayout->insertLayout(2, combinedContainerLayout);
 }
 
@@ -645,9 +589,8 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Escape) {
         if (!menu) {
             try {
-                // Create menu but keep it hidden initially
                 menu = std::make_unique<MenuWindow>(this);
-                menu->hide(); // Ensure it starts hidden to prevent flash
+                menu->hide();
 
                 connect(menu.get(), &MenuWindow::goToHome, this, [this]() {
                     if (menu) {
@@ -682,7 +625,6 @@ void SecondaryWindow::keyPressEvent(QKeyEvent* event) {
                 menu->hide();
             }
             else {
-                // Prepare the menu before showing to prevent flash
                 menu->adjustSize();
                 menu->show();
                 menu->raise();
@@ -740,7 +682,6 @@ void SecondaryWindow::onMageClicked(const QString& mageName, const Color& color)
             } while (returnedValue == false);
             break;
         }
-                                 // Restul case-urilor rămân la fel, dar cu verificări similare
         default:
             qDebug() << "Unknown mage:" << mageName;
             break;
@@ -865,7 +806,6 @@ void SecondaryWindow::onPowerClicked(const QString& powerName, const Color& colo
 
 
 void SecondaryWindow::updateBoardView() {
-    // Prevent multiple rapid updates
     static bool boardUpdateInProgress = false;
 
     if (boardUpdateInProgress) {
@@ -879,7 +819,6 @@ void SecondaryWindow::updateBoardView() {
         try {
             qDebug() << "Updating board view...";
 
-            // Simple, single update call
             m_boardView->updateView();
 
             qDebug() << "Board view update completed";
@@ -981,11 +920,7 @@ void SecondaryWindow::onCardSelected(const SimpleCard& card, int cardIndex) {
 }
 void SecondaryWindow::refreshCardDisplays() {
     if (!game) return;
-
-    // We need to get the card vectors from the Game instance
-    // Since we don't have direct access to player1/player2, we'll trigger an update
-    // The game should call setPlayer1Cards and setPlayer2Cards after any card selection
-    game->getCurrentPlayer(); // This will ensure game has the right current player
+    game->getCurrentPlayer();
 }
 
 
@@ -995,7 +930,6 @@ void SecondaryWindow::setPlayer1Cards(const std::vector<SimpleCard>& cards) {
         return;
     }
 
-    // Curățare sigură a layout-ului
     QLayoutItem* child;
     while ((child = player1CardsLayout->takeAt(0)) != nullptr) {
         if (QWidget* widget = child->widget()) {
@@ -1090,7 +1024,6 @@ void SecondaryWindow::setPlayer2Cards(const std::vector<SimpleCard>& cards) {
         return;
     }
 
-    // Curățare sigură a layout-ului
     QLayoutItem* child;
     while ((child = player2CardsLayout->takeAt(0)) != nullptr) {
         if (QWidget* widget = child->widget()) {

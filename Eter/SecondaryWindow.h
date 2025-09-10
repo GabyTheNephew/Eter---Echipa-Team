@@ -26,9 +26,8 @@
 #include <QHBoxLayout>
 #include <QSpacerItem>
 #include <QSizePolicy>
-#include <memory> // Added for smart pointers
+#include <memory>
 
-// Also make sure you have the QTimer include in SecondaryWindow.cpp:
 #include <QTimer>
 #include <QEventLoop>
 class Game;
@@ -51,7 +50,6 @@ public:
     void updateBoardView();
     void resetView();
 
-    // Round and match management
     void updateMatchInfo(int currentRound, int player1Score, int player2Score, int roundsToWin);
     void showRoundWinner(const QString& winnerName, int currentRound);
 
@@ -69,33 +67,28 @@ protected:
 
 private:
     void refreshCardDisplays();
-    // In SecondaryWindow.h, add these declarations to the private section:
     void setPowersCompact(const QString& power1Name, const QString& power2Name);
     void setMagesAndPowersCompact(const QString& mage1Name, const QString& mage2Name, const QString& power1Name, const QString& power2Name);
 
-    int selectedCardIndex = -1;      // Indexul exact al cărții selectate
+    int selectedCardIndex = -1;
     Color selectedCardPlayer = Color::Red;
     QString imagePath;
 
-    // Changed from raw pointer to unique_ptr
     std::unique_ptr<MenuWindow> menu{ nullptr };
 
-    // Changed from raw pointer to unique_ptr
     std::unique_ptr<BoardView> m_boardView{ nullptr };
 
-    // These layouts are managed by Qt's parent-child system, so we keep them as raw pointers
     QVBoxLayout* mainLayout;
     QHBoxLayout* player1CardsLayout;
     QHBoxLayout* player2CardsLayout;
 
-    // UI elements for match info - managed by Qt's parent-child system
     QLabel* matchInfoLabel;
     QLabel* roundInfoLabel;
     QHBoxLayout* matchInfoLayout;
 
     SimpleCard selectedCard;
     Color currentPlayer;
-    Game* game; // Keep as raw pointer since Game is a singleton
+    Game* game;
     void cleanupEmptyBorders();
     void setupMatchInfoUI();
 

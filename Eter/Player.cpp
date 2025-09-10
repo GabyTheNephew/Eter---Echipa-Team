@@ -13,15 +13,12 @@ void Player::setPowerAssignment(int powerId) {
 }
 
 bool Player::hasMage() const {
-	// Check if player has a valid mage assigned
-	// Based on your asignMage() method which returns 0-7, assume all values are valid
+
 	int mageId = static_cast<int>(m_mage);
 	return mageId >= 0 && mageId <= 7;
 }
 
 bool Player::hasPower() const {
-	// Check if player has a valid power assigned
-	// Based on your assignPower() method which returns 0-4, assume all values are valid
 	int powerId = static_cast<int>(m_power);
 	return powerId >= 0 && powerId <= 4;
 }
@@ -234,8 +231,6 @@ int Player::asignMage()
 
 SimpleCard Player::chooseCard()
 {
-	// Pentru GUI, returnăm prima carte disponibilă
-	// Aceasta va fi apoi selectată prin click în interfața grafică
 
 	for (int16_t i = 0; i < m_simpleCardsVector.size(); i++)
 	{
@@ -246,27 +241,9 @@ SimpleCard Player::chooseCard()
 		}
 	}
 
-	// Dacă nu găsim nicio carte validă, returnăm o carte invalidă
-	return SimpleCard(0, Color::Red); // Valoare 0 indică că nu mai sunt cărți
+	return SimpleCard(0, Color::Red);
 }
 
-//SimpleCard Player::chooseCard()
-//{
-//	int16_t chosen_card;
-//	std::cout << getName() << " select a card\n";
-//	printSimpleCards();
-//	std::cout << "\nPick a card\n";
-//	std::cin >> chosen_card;
-//
-//	for (int16_t i = 0; i < m_simpleCardsVector.size(); i++)
-//	{
-//		if (m_simpleCardsVector[i].getValue() == chosen_card && (ColorToString(m_simpleCardsVector[i].getColor()) == "Red" || ColorToString(m_simpleCardsVector[i].getColor()) == "Blue"))
-//		{
-//			return m_simpleCardsVector[i];
-//		}
-//	}
-//
-//}
 
 int Player::numberofValidCards()
 {

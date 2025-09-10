@@ -1,9 +1,10 @@
 ﻿#include "Game.h"
-// IMPORTANT: Include complete definition BEFORE any smart pointer usage
 #include "MainWindow.h"
 #include <QTimer>
 Game Game::m_current_Instance;
-
+void Game::setCurrentGameType(GameType type) {
+    currentGameType = type;
+}
 void Game::createWindowFromLoad(GameType type) {
     QString title;
     bool hasMage = false, hasPower = false;
@@ -20,7 +21,6 @@ void Game::createWindowFromLoad(GameType type) {
         QDir::currentPath() + QDir::separator() + "eter.png",
         this, "", "", "", "", hasMage, hasPower);
 
-    // 🔹 NU îl arătăm încă, doar îl pregătim
     currentGameWindow.reset(window);
 
     connect(currentGameWindow.get(), &SecondaryWindow::boardClicked,
@@ -28,7 +28,6 @@ void Game::createWindowFromLoad(GameType type) {
     connect(currentGameWindow.get(), &SecondaryWindow::returnToMainMenu,
         this, &Game::showMainMenu);
 
-    // îl vom arăta abia după ce populăm datele în DeserializeGame
 }
 
 Game::~Game() {
@@ -38,22 +37,17 @@ Game::~Game() {
         if (currentGameWindow) {
             qDebug() << "Cleaning up currentGameWindow";
 
-            // Disconnect all signals to prevent issues
             currentGameWindow->disconnect();
 
-            // Close the window gracefully
             currentGameWindow->close();
 
-            // Set parent to nullptr to prevent Qt from managing it
             currentGameWindow->setParent(nullptr);
 
-            // Now safe to reset the smart pointer
             currentGameWindow.reset();
 
             qDebug() << "currentGameWindow cleanup completed";
         }
 
-        // Reset other members
         player1RoundsWon = 0;
         player2RoundsWon = 0;
         m_round_Counter = 0;
@@ -88,7 +82,6 @@ Game::GameType Game::stringToGameType(std::string_view word) const
     else if (word == "MageDuelAndPower")
         return GameType::MageDuelAndPower;
 
-    // Add default case to avoid warning
     return GameType::Training;
 }
 
@@ -105,7 +98,6 @@ std::string_view Game::gameTypeToString(GameType gameType) const
     else if (gameType == GameType::MageDuelAndPower)
         return "MageDuelAndPower";
 
-    // Add default case
     return "Training";
 }
 
@@ -120,7 +112,6 @@ const Board& Game::getBoard() const {
 void Game::showMainMenu() {
     qDebug() << "Returning to main menu...";
 
-    // Prevent multiple calls
     static bool returningToMenu = false;
     if (returningToMenu) {
         qDebug() << "Already returning to menu, ignoring duplicate call";
@@ -131,44 +122,33 @@ void Game::showMainMenu() {
     if (currentGameWindow) {
         qDebug() << "Closing current game window";
 
-        // Disconnect signals first to prevent cascading calls
         currentGameWindow->disconnect();
 
-        // Hide the window immediately to prevent flash
         currentGameWindow->hide();
 
-        // Close the window
         currentGameWindow->close();
 
-        // Remove from Qt's parent-child system
         currentGameWindow->setParent(nullptr);
 
-        // Reset the smart pointer - custom deleter will handle it safely
         currentGameWindow.reset();
     }
 
-    // Reset game state
     m_round_Counter = 0;
     player1RoundsWon = 0;
     player2RoundsWon = 0;
     playerMoveCompleted = false;
 
-    // Create main window using Qt's standard approach with proper preparation
     QTimer::singleShot(100, [this]() {
-        // Reset the flag before creating the window
         static bool returningToMenu = false;
         returningToMenu = false;
 
-        // Create MainWindow but prepare it fully before showing
         MainWindow* mainWindow = new MainWindow(QDir::currentPath() + QDir::separator() + "eter.png");
         mainWindow->setAttribute(Qt::WA_DeleteOnClose);
         mainWindow->setObjectName("MainWindow");
 
-        // Prepare the window completely to prevent flashing
         mainWindow->adjustSize();
         mainWindow->setAttribute(Qt::WA_DontShowOnScreen, false);
 
-        // Show everything at once
         mainWindow->show();
         mainWindow->raise();
         mainWindow->activateWindow();
@@ -187,15 +167,12 @@ void Game::startTraining() {
         roundsToWin = 2;
         maxRounds = 3;
 
-        // Create window without parent - smart pointer will manage it
         auto* window = new SecondaryWindow("Training",
             QDir::currentPath() + QDir::separator() + "eter.png",
             &Game::get_Instance(), "", "", "", "", false, false);
 
-        // Hide window initially to prevent flash during setup
         window->hide();
 
-        // Transfer ownership to smart pointer with custom deleter
         currentGameWindow.reset(window);
 
         if (!currentGameWindow) {
@@ -203,16 +180,13 @@ void Game::startTraining() {
             return;
         }
 
-        // Setup connections while window is hidden
         connect(currentGameWindow.get(), &SecondaryWindow::boardClicked,
             this, &Game::handleBoardClick);
         connect(currentGameWindow.get(), &SecondaryWindow::returnToMainMenu,
             this, &Game::showMainMenu);
 
-        // Prepare the game state
         startNewRound();
 
-        // Show the window only after everything is ready
         currentGameWindow->show();
 
         qDebug() << "=== DEBUG: startTraining completed successfully ===";
@@ -260,7 +234,6 @@ void Game::startNewRound() {
     currentGameWindow->updateBoardView();
     currentGameWindow->updateMatchInfo(m_round_Counter, player1RoundsWon, player2RoundsWon, roundsToWin);
 
-    // Force UI update
     currentGameWindow->update();
     currentGameWindow->repaint();
 }
@@ -279,7 +252,6 @@ void Game::checkRoundEnd() {
         roundWinnerName = "Jucătorul 2";
     }
     else if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
-        // FOLOSEȘTE direct funcțiile moderne pentru calculul punctelor
         int16_t redSum = m_gameBoard.sumPointsModern(Color::Red);
         int16_t blueSum = m_gameBoard.sumPointsModern(Color::Blue);
 
@@ -337,7 +309,6 @@ void Game::handleBoardClick(int row, int col, int player) {
         return;
     }
 
-    // Prevent multiple simultaneous moves
     static bool processingMove = false;
     if (processingMove) {
         qDebug() << "Move already being processed, ignoring duplicate call";
@@ -345,7 +316,6 @@ void Game::handleBoardClick(int row, int col, int player) {
     }
     processingMove = true;
 
-    // Block signals during processing to prevent cascading updates
     currentGameWindow->blockSignals(true);
 
     if (!m_gameBoard.canBePlaced(row, col)) {
@@ -355,7 +325,6 @@ void Game::handleBoardClick(int row, int col, int player) {
         return;
     }
 
-    // FOLOSEȘTE pentru logica de sfârșit de joc
     auto emptyPositions = m_gameBoard.getEmptyPositionsModern();
     if (emptyPositions.empty()) {
         qDebug() << "No empty positions left - triggering end game";
@@ -375,14 +344,12 @@ void Game::handleBoardClick(int row, int col, int player) {
         currentGameWindow->blockSignals(false);
         processingMove = false;
 
-        // Use timer to prevent immediate UI conflicts
         QTimer::singleShot(100, this, [this]() {
             checkRoundEnd();
             });
         return;
     }
 
-    // Check if there's a selected card
     SimpleCard cardToPlay;
     bool foundCard = false;
 
@@ -420,14 +387,11 @@ void Game::handleBoardClick(int row, int col, int player) {
 
     qDebug() << "Placing card with value:" << cardToPlay.getValue();
 
-    // Place the card
     m_gameBoard.pushCard(cardToPlay, { row, col });
 
-    // Clear selection
     clearSelectedCard();
     currentGameWindow->clearCardSelection();
 
-    // Board expansion logic
     QString windowTitle = currentGameWindow->windowTitle();
     int maxBoardSize = 4;
     int targetWinSize = 3;
@@ -449,13 +413,11 @@ void Game::handleBoardClick(int row, int col, int player) {
         targetWinSize = 4;
     }
 
-    // Do board management
     try {
         qDebug() << "Starting board management...";
         m_gameBoard.smartBoardManagement(maxBoardSize);
         qDebug() << "Board management completed";
 
-        // Mark card as used
         currentPlayerRef.makeCardInvalid(cardToPlay);
         currentPlayerRef.getPastVector().push_back(cardToPlay);
 
@@ -467,23 +429,19 @@ void Game::handleBoardClick(int row, int col, int player) {
         return;
     }
 
-    // Re-enable signals
     currentGameWindow->blockSignals(false);
 
-    // Batch update interface using timer to prevent conflicts
     QTimer::singleShot(50, this, [this, targetWinSize, windowTitle]() {
         if (!currentGameWindow) return;
 
         qDebug() << "Starting UI update batch...";
 
-        // Single batch update
         currentGameWindow->setPlayer1Cards(player1.getVector());
         currentGameWindow->setPlayer2Cards(player2.getVector());
         currentGameWindow->updateBoardView();
 
         qDebug() << "UI update batch completed";
 
-        // Check end of round
         Board::State winState = m_gameBoard.checkWin(false, targetWinSize);
 
         if (winState != Board::State::None) {
@@ -503,7 +461,6 @@ void Game::handleBoardClick(int row, int col, int player) {
             return;
         }
 
-        // Check if both players are out of cards
         if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
             qDebug() << "Both players out of cards, ending round";
             if (windowTitle == "Training") {
@@ -521,21 +478,18 @@ void Game::handleBoardClick(int row, int col, int player) {
             return;
         }
 
-        // Switch player
         currentPlayer = (currentPlayer == Color::Red) ? Color::Blue : Color::Red;
         currentGameWindow->setCurrentPlayer(currentPlayer);
 
         qDebug() << "Player switched to" << (currentPlayer == Color::Red ? "Red" : "Blue");
         });
 
-    // Reset the processing flag
     processingMove = false;
     qDebug() << "=== BOARD CLICK DEBUG END ===";
 }
 void Game::cleanupEmptyBorders() {
     qDebug() << "Cleaning up borders...";
 
-    // Eliminăm rândurile goale de la margini
     while (m_gameBoard.getRowSize() > 3) {
         if (m_gameBoard.isFirstRowEmpty() && !m_gameBoard.isLastRowEmpty()) {
             m_gameBoard.removeRow(0);
@@ -550,7 +504,6 @@ void Game::cleanupEmptyBorders() {
         }
     }
 
-    // Eliminăm coloanele goale de la margini
     while (m_gameBoard.getColumnSize() > 3) {
         if (m_gameBoard.isFirstColumnEmpty() && !m_gameBoard.isLastColumnEmpty()) {
             m_gameBoard.removeColumn(0);
@@ -583,10 +536,8 @@ void Game::startMageDuel() {
             QDir::currentPath() + QDir::separator() + "eter.png",
             &Game::get_Instance(), "", "", "", "", true, false);
 
-        // Hide initially to prevent flash
         window3->hide();
 
-        // Transfer ownership to smart pointer with custom deleter
         currentGameWindow.reset(window3);
 
         if (!currentGameWindow) {
@@ -594,13 +545,11 @@ void Game::startMageDuel() {
             return;
         }
 
-        // Setup connections while hidden
         connect(currentGameWindow.get(), &SecondaryWindow::boardClicked,
             this, &Game::handleBoardClick);
         connect(currentGameWindow.get(), &SecondaryWindow::returnToMainMenu,
             this, &Game::showMainMenu);
 
-        // Setup game state
         std::vector<SimpleCard> PastCards;
         player1 = Player("Jucătorul 1", {
             SimpleCard(1, Color::Red), SimpleCard(1, Color::Red),
@@ -626,10 +575,8 @@ void Game::startMageDuel() {
         currentGameWindow->setMagesCompact(QString::fromStdString(player1.getMage()),
             QString::fromStdString(player2.getMage()));
 
-        // Start the round while window is still hidden
         startNewMageDuelRound();
 
-        // Show only after everything is ready
         currentGameWindow->show();
 
     }
@@ -665,7 +612,6 @@ void Game::startNewMageDuelRound() {
 void Game::checkMageDuelRoundEnd() {
     if (!currentGameWindow) return;
 
-    // Check win conditions for 4x4 board (need 4 in a row for mage duel)
     Board::State winState = m_gameBoard.checkWin(false, 4);
     QString roundWinnerName;
 
@@ -678,7 +624,6 @@ void Game::checkMageDuelRoundEnd() {
         roundWinnerName = "Jucătorul 2";
     }
     else if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
-        // Count points if both players are out of cards
         auto state = m_gameBoard.checkWin(true, 4);
         if (state == Board::State::RedWin) {
             player1RoundsWon++;
@@ -693,7 +638,6 @@ void Game::checkMageDuelRoundEnd() {
         }
     }
 
-    // If round ended
     if (!roundWinnerName.isEmpty()) {
         if (roundWinnerName != "Egalitate") {
             currentGameWindow->showRoundWinner(roundWinnerName, m_round_Counter);
@@ -701,7 +645,6 @@ void Game::checkMageDuelRoundEnd() {
 
         incrementRoundCounter();
 
-        // Check if match ended
         if (player1RoundsWon >= roundsToWin) {
             currentGameWindow->showWinner("Jucătorul 1 - Câștigătorul meciului!");
             return;
@@ -723,7 +666,6 @@ void Game::checkMageDuelRoundEnd() {
             return;
         }
 
-        // Start next round after delay
         QTimer::singleShot(2000, this, &Game::startNewMageDuelRound);
     }
 }
@@ -770,10 +712,8 @@ void Game::startPowerDuel() {
             power1Name, power2Name,
             false, true);
 
-        // Hide initially
         window->hide();
 
-        // Transfer ownership to smart pointer with custom deleter
         currentGameWindow.reset(window);
 
         if (!currentGameWindow) {
@@ -781,14 +721,11 @@ void Game::startPowerDuel() {
             return;
         }
 
-        // Setup connections while hidden
         connect(currentGameWindow.get(), &SecondaryWindow::boardClicked, this, &Game::handleBoardClick);
         connect(currentGameWindow.get(), &SecondaryWindow::returnToMainMenu, this, &Game::showMainMenu);
 
-        // Start round while hidden
         startNewPowerDuelRound();
 
-        // Show only when ready
         currentGameWindow->show();
 
     }
@@ -807,19 +744,16 @@ void Game::startNewPowerDuelRound() {
     qDebug() << "=== Starting Power Duel Round " << m_round_Counter << " ===";
     qDebug() << "Score - Player 1:" << player1RoundsWon << ", Player 2:" << player2RoundsWon;
 
-    // Reset cards for new round (but keep powers)
     player1.ResetVector();
     player2.ResetVector();
 
-    // Initialize board for power duel (4x4 final size)
-    m_gameBoard.initializeForDynamicPlay(5);  // Can expand to 5x5, will fix to 4x4
+    m_gameBoard.initializeForDynamicPlay(5);
     currentPlayer = Color::Red;
     playerMoveCompleted = false;
 
     auto emptyPositions = m_gameBoard.getEmptyPositionsModern();
 
-    // Set the board with max size 5 for Power Duel (will fix to 4x4 final target)
-    currentGameWindow->setBoard(m_gameBoard, 5);  // Max expansion size
+    currentGameWindow->setBoard(m_gameBoard, 5);
     currentGameWindow->setPlayer1Cards(player1.getVector());
     currentGameWindow->setPlayer2Cards(player2.getVector());
     currentGameWindow->setCurrentPlayer(currentPlayer);
@@ -830,7 +764,6 @@ void Game::startNewPowerDuelRound() {
 void Game::checkPowerDuelRoundEnd() {
     if (!currentGameWindow) return;
 
-    // Check win conditions for 4x4 board (need 4 in a row for power duel)
     Board::State winState = m_gameBoard.checkWin(false, 4);
     QString roundWinnerName;
 
@@ -843,7 +776,6 @@ void Game::checkPowerDuelRoundEnd() {
         roundWinnerName = "Jucătorul 2";
     }
     else if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
-        // Count points if both players are out of cards
         auto state = m_gameBoard.checkWin(true, 4);
         if (state == Board::State::RedWin) {
             player1RoundsWon++;
@@ -858,7 +790,6 @@ void Game::checkPowerDuelRoundEnd() {
         }
     }
 
-    // If round ended
     if (!roundWinnerName.isEmpty()) {
         if (roundWinnerName != "Egalitate") {
             currentGameWindow->showRoundWinner(roundWinnerName, m_round_Counter);
@@ -866,7 +797,6 @@ void Game::checkPowerDuelRoundEnd() {
 
         incrementRoundCounter();
 
-        // Check if match ended
         if (player1RoundsWon >= roundsToWin) {
             currentGameWindow->showWinner("Jucătorul 1 - Câștigătorul meciului!");
             return;
@@ -888,7 +818,6 @@ void Game::checkPowerDuelRoundEnd() {
             return;
         }
 
-        // Start next round after delay
         QTimer::singleShot(2000, this, &Game::startNewPowerDuelRound);
     }
 }
@@ -940,7 +869,6 @@ void Game::startMageDuelAndPower() {
             SimpleCard(4, Color::Blue), SimpleCard(5, Color::Blue)
             }, PastCards, true);
 
-        // Assign distinct mages
         auto mage1 = player1.getMageAssignment();
         auto mage2 = player2.getMageAssignment();
         while ((mage1 == mage2) || (mage1 % 2 == 0 && mage2 == mage1 + 1) || (mage1 % 2 == 1 && mage2 == mage1 - 1)) {
@@ -948,7 +876,6 @@ void Game::startMageDuelAndPower() {
             mage2 = player2.getMageAssignment();
         }
 
-        // Assign distinct powers
         player1.assignPower();
         player2.assignPower();
         while (player1.getPower() == player2.getPower()) {
@@ -967,10 +894,8 @@ void Game::startMageDuelAndPower() {
             power1Name, power2Name,
             true, true);
 
-        // Hide initially to prevent flash
         window2->hide();
 
-        // Transfer ownership to smart pointer with custom deleter
         currentGameWindow.reset(window2);
 
         if (!currentGameWindow) {
@@ -978,14 +903,11 @@ void Game::startMageDuelAndPower() {
             return;
         }
 
-        // Setup connections while hidden
         connect(currentGameWindow.get(), &SecondaryWindow::boardClicked, this, &Game::handleBoardClick);
         connect(currentGameWindow.get(), &SecondaryWindow::returnToMainMenu, this, &Game::showMainMenu);
 
-        // Start round while hidden
         startNewCombinedRound();
 
-        // Show only when everything is ready
         currentGameWindow->show();
 
     }
@@ -1002,17 +924,14 @@ void Game::startNewCombinedRound() {
     qDebug() << "=== Starting Combined Duel Round " << m_round_Counter << " ===";
     qDebug() << "Score - Player 1:" << player1RoundsWon << ", Player 2:" << player2RoundsWon;
 
-    // Reset cards for new round (but keep mages and powers)
     player1.ResetVector();
     player2.ResetVector();
 
-    // Initialize board for combined duel (4x4 final size)
-    m_gameBoard.initializeForDynamicPlay(5);  // Can expand to 5x5, will fix to 4x4
+    m_gameBoard.initializeForDynamicPlay(5);
     currentPlayer = Color::Red;
     playerMoveCompleted = false;
 
-    // Set the board with max size 5 for Combined Duel (will fix to 4x4 final target)
-    currentGameWindow->setBoard(m_gameBoard, 5);  // Max expansion size
+    currentGameWindow->setBoard(m_gameBoard, 5);
     currentGameWindow->setPlayer1Cards(player1.getVector());
     currentGameWindow->setPlayer2Cards(player2.getVector());
     currentGameWindow->setCurrentPlayer(currentPlayer);
@@ -1023,7 +942,6 @@ void Game::startNewCombinedRound() {
 void Game::checkCombinedRoundEnd() {
     if (!currentGameWindow) return;
 
-    // Check win conditions for 4x4 board (need 4 in a row for combined duel)
     Board::State winState = m_gameBoard.checkWin(false, 4);
     QString roundWinnerName;
 
@@ -1036,7 +954,6 @@ void Game::checkCombinedRoundEnd() {
         roundWinnerName = "Jucătorul 2";
     }
     else if (player1.numberofValidCards() == 0 && player2.numberofValidCards() == 0) {
-        // Count points if both players are out of cards
         auto state = m_gameBoard.checkWin(true, 4);
         if (state == Board::State::RedWin) {
             player1RoundsWon++;
@@ -1051,7 +968,6 @@ void Game::checkCombinedRoundEnd() {
         }
     }
 
-    // If round ended
     if (!roundWinnerName.isEmpty()) {
         if (roundWinnerName != "Egalitate") {
             currentGameWindow->showRoundWinner(roundWinnerName, m_round_Counter);
@@ -1059,7 +975,6 @@ void Game::checkCombinedRoundEnd() {
 
         incrementRoundCounter();
 
-        // Check if match ended
         if (player1RoundsWon >= roundsToWin) {
             currentGameWindow->showWinner("Jucătorul 1 - Câștigătorul meciului!");
             return;
@@ -1081,7 +996,6 @@ void Game::checkCombinedRoundEnd() {
             return;
         }
 
-        // Start next round after delay
         QTimer::singleShot(2000, this, &Game::startNewCombinedRound);
     }
 }
@@ -1216,30 +1130,3 @@ bool Game::checkPlayExplosion(Board& m_board)
 	}
 	return false;
 }
-
-
-//void Game::handleBoardClick(int row, int col) {
-//	qDebug() << "Clicked on board at (" << row << ", " << col << ")";
-//
-//	if (!m_gameBoard.canBePlaced(row, col)) {
-//		qDebug() << "Position is not valid for placement.";
-//		return;
-//	}
-//
-//	if (currentPlayer == Color::Red) {
-//		SimpleCard selectedCard = player1.chooseCard();
-//		m_gameBoard.pushCard(selectedCard, { row, col });
-//		qDebug() << "Player 1 placed card at (" << row << ", " << col << ")";
-//		currentPlayer = Color::Blue; 
-//	}
-//	else if (currentPlayer == Color::Blue) {
-//		SimpleCard selectedCard = player2.chooseCard();
-//		m_gameBoard.pushCard(selectedCard, { row, col });
-//		qDebug() << "Player 2 placed card at (" << row << ", " << col << ")";
-//		currentPlayer = Color::Red;
-//	}
-//
-//	playerMoveCompleted = true; 
-//}
-
-
